@@ -67,6 +67,13 @@ xor/
 ├── utils/                   # 工具函数 (arg_helper, train_helper, logger 等)
 ├── data/                    # 数据集 (MNIST, CIFAR-10, FashionMNIST)
 ├── exp/                     # 实验结果和模型 checkpoint
+├── scripts/
+│   ├── run_exp_local.py     # 本地运行入口
+│   └── run_exp.py           # DataJoint 集群运行入口
+├── notebooks/               # 实验 notebook 和可视化
+├── results/                 # 实验结果图 (.png)
+├── docs/
+│   └── 2110.06871v2.pdf     # 论文原文
 ├── run_exp_local.py         # 本地运行入口
 ├── run_exp.py               # DataJoint 集群运行入口
 ├── 2110.06871v2.pdf         # 论文原文
@@ -85,13 +92,13 @@ conda activate xor
 ### 本地训练
 
 ```bash
-python run_exp_local.py -c config/xor_neuron_mlp_mnist.yaml
+python scripts/run_exp_local.py -c config/xor_neuron_mlp_mnist.yaml
 ```
 
 ### 测试
 
 ```bash
-python run_exp_local.py -c config/xor_neuron_mlp_mnist.yaml -t
+python scripts/run_exp_local.py -c config/xor_neuron_mlp_mnist.yaml -t
 ```
 
 ## 关键配置参数

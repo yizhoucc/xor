@@ -3,7 +3,7 @@
 ## 论文
 "Two-argument activation functions learn soft XOR operations like cortical neurons"
 Yoon, Orhan, Kim, Pitkow (2021), arXiv:2110.06871v2
-PDF: `2110.06871v2.pdf`
+PDF: `docs/2110.06871v2.pdf`
 
 ## 项目目标
 复现论文实验：用可学习的二参数激活函数（InnerNet）替代 ReLU，验证学到的函数收敛为软 XOR，且比 ReLU 学得更快、更鲁棒。
@@ -30,16 +30,19 @@ PDF: `2110.06871v2.pdf`
 - Runner: `runner/inference_runner.py`（很大，包含 pretrain/phase1/phase2/test 逻辑）
 - 数据: `dataset/innernet_data.py`（101×101 网格，高斯核 σ=1/3）
 - 配置: `config/*.yaml`
-- 入口: `run_exp_local.py`（本地）, `run_exp.py`（DataJoint 集群）
+- 入口: `scripts/run_exp_local.py`（本地）, `scripts/run_exp.py`（DataJoint 集群）
 - 实验输出: `exp/`
+- Notebooks: `notebooks/`
+- 实验结果图: `results/`
+- 论文: `docs/`
 
 ## 运行
 ```bash
 # 本地训练（完整流程：pretrain → phase1 → phase2 → test）
-python run_exp_local.py -c config/xor_neuron_mlp_mnist.yaml
+python scripts/run_exp_local.py -c config/xor_neuron_mlp_mnist.yaml
 
 # 仅测试
-python run_exp_local.py -c config/xor_neuron_mlp_mnist.yaml -t
+python scripts/run_exp_local.py -c config/xor_neuron_mlp_mnist.yaml -t
 ```
 
 ## 论文对应的基线架构

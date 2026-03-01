@@ -6,6 +6,9 @@ import traceback
 import numpy as np
 from pprint import pprint
 
+# Add project root to path so imports work from scripts/
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
 from runner import *
 from utils.logger import setup_logging
 from utils.arg_helper import parse_arguments, get_config
