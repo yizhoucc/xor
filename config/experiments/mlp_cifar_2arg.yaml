@@ -1,0 +1,54 @@
+---
+exp_name: mlp_cifar_2arg
+exp_dir: ./exp
+use_gpu: true
+gpus: [0]
+seed: 1234
+dataset:
+  name: cifar10
+  loader_name: InnerNetData
+  data_path: ./data
+  split: train
+model:
+  name: XorNeuronMLP
+  num_cell_types: 1
+  inner_net: mlp
+  input_dim: 3072
+  arg_in_dim: 2
+  in_hidden_dim: 64
+  out_hidden_dim: [120, 120, 120]
+  dropout: 0.5
+  num_classes: 10
+  loss: CrossEntropy
+pretrain:
+  optimizer: Adam
+  num_workers: 0
+  max_epoch: 500
+  batch_size: 100
+  snapshot_epoch: 1000
+  lr: 1.0e-3
+  wd: 0.0e-4
+  momentum: 0.9
+  shuffle: true
+  best_model: [/model_snapshot_best_pretrained0.pth]
+train:
+  optimizer: Adam
+  lr_decay: 0.1
+  lr_decay_steps: [10000]
+  num_workers: 0
+  max_epoch: 200
+  batch_size: 100
+  display_iter: 5000
+  snapshot_epoch: 1000
+  valid_epoch: 1
+  lr: 1.0e-3
+  wd: 0.0e-4
+  momentum: 0.9
+  shuffle: true
+  is_resume: false
+  resume_model: None
+  best_model: /model_snapshot_best_phase1.pth
+test:
+  batch_size: 100
+  num_workers: 0
+  test_model: /model_snapshot_best_phase2.pth

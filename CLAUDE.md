@@ -26,11 +26,14 @@ PDF: `docs/2110.06871v2.pdf`
 
 ## 代码结构
 - 模型: `model/xorneuron.py`（InnerNet, ComplexNeuron*, XorNeuron*）
+- Baseline 模型: `model/baseline.py`（BaselineMLP, BaselineCNN, BaselineRNN）
 - 层: `model/denselayer.py`, `model/conv2dlayer.py`, `model/rnncell.py`
-- Runner: `runner/inference_runner.py`（很大，包含 pretrain/phase1/phase2/test 逻辑）
+- Runner（旧）: `runner/inference_runner.py`（包含 pretrain/phase1/phase2/test 逻辑）
+- Runner（新）: `runner/experiment_runner.py`（干净的 ExperimentRunner，统一处理所有模型类型）
 - 数据: `dataset/innernet_data.py`（101×101 网格，高斯核 σ=1/3）
-- 配置: `config/*.yaml`
-- 入口: `scripts/run_exp_local.py`（本地）, `scripts/run_exp.py`（DataJoint 集群）
+- 配置: `config/*.yaml`（旧）, `config/experiments/*.yaml`（论文 Table 1-3 的 15 个标准化实验）
+- 统一入口: `run.py`（config hash 去重 + 断点续传）
+- 旧入口: `scripts/run_exp_local.py`（本地）, `scripts/run_exp.py`（DataJoint 集群）
 - 实验输出: `exp/`
 - Notebooks: `notebooks/`
 - 实验结果图: `results/`
@@ -38,12 +41,37 @@ PDF: `docs/2110.06871v2.pdf`
 
 ## 运行
 ```bash
-# 本地训练（完整流程：pretrain → phase1 → phase2 → test）
-python scripts/run_exp_local.py -c config/xor_neuron_mlp_mnist.yaml
+# 新入口（推荐）— 论文复现实验
+python run.py -c config/experiments/mlp_mnist_2arg.yaml      # 完整流程
+python run.py -c config/experiments/mlp_mnist_2arg.yaml -t   # 仅测试
+python run.py -c config/experiments/mlp_mnist_2arg.yaml --resume exp/xxx  # 手动续传
 
-# 仅测试
+# 批量复现所有实验
+for cfg in config/experiments/*.yaml; do python run.py -c "$cfg"; done
+
+# 旧入口（仍可用）
+python scripts/run_exp_local.py -c config/xor_neuron_mlp_mnist.yaml
 python scripts/run_exp_local.py -c config/xor_neuron_mlp_mnist.yaml -t
 ```
+
+## 论文实验配置（config/experiments/）
+| 实验 | 配置文件 | 模型 | 论文表格 |
+|------|----------|------|----------|
+| MLP MNIST 2-arg | mlp_mnist_2arg.yaml | XorNeuronMLP | Table 1 |
+| MLP MNIST 1-arg | mlp_mnist_1arg.yaml | XorNeuronMLP | Table 1 |
+| MLP MNIST ReLU | mlp_mnist_relu.yaml | BaselineMLP | Table 1 |
+| MLP CIFAR 2-arg | mlp_cifar_2arg.yaml | XorNeuronMLP | Table 1 |
+| MLP CIFAR 1-arg | mlp_cifar_1arg.yaml | XorNeuronMLP | Table 1 |
+| MLP CIFAR ReLU | mlp_cifar_relu.yaml | BaselineMLP | Table 1 |
+| CNN MNIST 2-arg | cnn_mnist_2arg.yaml | XorNeuronConv | Table 2 |
+| CNN MNIST 1-arg | cnn_mnist_1arg.yaml | XorNeuronConv | Table 2 |
+| CNN MNIST ReLU | cnn_mnist_relu.yaml | BaselineCNN | Table 2 |
+| CNN CIFAR 2-arg | cnn_cifar_2arg.yaml | XorNeuronConv | Table 2 |
+| CNN CIFAR 1-arg | cnn_cifar_1arg.yaml | XorNeuronConv | Table 2 |
+| CNN CIFAR ReLU | cnn_cifar_relu.yaml | BaselineCNN | Table 2 |
+| RNN PTB 2-arg | rnn_ptb_2arg.yaml | ComplexNeuronRNN | Table 3 |
+| RNN PTB 1-arg | rnn_ptb_1arg.yaml | ComplexNeuronRNN | Table 3 |
+| RNN PTB tanh | rnn_ptb_tanh.yaml | BaselineRNN | Table 3 |
 
 ## 论文对应的基线架构
 - MLP: 3 层隐藏层 × 64 units

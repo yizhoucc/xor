@@ -633,8 +633,9 @@ class XorNeuronConv(nn.Module):
                 if m.bias is not None:
                     m.bias.data.zero_()
 
-    def forward(self, x, labels):
+    def forward(self, x, labels, collect=False):
         batch_size = x.shape[0]
+        in2cells_per_layer = []
 
         for i, conv in enumerate(self.outer_net):
             # ConvLayer
@@ -642,6 +643,9 @@ class XorNeuronConv(nn.Module):
             out = self.layer_norm[i](out)
             # InnerNet
             out = out.reshape(-1, self.arg_in_dim, out.shape[2], out.shape[3])
+            if collect:
+                in2cells_per_layer.append(
+                    np.moveaxis(out.data.cpu().numpy(), 1, -1).reshape(-1, self.arg_in_dim))
             out = self.inner_net(out)
             out = out.reshape(batch_size, out.shape[0] // batch_size, out.shape[-2], out.shape[-1])
             # MaxPooling
@@ -652,13 +656,16 @@ class XorNeuronConv(nn.Module):
         out = self.fc_out[0](out.view(batch_size, -1, 1, 1))
         # InnerNet
         out = out.reshape(-1, self.arg_in_dim, out.shape[2], out.shape[3])
+        if collect:
+            in2cells_per_layer.append(
+                np.moveaxis(out.data.cpu().numpy(), 1, -1).reshape(-1, self.arg_in_dim))
         out = self.inner_net(out)
         out = out.reshape(batch_size, out.shape[0] // batch_size, out.shape[-2], out.shape[-1])
         # OutputLayer
         out = self.fc_out[1](out.view(batch_size, -1))
         loss = self.loss_func(out, labels)
 
-        return out, loss
+        return out, loss, in2cells_per_layer
 
 
 class XorNeuronMLP_test(nn.Module):
