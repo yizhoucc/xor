@@ -1,0 +1,63 @@
+dataset:
+  data_path: /home/yc/repo/xor_neuron_yoon/data
+  loader_name: InnerNetData
+  name: cifar10
+  split: train
+exp_dir: /home/yc/repo/xor_neuron_yoon/exp/xor_neuron_mlp_cifar
+exp_name: XorNeuronMLP_v3_001_cifar10_2025-Dec-24-20-03-20
+gpus:
+- 0
+model:
+  arg_in_dim: 2
+  dropout: 0.5
+  in_hidden_dim: 64
+  inner_net: mlp
+  input_dim: 3072
+  loss: CrossEntropy
+  name: XorNeuronMLP_v3
+  num_cell_types: 2
+  num_classes: 10
+  out_hidden_dim:
+  - 120
+  - 120
+  - 120
+pretrain:
+  batch_size: 100
+  best_model:
+  - /model_snapshot_best_pretrained1.pth
+  - /model_snapshot_best_pretrained0.pth
+  lr: 0.001
+  max_epoch: 55
+  momentum: 0.9
+  num_workers: 0
+  optimizer: Adam
+  shuffle: true
+  snapshot_epoch: 100
+  wd: 0.0
+run_id: '817197'
+runner: XorNeuronRunner_v2
+save_dir: /home/yc/repo/xor_neuron_yoon/exp/xor_neuron_mlp_cifar/XorNeuronMLP_v3_001_cifar10_2025-Dec-24-20-03-20
+seed: 123
+test:
+  batch_size: 100
+  num_workers: 0
+  test_model: /model_snapshot_best_phase2.pth
+train:
+  batch_size: 1024
+  best_model: /model_snapshot_best_phase1.pth
+  display_iter: 500
+  is_resume: false
+  lr: 0.001
+  lr_decay: 0.1
+  lr_decay_steps:
+  - 10000
+  max_epoch: 200
+  momentum: 0.9
+  num_workers: 8
+  optimizer: Adam
+  resume_model: None
+  shuffle: true
+  snapshot_epoch: 1000
+  valid_epoch: 1
+  wd: 0.0
+use_gpu: true
