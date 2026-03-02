@@ -38,6 +38,7 @@ class ExperimentRunner:
         self.model_conf = config.model
         self.pretrain_conf = config.pretrain
         self.train_conf = config.train
+        self.train_phase2_conf = config.get('train_phase2', {})
         self.test_conf = config.test
         self.use_gpu = config.use_gpu
         self.gpus = config.gpus
@@ -159,7 +160,7 @@ class ExperimentRunner:
             model = nn.DataParallel(model, device_ids=self.gpus)
 
         optimizer = self._make_optimizer(model)
-        early_stop = EarlyStopper([0.0], win_size=10, is_decrease=False)
+        early_stop = EarlyStopper([0.0], win_size=self.train_conf.get('early_stop_window', 20), is_decrease=False)
         lr_scheduler = optim.lr_scheduler.MultiStepLR(
             optimizer, milestones=self.train_conf.lr_decay_steps,
             gamma=self.train_conf.lr_decay)
@@ -255,7 +256,7 @@ class ExperimentRunner:
             model = nn.DataParallel(model, device_ids=self.gpus).cuda()
 
         optimizer = self._make_optimizer(model)
-        early_stop = EarlyStopper([0.0], win_size=10, is_decrease=False)
+        early_stop = EarlyStopper([0.0], win_size=self.train_conf.get('early_stop_window', 20), is_decrease=False)
         lr_scheduler = optim.lr_scheduler.MultiStepLR(
             optimizer, milestones=self.train_conf.lr_decay_steps,
             gamma=self.train_conf.lr_decay)
@@ -371,7 +372,7 @@ class ExperimentRunner:
             model = nn.DataParallel(model, device_ids=self.gpus)
 
         optimizer = self._make_optimizer(model)
-        early_stop = EarlyStopper([0.0], win_size=10, is_decrease=False)
+        early_stop = EarlyStopper([0.0], win_size=self.train_conf.get('early_stop_window', 20), is_decrease=False)
         lr_scheduler = optim.lr_scheduler.MultiStepLR(
             optimizer, milestones=self.train_conf.lr_decay_steps,
             gamma=self.train_conf.lr_decay)
@@ -381,7 +382,8 @@ class ExperimentRunner:
         best_val_loss = float('inf')
         best_val_acc = 0.0
 
-        for epoch in range(self.train_conf.max_epoch):
+        phase2_max_epoch = self.train_phase2_conf.get('max_epoch', self.train_conf.max_epoch)
+        for epoch in range(phase2_max_epoch):
             # Validation
             if (epoch + 1) % self.train_conf.valid_epoch == 0 or epoch == 0:
                 model.eval()
@@ -459,7 +461,7 @@ class ExperimentRunner:
             model = nn.DataParallel(model, device_ids=self.gpus).cuda()
 
         optimizer = self._make_optimizer(model)
-        early_stop = EarlyStopper([0.0], win_size=10, is_decrease=False)
+        early_stop = EarlyStopper([0.0], win_size=self.train_conf.get('early_stop_window', 20), is_decrease=False)
         lr_scheduler = optim.lr_scheduler.MultiStepLR(
             optimizer, milestones=self.train_conf.lr_decay_steps,
             gamma=self.train_conf.lr_decay)
@@ -468,7 +470,8 @@ class ExperimentRunner:
         results = defaultdict(list)
         best_val_loss = np.inf
 
-        for epoch in range(self.train_conf.max_epoch):
+        phase2_max_epoch = self.train_phase2_conf.get('max_epoch', self.train_conf.max_epoch)
+        for epoch in range(phase2_max_epoch):
             # Validation
             if (epoch + 1) % self.train_conf.valid_epoch == 0 or epoch == 0:
                 model.eval()

@@ -21,16 +21,30 @@ class InnerNetData(Dataset):
     self.split = split
     self.npr = np.random.RandomState(seed=config.seed)
 
-    nb = 101
-    x = np.linspace(-5, 5, nb)
-    y = np.linspace(-5, 5, nb)
-    xv, yv = np.meshgrid(x, y)
-    xy = np.vstack([xv.reshape(-1), yv.reshape(-1)]).T
-    mvn = multivariate_normal(mean=[0, 0], cov=[[1/9, 0], [0, 1/9]])
-    gaussian_kernel = mvn.pdf(xy).reshape(nb, nb)
-    gaussian_kernel /= gaussian_kernel.sum()
-    init_unif = self.npr.uniform(-1, 1, size=(nb, nb))
-    targets = convolve2d(init_unif, gaussian_kernel, mode='same').reshape(-1,1)
+    arg_in_dim = getattr(config.model, 'arg_in_dim', 2)
+
+    if arg_in_dim == 1:
+      # 1D: smoothed random function on a line
+      nb = 101
+      x = np.linspace(-5, 5, nb)
+      xy = x.reshape(-1, 1)
+      from scipy.stats import norm
+      gaussian_kernel = norm.pdf(x, loc=0, scale=1/3)
+      gaussian_kernel /= gaussian_kernel.sum()
+      init_unif = self.npr.uniform(-1, 1, size=nb)
+      targets = np.convolve(init_unif, gaussian_kernel, mode='same').reshape(-1, 1)
+    else:
+      # 2D: smoothed random function on a grid (original)
+      nb = 101
+      x = np.linspace(-5, 5, nb)
+      y = np.linspace(-5, 5, nb)
+      xv, yv = np.meshgrid(x, y)
+      xy = np.vstack([xv.reshape(-1), yv.reshape(-1)]).T
+      mvn = multivariate_normal(mean=[0, 0], cov=[[1/9, 0], [0, 1/9]])
+      gaussian_kernel = mvn.pdf(xy).reshape(nb, nb)
+      gaussian_kernel /= gaussian_kernel.sum()
+      init_unif = self.npr.uniform(-1, 1, size=(nb, nb))
+      targets = convolve2d(init_unif, gaussian_kernel, mode='same').reshape(-1, 1)
 
     self.xy = xy
     self.targets = targets

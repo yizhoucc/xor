@@ -582,7 +582,10 @@ class XorNeuronConv(nn.Module):
             x_shape.append(((x_shape[-1] - self.kernel_size[i] + 2 * self.zero_pad[i]) // self.stride[i] + 1))
             self.layer_norm.append(
                 nn.LayerNorm([self.out_channel[i], x_shape[-1], x_shape[-1]], elementwise_affine=False))
-            x_shape.append(x_shape[-1] // 2)
+            if x_shape[-1] >= 2:
+                x_shape.append(x_shape[-1] // 2)
+            else:
+                x_shape.append(x_shape[-1])  # no pooling
             if i == 0:
                 self.outer_net.append(nn.Conv2d(in_channels=self.input_channel,
                                                 out_channels=self.out_channel[i],
@@ -605,7 +608,7 @@ class XorNeuronConv(nn.Module):
                                      out_channels=256,
                                      kernel_size=1,
                                      stride=1))
-        self.fc_out.append(nn.Linear(128, self.num_classes))
+        self.fc_out.append(nn.Linear(256 // self.arg_in_dim, self.num_classes))
 
         # dropout layer
         self.drop_layer = nn.Dropout(p=self.dropout)
@@ -648,8 +651,9 @@ class XorNeuronConv(nn.Module):
                     np.moveaxis(out.data.cpu().numpy(), 1, -1).reshape(-1, self.arg_in_dim))
             out = self.inner_net(out)
             out = out.reshape(batch_size, out.shape[0] // batch_size, out.shape[-2], out.shape[-1])
-            # MaxPooling
-            out = self.max_pool(out)
+            # MaxPooling (skip if spatial too small)
+            if out.shape[-1] >= 2:
+                out = self.max_pool(out)
             out = self.drop_layer(out)
 
         # Effective flattening via 1x1 conv
@@ -784,7 +788,10 @@ class XorNeuronConv_test(nn.Module):
             x_shape.append(((x_shape[-1] - self.kernel_size[i] + 2 * self.zero_pad[i]) // self.stride[i] + 1))
             self.layer_norm.append(
                 nn.LayerNorm([self.out_channel[i], x_shape[-1], x_shape[-1]], elementwise_affine=False))
-            x_shape.append(x_shape[-1] // 2)
+            if x_shape[-1] >= 2:
+                x_shape.append(x_shape[-1] // 2)
+            else:
+                x_shape.append(x_shape[-1])  # no pooling
             if i == 0:
                 self.outer_net.append(nn.Conv2d(in_channels=self.input_channel,
                                                 out_channels=self.out_channel[i],
@@ -807,7 +814,7 @@ class XorNeuronConv_test(nn.Module):
                                      out_channels=256,
                                      kernel_size=1,
                                      stride=1))
-        self.fc_out.append(nn.Linear(128, self.num_classes))
+        self.fc_out.append(nn.Linear(256 // self.arg_in_dim, self.num_classes))
 
         # dropout layer
         self.drop_layer = nn.Dropout(p=self.dropout)
@@ -848,8 +855,9 @@ class XorNeuronConv_test(nn.Module):
             # InnerNet
             out = self.inner_net(out)
             out = out.reshape(batch_size, out.shape[0] // batch_size, out.shape[-2], out.shape[-1])
-            # MaxPooling
-            out = self.max_pool(out)
+            # MaxPooling (skip if spatial too small)
+            if out.shape[-1] >= 2:
+                out = self.max_pool(out)
             out = self.drop_layer(out)
 
         # Effective flattening via 1x1 conv

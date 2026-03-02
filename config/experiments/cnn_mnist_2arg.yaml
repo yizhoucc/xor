@@ -1,4 +1,5 @@
 ---
+# CNN + MNIST + 2-arg learned activation
 exp_name: cnn_mnist_2arg
 exp_dir: ./exp
 use_gpu: true
@@ -50,7 +51,10 @@ train:
   shuffle: true
   is_resume: false
   resume_model: None
+  early_stop_window: 20
   best_model: /model_snapshot_best_phase1.pth
+train_phase2:
+  max_epoch: 400
 test:
   batch_size: 100
   num_workers: 0
