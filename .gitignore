@@ -2,4 +2,8 @@ data/cifar-100-python/train
 __pycache__/
 *.pyc
 .venv/
-exp/
+
+# exp/ — keep small results, exclude large files
+exp/**/*.pth
+exp/**/in2cells.p
+exp/**/train_stats_*.p
