@@ -27,6 +27,11 @@ class InnerNetLSTMCell(nn.Module):
 
     Standard LSTM gates (i, f, o) use sigmoid as usual.
     Cell candidate g uses InnerNet(input_proj, hidden_proj) instead of tanh(combined).
+
+    The two InnerNet arguments have clear semantic meaning:
+      arg1 = W_cx @ x  (current input projection, "what's coming in now")
+      arg2 = W_ch @ h  (hidden state projection, "what memory says")
+    This mirrors the biological basal (feedforward) vs apical (feedback) dendrite analogy.
     """
     def __init__(self, input_size, hidden_size, inner_hidden=32):
         super().__init__()
@@ -34,8 +39,9 @@ class InnerNetLSTMCell(nn.Module):
         self.hidden_size = hidden_size
         # 3 gates (i, f, o) use standard linear + sigmoid
         self.gate_linear = nn.Linear(input_size + hidden_size, 3 * hidden_size)
-        # Cell candidate: two separate projections for InnerNet's 2 args
-        self.cell_linear = nn.Linear(input_size + hidden_size, 2 * hidden_size)
+        # Cell candidate: two SEPARATE projections for InnerNet's 2 args
+        self.cell_input_proj = nn.Linear(input_size, hidden_size)    # from current input x
+        self.cell_hidden_proj = nn.Linear(hidden_size, hidden_size)  # from memory h
         self.inner_net = InnerNetLSTMActivation(hidden_dim=inner_hidden)
         self.reset_parameters()
 
@@ -55,9 +61,12 @@ class InnerNetLSTMCell(nn.Module):
         f = torch.sigmoid(f_gate)
         o = torch.sigmoid(o_gate)
 
-        # Cell candidate via InnerNet
-        cell_raw = self.cell_linear(combined)
-        cell_pairs = cell_raw.view(x.size(0), self.hidden_size, 2)
+        # Cell candidate via InnerNet with separate projections
+        # arg1: "what the current input says" (feedforward / basal)
+        # arg2: "what the memory says" (feedback / apical)
+        arg1 = self.cell_input_proj(x)          # [B, hidden_size]
+        arg2 = self.cell_hidden_proj(h_prev)    # [B, hidden_size]
+        cell_pairs = torch.stack([arg1, arg2], dim=-1)  # [B, hidden_size, 2]
         g_flat = self.inner_net(cell_pairs.view(-1, 2))
         g = g_flat.view(x.size(0), self.hidden_size)
 
