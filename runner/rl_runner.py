@@ -13,7 +13,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-logger = logging.getLogger('exp')
+logger = logging.getLogger('exp_logger')
 
 
 class ReplayBuffer:

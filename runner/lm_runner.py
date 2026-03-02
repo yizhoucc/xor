@@ -14,7 +14,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
 
-logger = logging.getLogger('exp')
+logger = logging.getLogger('exp_logger')
 
 
 class WikiTextDataset(Dataset):
