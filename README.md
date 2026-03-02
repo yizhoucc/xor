@@ -54,30 +54,34 @@
 
 ```
 xor/
+├── run.py                          # 统一实验入口（推荐）
 ├── model/
-│   ├── xorneuron.py        # 核心模型：InnerNet, ComplexNeuron*, XorNeuron*
-│   ├── denselayer.py        # 支持复杂神经元的全连接层 (多 cell type)
-│   ├── conv2dlayer.py       # 支持复杂神经元的卷积层
-│   └── rnncell.py           # 支持复杂神经元的 RNN cell
+│   ├── xorneuron.py                # 核心模型：InnerNet, ComplexNeuron*, XorNeuron*
+│   ├── baseline.py                 # ReLU/tanh baseline 模型
+│   ├── denselayer.py               # 支持复杂神经元的全连接层 (多 cell type)
+│   ├── conv2dlayer.py              # 支持复杂神经元的卷积层
+│   └── rnncell.py                  # 支持复杂神经元的 RNN cell
 ├── runner/
-│   └── inference_runner.py  # 训练/推理 Runner (pretrain, phase1, phase2, test)
+│   ├── experiment_runner.py        # 标准化实验 Runner (pretrain → phase1 → phase2 → test)
+│   └── inference_runner.py         # 旧版 Runner
 ├── dataset/
-│   └── innernet_data.py     # InnerNet 预训练数据：101×101 网格，高斯滤波随机函数
-├── config/                  # YAML 配置文件
-├── utils/                   # 工具函数 (arg_helper, train_helper, logger 等)
-├── data/                    # 数据集 (MNIST, CIFAR-10, FashionMNIST)
-├── exp/                     # 实验结果和模型 checkpoint
-├── scripts/
-│   ├── run_exp_local.py     # 本地运行入口
-│   └── run_exp.py           # DataJoint 集群运行入口
-├── notebooks/               # 实验 notebook 和可视化
-├── results/                 # 实验结果图 (.png)
+│   └── innernet_data.py            # InnerNet 预训练数据（1D/2D 高斯滤波随机函数）
+├── config/
+│   └── experiments/                # 论文复现实验配置（15 个）
+│       ├── mlp_mnist_{2arg,1arg,relu}.yaml
+│       ├── mlp_cifar_{2arg,1arg,relu}.yaml
+│       ├── cnn_mnist_{2arg,1arg,relu}.yaml
+│       ├── cnn_cifar_{2arg,1arg,relu}.yaml
+│       └── rnn_ptb_{2arg,1arg,tanh}.yaml
+├── utils/                          # 工具函数
+├── data/                           # 数据集 (MNIST, CIFAR-10, PTB)
+├── exp/                            # 实验输出 (checkpoint, 统计, 标记文件)
 ├── docs/
-│   └── 2110.06871v2.pdf     # 论文原文
-├── run_exp_local.py         # 本地运行入口
-├── run_exp.py               # DataJoint 集群运行入口
-├── 2110.06871v2.pdf         # 论文原文
-└── *.ipynb                  # 实验 notebook 和可视化
+│   ├── 2110.06871v2.pdf            # 论文原文
+│   └── paper_results.md            # 论文结果摘要与复现对比
+├── scripts/                        # 旧版入口脚本
+├── notebooks/                      # 可视化 notebook
+└── results/                        # 实验结果图
 ```
 
 ## 运行
@@ -85,21 +89,83 @@ xor/
 ### 环境
 
 ```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+# 或使用 conda
 conda env create -f condaenv.yml
 conda activate xor
 ```
 
-### 本地训练
+### 复现论文实验（推荐）
+
+使用 `run.py` 统一入口，自动执行完整流程：pretrain → phase1 → phase2 → test。
+支持 config hash 断点续传（重复运行同一 config 会自动跳过已完成实验）。
+
+```bash
+# ============ MLP 实验 ============
+# MLP + MNIST
+python run.py -c config/experiments/mlp_mnist_2arg.yaml    # 2-arg learned activation
+python run.py -c config/experiments/mlp_mnist_1arg.yaml    # 1-arg learned activation
+python run.py -c config/experiments/mlp_mnist_relu.yaml    # ReLU baseline
+
+# MLP + CIFAR-10
+python run.py -c config/experiments/mlp_cifar_2arg.yaml
+python run.py -c config/experiments/mlp_cifar_1arg.yaml
+python run.py -c config/experiments/mlp_cifar_relu.yaml
+
+# ============ CNN 实验 ============
+# CNN + MNIST
+python run.py -c config/experiments/cnn_mnist_2arg.yaml
+python run.py -c config/experiments/cnn_mnist_1arg.yaml
+python run.py -c config/experiments/cnn_mnist_relu.yaml
+
+# CNN + CIFAR-10
+python run.py -c config/experiments/cnn_cifar_2arg.yaml
+python run.py -c config/experiments/cnn_cifar_1arg.yaml
+python run.py -c config/experiments/cnn_cifar_relu.yaml
+
+# ============ RNN 实验 ============
+# RNN + PTB
+python run.py -c config/experiments/rnn_ptb_2arg.yaml
+python run.py -c config/experiments/rnn_ptb_1arg.yaml
+python run.py -c config/experiments/rnn_ptb_tanh.yaml
+```
+
+### 批量运行所有实验
+
+```bash
+for cfg in config/experiments/*.yaml; do python run.py -c "$cfg"; done
+```
+
+### 仅测试（跳过训练）
+
+```bash
+python run.py -c config/experiments/mlp_mnist_2arg.yaml -t
+```
+
+### 从断点恢复
+
+```bash
+# 手动指定实验目录恢复
+python run.py -c config/experiments/mlp_mnist_2arg.yaml --resume exp/mlp_mnist_2arg_20260301_145935_59238531
+```
+
+### 旧版入口（仍可用）
 
 ```bash
 python scripts/run_exp_local.py -c config/xor_neuron_mlp_mnist.yaml
 ```
 
-### 测试
+### 实验输出
 
-```bash
-python scripts/run_exp_local.py -c config/xor_neuron_mlp_mnist.yaml -t
-```
+每个实验在 `exp/` 下生成独立目录，包含：
+- `config.yaml` — 实验配置副本
+- `config_hash.txt` — 配置 hash（用于断点续传）
+- `model_snapshot_best_*.pth` — 各阶段最优模型
+- `train_stats_phase{1,2}.p` — 训练统计
+- `test_results.p` — 测试结果
+- `PRETRAIN_DONE`, `PHASE1_DONE`, `PHASE2_DONE`, `TEST_DONE`, `COMPLETED` — 阶段标记
 
 ## 关键配置参数
 
