@@ -89,13 +89,17 @@ xor/
 ### 环境
 
 ```bash
+# 方式一: venv (推荐)
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-# 或使用 conda
+
+# 方式二: conda
 conda env create -f condaenv.yml
 conda activate xor
 ```
+
+> GPU 用户安装 PyTorch 时按官方指引选择对应 CUDA 版本: https://pytorch.org/get-started/locally/
 
 ### 复现论文实验（推荐）
 
