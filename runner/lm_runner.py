@@ -130,12 +130,14 @@ class LMRunner:
         seeds = list(range(42, 42 + self.num_seeds))
         all_ppl_histories = []
 
-        for seed in seeds:
-            logger.info(f"[Seed {seed}] Training {self.model_name}...")
+        for si, seed in enumerate(seeds):
+            logger.info(f"[Seed {seed}] ({si+1}/{len(seeds)}) Training {self.model_name} "
+                       f"for {self.epochs} epochs...")
             ppl_history = self._train_single_seed(
                 seed, train_loader, val_loader, vocab_size, gaussian_weights
             )
             all_ppl_histories.append(ppl_history)
+            logger.info(f"[Seed {seed}] Done. Best PPL: {min(ppl_history):.2f}")
 
         # Save results
         data = np.array(all_ppl_histories)  # [num_seeds, epochs]

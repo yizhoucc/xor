@@ -95,15 +95,17 @@ class RLRunner:
 
     def train(self):
         """Train DQN across multiple seeds."""
+        logger.info(f"Creating environment: {self.env_name}")
         env = self._make_env()
         state_dim = env.observation_space.shape[0]
         action_dim = env.action_space.n
         env.close()
+        logger.info(f"Environment ready: state_dim={state_dim}, action_dim={action_dim}")
 
         # Pretrain InnerNet once (shared across seeds)
         gaussian_weights = None
         if self.is_innernet:
-            logger.info("Pretraining InnerNet on Gaussian target...")
+            logger.info("Pretraining InnerNet on Gaussian target (500 steps)...")
             from model.dqn import InnerNetDQNActivation
             temp_inner = InnerNetDQNActivation(
                 hidden_dim=self.config.model.get('inner_hidden', 32)
@@ -114,11 +116,12 @@ class RLRunner:
         seeds = list(range(42, 42 + self.num_seeds))
         all_scores = []
 
-        for seed in seeds:
-            logger.info(f"[Seed {seed}] Training {self.model_name}...")
+        for si, seed in enumerate(seeds):
+            logger.info(f"[Seed {seed}] ({si+1}/{len(seeds)}) Training {self.model_name} "
+                       f"for {self.num_episodes} episodes...")
             scores = self._train_single_seed(seed, state_dim, action_dim, gaussian_weights)
             all_scores.append(scores)
-            logger.info(f"[Seed {seed}] Final avg(last 50): {np.mean(scores[-50:]):.2f}")
+            logger.info(f"[Seed {seed}] Done. Final avg(last 50): {np.mean(scores[-50:]):.2f}")
 
         # Save results
         results = {
@@ -208,7 +211,8 @@ class RLRunner:
 
             scores.append(score)
 
-            if (i_episode + 1) % self.log_interval == 0:
+            # Log first 5 episodes individually, then every log_interval
+            if i_episode < 5 or (i_episode + 1) % self.log_interval == 0:
                 avg_score = np.mean(scores[-self.log_interval:])
                 logger.info(f"  Ep {i_episode+1}/{self.num_episodes}: "
                           f"Avg Score = {avg_score:.2f} (eps: {epsilon:.3f})")
