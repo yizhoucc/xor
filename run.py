@@ -17,7 +17,6 @@ import torch
 
 from easydict import EasyDict as edict
 from utils.logger import setup_logging
-from runner.experiment_runner import ExperimentRunner
 
 
 def parse_args():
@@ -144,37 +143,56 @@ def main():
     logger.info(f"Save dir: {save_dir}")
 
     # 7. Run experiment
-    runner = ExperimentRunner(config)
+    task_type = config.get('task_type', 'classification')
+    logger.info(f"Task type: {task_type}")
 
-    if args.test:
-        runner.test()
-        return
-
-    completed_stages = get_completed_stage(save_dir)
-
-    if 'PRETRAIN_DONE' not in completed_stages:
-        logger.info("=== Starting Pretrain ===")
-        runner.pretrain()
+    if task_type == 'rl':
+        from runner.rl_runner import RLRunner
+        runner = RLRunner(config)
+        if args.test:
+            runner.test()
+        else:
+            runner.train()
+    elif task_type == 'language_model':
+        from runner.lm_runner import LMRunner
+        runner = LMRunner(config)
+        if args.test:
+            runner.test()
+        else:
+            runner.train()
     else:
-        logger.info("Pretrain already done, skipping.")
+        from runner.experiment_runner import ExperimentRunner
+        runner = ExperimentRunner(config)
 
-    if 'PHASE1_DONE' not in completed_stages:
-        logger.info("=== Starting Phase 1 ===")
-        runner.train_phase1()
-    else:
-        logger.info("Phase 1 already done, skipping.")
+        if args.test:
+            runner.test()
+            return
 
-    if 'PHASE2_DONE' not in completed_stages:
-        logger.info("=== Starting Phase 2 ===")
-        runner.train_phase2()
-    else:
-        logger.info("Phase 2 already done, skipping.")
+        completed_stages = get_completed_stage(save_dir)
 
-    if 'TEST_DONE' not in completed_stages:
-        logger.info("=== Starting Test ===")
-        runner.test()
-    else:
-        logger.info("Test already done, skipping.")
+        if 'PRETRAIN_DONE' not in completed_stages:
+            logger.info("=== Starting Pretrain ===")
+            runner.pretrain()
+        else:
+            logger.info("Pretrain already done, skipping.")
+
+        if 'PHASE1_DONE' not in completed_stages:
+            logger.info("=== Starting Phase 1 ===")
+            runner.train_phase1()
+        else:
+            logger.info("Phase 1 already done, skipping.")
+
+        if 'PHASE2_DONE' not in completed_stages:
+            logger.info("=== Starting Phase 2 ===")
+            runner.train_phase2()
+        else:
+            logger.info("Phase 2 already done, skipping.")
+
+        if 'TEST_DONE' not in completed_stages:
+            logger.info("=== Starting Test ===")
+            runner.test()
+        else:
+            logger.info("Test already done, skipping.")
 
     logger.info("Experiment completed!")
 

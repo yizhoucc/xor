@@ -136,6 +136,25 @@ python run.py -c config/experiments/rnn_ptb_1arg.yaml
 python run.py -c config/experiments/rnn_ptb_tanh.yaml
 ```
 
+### 扩展实验：RL 和 LSTM 语言建模
+
+验证 InnerNet 在论文之外的架构上的泛化性。需额外安装 `pip install gymnasium datasets`。
+
+```bash
+# ============ DQN 强化学习 ============
+# CartPole-v1 (10 seeds × 500 episodes)
+python run.py -c config/experiments/dqn_cartpole_2arg.yaml     # InnerNet DQN
+python run.py -c config/experiments/dqn_cartpole_relu.yaml     # ReLU baseline
+
+# LunarLander-v3 (10 seeds × 1000 episodes)
+python run.py -c config/experiments/dqn_lunarlander_2arg.yaml  # InnerNet DQN
+python run.py -c config/experiments/dqn_lunarlander_relu.yaml  # ReLU baseline
+
+# ============ LSTM 语言建模 (WikiText-2) ============
+python run.py -c config/experiments/lstm_wikitext_2arg.yaml    # InnerNet LSTM (5 seeds × 10 epochs)
+python run.py -c config/experiments/lstm_wikitext_baseline.yaml # Standard LSTM baseline
+```
+
 ### 批量运行所有实验
 
 ```bash

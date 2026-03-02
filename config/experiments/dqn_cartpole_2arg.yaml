@@ -1,0 +1,24 @@
+# DQN + CartPole-v1 with InnerNet activation
+exp_name: dqn_cartpole_2arg
+task_type: rl
+seed: 1234
+use_gpu: true
+exp_dir: exp
+
+model:
+  name: InnerNetDQN
+  inner_hidden: 32
+
+rl:
+  env_name: CartPole-v1
+  num_episodes: 500
+  num_seeds: 10
+  gamma: 0.99
+  batch_size: 64
+  lr: 0.001
+  epsilon_start: 1.0
+  epsilon_end: 0.01
+  epsilon_decay: 0.995
+  memory_size: 10000
+  target_update: 10
+  log_interval: 50

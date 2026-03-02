@@ -126,3 +126,25 @@ Yoon, Orhan, Kim, Pitkow (2021), arXiv:2110.06871v2
 ### 下一步
 - [ ] 用参数匹配的 baseline 重跑所有实验
 - [ ] 多次重复取平均（4 seeds）
+
+---
+
+## 核心洞察：InnerNet 到底提升了什么？
+
+### 本质
+标准神经元计算 `f(w·x)`（ReLU 逐维独立处理），InnerNet 神经元计算 `f(w1·x, w2·x)`（两个线性投影的非线性交互）。学到的函数收敛为 **soft XOR / 乘法门控**，即 `f(x1, x2) ≈ x1 · x2`。
+
+这本质上是在每个神经元级别引入了 **特征交互（feature interaction）**——类似 attention 和 LSTM 门控的机制，但内置在激活函数中。
+
+### 提升的三个层面
+1. **学习速度**（sample efficiency）— 更少 epoch 达到同样精度
+2. **渐近性能**（final accuracy）— 最终精度略高
+3. **鲁棒性**（robustness）— 对抗攻击和自然扰动下更强
+
+### 关键发现（来自 run_v0.ipynb 实验）
+- **像素分类（MNIST/Fashion-MNIST）**：InnerNet 优势小，因为相邻像素太相似，XOR(白,白)=0 无意义
+- **语言建模（PTB/WikiText）**：InnerNet 优势大，因为 embedding 各维是高度压缩的语义特征，维度间交互有意义（如"皇室" AND "女性" = "女王"）
+- **RL（LunarLander）**：InnerNet 学得更快（Ep 600 就到 106 分，Baseline 要到 Ep 850 才到 206 分）
+
+### 推论
+任何使用激活函数的网络，理论上都可以受益于 2-arg InnerNet。受益程度取决于任务是否依赖特征间的乘法/门控交互。
