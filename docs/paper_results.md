@@ -211,3 +211,60 @@ Yoon, Orhan, Kim, Pitkow (2021), arXiv:2110.06871v2
 | LSTM WikiText-2 | InnerNet 略胜 | -0.9% PPL, 一致性好 |
 
 **特征交互假设部分成立**：InnerNet 在语言建模和简单 RL 上有优势，但在需要更大网络容量的复杂 RL 任务中反而受限于参数压缩。
+
+---
+
+## 修复与新实验（进行中）
+
+### DQN 宽度匹配修复
+
+之前 InnerNet DQN 的 LunarLander 大幅落后，根因是宽度不匹配：
+
+```
+旧 InnerNetDQN:  fc1(state, 128) → InnerNet → 64 → fc2(64, 64) → head
+旧 BaselineDQN:  fc1(state, 128) → ReLU    → 128 → fc2(128, 64) → head
+                                              ^^^  有效宽度不匹配
+```
+
+修复方案：InnerNet 层加宽 2×，使有效宽度都为 128：
+
+```
+修复 InnerNetDQN:  fc1(state, 256) → InnerNet → 128 → fc2(128, 64) → head
+固定 BaselineDQN:  fc1(state, 128) → ReLU     → 128 → fc2(128, 64) → head
+```
+
+需要重跑所有 DQN 实验以获得公平对比结果。
+
+### Transformer FFN 实验（新增）
+
+用 InnerNet 替换 Transformer FFN 中的 GELU，采用 GLU 风格的双投影：
+
+```
+标准 FFN:    W2 · GELU(W1 · x + b1) + b2
+InnerNet FFN: W2 · InnerNet(W1a · x, W1b · x) + b2
+```
+
+两个投影有不同语义角色（value vs gate），类似 SwiGLU 但用学习的激活函数。
+
+模型配置：
+- Decoder-only Transformer, 4 layers
+- d_model=128, n_heads=4, d_ff=512
+- WikiText-2, context=64, vocab=10000
+- 5 seeds × 10 epochs
+
+| 参数 | InnerNet Transformer | Standard Transformer |
+|------|---------------------|---------------------|
+| 参数量 | ~1.07M | ~0.81M |
+| FFN 激活 | InnerNet (learned) | GELU |
+| FFN 投影 | 2 个 (W1a, W1b) | 1 个 (W1) |
+
+运行命令：
+```bash
+# 重跑宽度匹配的 DQN
+rm -rf exp/dqn_*
+for cfg in config/experiments/dqn_*.yaml; do python run.py -c "$cfg"; done
+
+# Transformer 实验
+python run.py -c config/experiments/transformer_wikitext_2arg.yaml
+python run.py -c config/experiments/transformer_wikitext_baseline.yaml
+```
