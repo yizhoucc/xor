@@ -58,21 +58,30 @@ xor/
 ├── model/
 │   ├── xorneuron.py                # 核心模型：InnerNet, ComplexNeuron*, XorNeuron*
 │   ├── baseline.py                 # ReLU/tanh baseline 模型
+│   ├── dqn.py                      # DQN 模型 (InnerNetDQN, BaselineDQN)
+│   ├── lstm.py                     # LSTM 模型 (InnerNetLSTMCell, StandardLSTM)
+│   ├── transformer.py              # Transformer 模型 (InnerNet FFN, Standard FFN)
 │   ├── denselayer.py               # 支持复杂神经元的全连接层 (多 cell type)
 │   ├── conv2dlayer.py              # 支持复杂神经元的卷积层
 │   └── rnncell.py                  # 支持复杂神经元的 RNN cell
 ├── runner/
 │   ├── experiment_runner.py        # 标准化实验 Runner (pretrain → phase1 → phase2 → test)
+│   ├── rl_runner.py                # DQN 强化学习 Runner
+│   ├── lm_runner.py                # 语言建模 Runner (LSTM / Transformer)
 │   └── inference_runner.py         # 旧版 Runner
 ├── dataset/
 │   └── innernet_data.py            # InnerNet 预训练数据（1D/2D 高斯滤波随机函数）
 ├── config/
-│   └── experiments/                # 论文复现实验配置（15 个）
+│   └── experiments/                # 论文复现实验配置（15 个）+ 扩展实验
 │       ├── mlp_mnist_{2arg,1arg,relu}.yaml
 │       ├── mlp_cifar_{2arg,1arg,relu}.yaml
 │       ├── cnn_mnist_{2arg,1arg,relu}.yaml
 │       ├── cnn_cifar_{2arg,1arg,relu}.yaml
-│       └── rnn_ptb_{2arg,1arg,tanh}.yaml
+│       ├── rnn_ptb_{2arg,1arg,tanh}.yaml
+│       ├── dqn_cartpole_{2arg,relu}.yaml
+│       ├── dqn_lunarlander_{2arg,relu}.yaml
+│       ├── lstm_wikitext_{2arg,baseline}.yaml
+│       └── transformer_wikitext_{2arg,baseline}.yaml
 ├── utils/                          # 工具函数
 ├── data/                           # 数据集 (MNIST, CIFAR-10, PTB)
 ├── exp/                            # 实验输出 (checkpoint, 统计, 标记文件)
@@ -136,7 +145,7 @@ python run.py -c config/experiments/rnn_ptb_1arg.yaml
 python run.py -c config/experiments/rnn_ptb_tanh.yaml
 ```
 
-### 扩展实验：RL 和 LSTM 语言建模
+### 扩展实验：RL、LSTM 和 Transformer
 
 验证 InnerNet 在论文之外的架构上的泛化性。需额外安装 `pip install gymnasium datasets`。
 
@@ -153,6 +162,12 @@ python run.py -c config/experiments/dqn_lunarlander_relu.yaml  # ReLU baseline
 # ============ LSTM 语言建模 (WikiText-2) ============
 python run.py -c config/experiments/lstm_wikitext_2arg.yaml    # InnerNet LSTM (5 seeds × 10 epochs)
 python run.py -c config/experiments/lstm_wikitext_baseline.yaml # Standard LSTM baseline
+
+# ============ Transformer 语言建模 (WikiText-2) ============
+# Decoder-only Transformer, 4 layers, d=128, 4 heads
+# InnerNet 用 GLU 风格双投影替换 GELU: InnerNet(W1a·x, W1b·x)
+python run.py -c config/experiments/transformer_wikitext_2arg.yaml     # InnerNet FFN (5 seeds × 10 epochs)
+python run.py -c config/experiments/transformer_wikitext_baseline.yaml # GELU baseline
 ```
 
 ### 批量运行所有实验
