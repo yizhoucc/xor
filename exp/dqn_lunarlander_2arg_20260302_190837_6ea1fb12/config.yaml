@@ -1,0 +1,23 @@
+exp_dir: exp
+exp_name: dqn_lunarlander_2arg
+model:
+  inner_hidden: 32
+  name: InnerNetDQN
+rl:
+  batch_size: 64
+  env_name: LunarLander-v3
+  epsilon_decay: 0.996
+  epsilon_end: 0.01
+  epsilon_start: 1.0
+  gamma: 0.99
+  log_interval: 50
+  lr: 0.001
+  memory_size: 100000
+  num_episodes: 1000
+  num_seeds: 10
+  target_update: 10
+run_id: '763655'
+save_dir: exp/dqn_lunarlander_2arg_20260302_190837_6ea1fb12
+seed: 1234
+task_type: rl
+use_gpu: true
