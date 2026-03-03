@@ -144,7 +144,70 @@ Yoon, Orhan, Kim, Pitkow (2021), arXiv:2110.06871v2
 ### 关键发现（来自 run_v0.ipynb 实验）
 - **像素分类（MNIST/Fashion-MNIST）**：InnerNet 优势小，因为相邻像素太相似，XOR(白,白)=0 无意义
 - **语言建模（PTB/WikiText）**：InnerNet 优势大，因为 embedding 各维是高度压缩的语义特征，维度间交互有意义（如"皇室" AND "女性" = "女王"）
-- **RL（LunarLander）**：InnerNet 学得更快（Ep 600 就到 106 分，Baseline 要到 Ep 850 才到 206 分）
 
 ### 推论
 任何使用激活函数的网络，理论上都可以受益于 2-arg InnerNet。受益程度取决于任务是否依赖特征间的乘法/门控交互。
+
+---
+
+## 扩展实验结果（超越论文）
+
+### InnerNet 配对策略
+
+论文作者 KiJung Yoon 确认 CNN 中应使用 **channel-wise** 配对（而非 spatial-wise）。
+
+| 架构 | 配对策略 | 语义 | 代码实现 |
+|------|---------|------|---------|
+| CNN | channel-wise | 不同特征检测器交互 | `reshape(-1, 2, H, W)` + 1×1 conv |
+| MLP | 相邻维度配对 | 混合特征间交互 | `reshape(B, -1, 2)` |
+| LSTM | input-proj vs hidden-proj | 当前输入 vs 历史记忆 | `W_cx(x)` vs `W_ch(h)` 分开投影 |
+| DQN | 相邻维度配对 | 状态特征间交互 | 同 MLP |
+
+核心原则：InnerNet 的两个输入应该是**语义不同**的特征，而非高度相关的值。
+
+### DQN CartPole-v1 (10 seeds × 500 episodes)
+
+| 指标 | InnerNet DQN | Baseline DQN |
+|------|-------------|-------------|
+| Final Mean (last 50) | **201.6 ± 56.4** | 177.7 ± 86.5 |
+| Ep 400-450 Avg | **207.3** | 171.2 |
+| 稳定性 (std) | **56.4** | 86.5 |
+
+结论：InnerNet 略优，方差更小。CartPole 状态空间只有 4 维，差异不大。
+
+### DQN LunarLander-v3 (10 seeds × 1000 episodes)
+
+| 指标 | InnerNet DQN | Baseline DQN |
+|------|-------------|-------------|
+| Final Mean (last 50) | 66.8 ± 110.2 | **185.6 ± 110.5** |
+| Seeds solved (>200) | 0/10 | **8/10** |
+
+结论：**InnerNet 明显输了。** 可能原因：
+1. InnerNet 将 128→64 压缩，网络容量不足（LunarLander 8 维状态需要更大网络）
+2. 高斯 pretrain 可能不适合 RL 的 Q-function landscape
+3. DQN 中特征交互不是瓶颈，简单 ReLU 已足够
+
+注意：后期 episode 变慢是正常的——agent 学得越好，每个 episode 越长（LunarLander 无 max step 截断）。
+
+### LSTM WikiText-2 语言建模 (5 seeds × 10 epochs, 分开投影版)
+
+| 指标 | InnerNet LSTM | Standard LSTM |
+|------|-------------|---------------|
+| Best Mean PPL | **103.41** | 104.38 |
+| PPL 改善 | **-0.93 (-0.9%)** | — |
+| 5/5 seeds 更好 | **是** | — |
+| 过拟合起点 | Epoch 6 | Epoch 4 |
+
+结论：InnerNet 一致性更好（5/5 seeds 全部优于 Standard），过拟合更晚，但绝对差距不大。
+
+### 总结
+
+| 任务 | InnerNet vs Baseline | 幅度 |
+|------|---------------------|------|
+| MLP MNIST (论文) | InnerNet 胜 | ~1% acc |
+| MLP CIFAR (论文) | InnerNet 胜 | ~3% acc |
+| DQN CartPole | InnerNet 略胜 | +24 reward, 方差更小 |
+| DQN LunarLander | **Baseline 胜** | -119 reward |
+| LSTM WikiText-2 | InnerNet 略胜 | -0.9% PPL, 一致性好 |
+
+**特征交互假设部分成立**：InnerNet 在语言建模和简单 RL 上有优势，但在需要更大网络容量的复杂 RL 任务中反而受限于参数压缩。
