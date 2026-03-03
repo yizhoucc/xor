@@ -2,6 +2,9 @@
 
 InnerNetDQN replaces ReLU with a learned 2-arg InnerNet activation.
 BaselineDQN uses standard ReLU for comparison.
+
+Width matching: InnerNet halves width (pairs of 2 → 1), so InnerNetDQN uses
+2× hidden_dim to match BaselineDQN's effective width after InnerNet.
 """
 import torch
 import torch.nn as nn
@@ -24,19 +27,21 @@ class InnerNetDQNActivation(nn.Module):
 class InnerNetDQN(nn.Module):
     """DQN Q-network with InnerNet activation.
 
-    Architecture: Linear(state, 128) → ReLU → reshape(64,2) → InnerNet → 64 → Linear(64,64) → ReLU → Linear(64, actions)
+    hidden_dim should be 2× the desired effective width (default 256 → 128 after InnerNet).
+    Architecture: Linear(state, hidden_dim) → ReLU → reshape(hidden_dim/2, 2) → InnerNet
+                  → hidden_dim/2 → Linear(hidden_dim/2, 64) → ReLU → Linear(64, actions)
     """
-    def __init__(self, state_dim, action_dim, inner_hidden=32):
+    def __init__(self, state_dim, action_dim, hidden_dim=256, inner_hidden=32):
         super().__init__()
-        self.fc1 = nn.Linear(state_dim, 128)
+        self.fc1 = nn.Linear(state_dim, hidden_dim)
         self.inner_net = InnerNetDQNActivation(hidden_dim=inner_hidden)
-        self.fc2 = nn.Linear(64, 64)
+        effective_dim = hidden_dim // 2
+        self.fc2 = nn.Linear(effective_dim, 64)
         self.head = nn.Linear(64, action_dim)
         self.relu = nn.ReLU()
 
     def forward(self, x):
         x = self.relu(self.fc1(x))
-        # Reshape to pairs [Batch, 64, 2] and apply InnerNet
         x_pairs = x.view(x.size(0), -1, 2)
         B, P, _ = x_pairs.shape
         acts = self.inner_net(x_pairs.view(-1, 2)).view(B, P)
@@ -47,14 +52,14 @@ class InnerNetDQN(nn.Module):
 class BaselineDQN(nn.Module):
     """Standard DQN Q-network with ReLU activation.
 
-    Architecture: Linear(state, 128) → ReLU → Linear(128, 64) → ReLU → Linear(64, actions)
+    Architecture: Linear(state, hidden_dim) → ReLU → Linear(hidden_dim, 64) → ReLU → Linear(64, actions)
     """
-    def __init__(self, state_dim, action_dim):
+    def __init__(self, state_dim, action_dim, hidden_dim=128):
         super().__init__()
         self.net = nn.Sequential(
-            nn.Linear(state_dim, 128),
+            nn.Linear(state_dim, hidden_dim),
             nn.ReLU(),
-            nn.Linear(128, 64),
+            nn.Linear(hidden_dim, 64),
             nn.ReLU(),
             nn.Linear(64, action_dim)
         )

@@ -1,0 +1,24 @@
+# Transformer + WikiText-2 with GELU baseline
+exp_name: transformer_wikitext_baseline
+task_type: language_model
+seed: 1234
+use_gpu: true
+exp_dir: exp
+
+model:
+  name: StandardTransformer
+  d_model: 128
+  n_heads: 4
+  d_ff: 512
+  n_layers: 4
+  dropout: 0.1
+
+lm:
+  context_size: 64
+  embed_dim: 128
+  batch_size: 128
+  epochs: 10
+  lr: 0.0005
+  grad_clip: 1.0
+  num_seeds: 5
+  num_workers: 4

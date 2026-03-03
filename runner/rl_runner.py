@@ -87,11 +87,12 @@ class RLRunner:
 
     def _make_model(self, state_dim, action_dim):
         from model.dqn import InnerNetDQN, BaselineDQN
+        hidden_dim = self.config.model.get('hidden_dim', 256 if self.is_innernet else 128)
         if self.is_innernet:
             inner_hidden = self.config.model.get('inner_hidden', 32)
-            return InnerNetDQN(state_dim, action_dim, inner_hidden)
+            return InnerNetDQN(state_dim, action_dim, hidden_dim=hidden_dim, inner_hidden=inner_hidden)
         else:
-            return BaselineDQN(state_dim, action_dim)
+            return BaselineDQN(state_dim, action_dim, hidden_dim=hidden_dim)
 
     def train(self):
         """Train DQN across multiple seeds."""
