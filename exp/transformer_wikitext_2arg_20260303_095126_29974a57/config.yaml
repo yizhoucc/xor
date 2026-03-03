@@ -1,0 +1,24 @@
+exp_dir: exp
+exp_name: transformer_wikitext_2arg
+lm:
+  batch_size: 128
+  context_size: 64
+  embed_dim: 128
+  epochs: 10
+  grad_clip: 1.0
+  lr: 0.0005
+  num_seeds: 5
+  num_workers: 4
+model:
+  d_ff: 512
+  d_model: 128
+  dropout: 0.1
+  inner_hidden: 32
+  n_heads: 4
+  n_layers: 4
+  name: InnerNetTransformer
+run_id: '5655'
+save_dir: exp/transformer_wikitext_2arg_20260303_095126_29974a57
+seed: 1234
+task_type: language_model
+use_gpu: true

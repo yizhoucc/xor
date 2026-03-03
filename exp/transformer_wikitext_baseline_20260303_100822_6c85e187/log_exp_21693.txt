@@ -1,0 +1,101 @@
+INFO  | 03/03/2026 10:08:22 AM | File run.py               | Line 141   | Config: config/experiments/transformer_wikitext_baseline.yaml
+INFO  | 03/03/2026 10:08:22 AM | File run.py               | Line 142   | Config hash: 6c85e1870d0052fbb35e71372a67c9c52750c8f6fe119741ae6735cf8b34a7e5
+INFO  | 03/03/2026 10:08:22 AM | File run.py               | Line 143   | Save dir: exp/transformer_wikitext_baseline_20260303_100822_6c85e187
+INFO  | 03/03/2026 10:08:22 AM | File run.py               | Line 147   | Task type: language_model
+INFO  | 03/03/2026 10:08:24 AM | File lm_runner.py         | Line 28    | Loading WikiText-2 (train)...
+INFO  | 03/03/2026 10:08:24 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/wikitext/resolve/main/README.md "HTTP/1.1 307 Temporary Redirect"
+INFO  | 03/03/2026 10:08:24 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/Salesforce/wikitext/resolve/main/README.md "HTTP/1.1 307 Temporary Redirect"
+INFO  | 03/03/2026 10:08:24 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/datasets/Salesforce/wikitext/b08601e04326c79dfdd32d625aee71d232d685c3/README.md "HTTP/1.1 200 OK"
+INFO  | 03/03/2026 10:08:24 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/wikitext.py "HTTP/1.1 307 Temporary Redirect"
+INFO  | 03/03/2026 10:08:24 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/Salesforce/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/wikitext.py "HTTP/1.1 404 Not Found"
+INFO  | 03/03/2026 10:08:25 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://s3.amazonaws.com/datasets.huggingface.co/datasets/datasets/wikitext/wikitext.py "HTTP/1.1 200 OK"
+INFO  | 03/03/2026 10:08:25 AM | File _client.py           | Line 1025  | HTTP Request: GET https://huggingface.co/api/datasets/wikitext/revision/b08601e04326c79dfdd32d625aee71d232d685c3 "HTTP/1.1 307 Temporary Redirect"
+INFO  | 03/03/2026 10:08:25 AM | File _client.py           | Line 1025  | HTTP Request: GET https://huggingface.co/api/datasets/Salesforce/wikitext/revision/b08601e04326c79dfdd32d625aee71d232d685c3 "HTTP/1.1 200 OK"
+INFO  | 03/03/2026 10:08:25 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/.huggingface.yaml "HTTP/1.1 307 Temporary Redirect"
+INFO  | 03/03/2026 10:08:25 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/Salesforce/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/.huggingface.yaml "HTTP/1.1 404 Not Found"
+INFO  | 03/03/2026 10:08:25 AM | File _client.py           | Line 1025  | HTTP Request: GET https://datasets-server.huggingface.co/info?dataset=wikitext "HTTP/1.1 404 Not Found"
+INFO  | 03/03/2026 10:08:26 AM | File _client.py           | Line 1025  | HTTP Request: GET https://huggingface.co/api/datasets/wikitext/tree/b08601e04326c79dfdd32d625aee71d232d685c3/wikitext-103-raw-v1?recursive=true&expand=false "HTTP/1.1 307 Temporary Redirect"
+INFO  | 03/03/2026 10:08:26 AM | File _client.py           | Line 1025  | HTTP Request: GET https://huggingface.co/api/datasets/Salesforce/wikitext/tree/b08601e04326c79dfdd32d625aee71d232d685c3/wikitext-103-raw-v1?recursive=true&expand=false "HTTP/1.1 200 OK"
+INFO  | 03/03/2026 10:08:26 AM | File _client.py           | Line 1025  | HTTP Request: GET https://huggingface.co/api/datasets/wikitext/tree/b08601e04326c79dfdd32d625aee71d232d685c3?recursive=false&expand=false "HTTP/1.1 307 Temporary Redirect"
+INFO  | 03/03/2026 10:08:26 AM | File _client.py           | Line 1025  | HTTP Request: GET https://huggingface.co/api/datasets/Salesforce/wikitext/tree/b08601e04326c79dfdd32d625aee71d232d685c3?recursive=false&expand=false "HTTP/1.1 200 OK"
+INFO  | 03/03/2026 10:08:26 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/dataset_infos.json "HTTP/1.1 307 Temporary Redirect"
+INFO  | 03/03/2026 10:08:26 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/Salesforce/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/dataset_infos.json "HTTP/1.1 404 Not Found"
+INFO  | 03/03/2026 10:08:26 AM | File _client.py           | Line 1025  | HTTP Request: GET https://huggingface.co/api/datasets/wikitext/tree/b08601e04326c79dfdd32d625aee71d232d685c3/wikitext-2-v1?recursive=true&expand=false "HTTP/1.1 307 Temporary Redirect"
+INFO  | 03/03/2026 10:08:26 AM | File _client.py           | Line 1025  | HTTP Request: GET https://huggingface.co/api/datasets/Salesforce/wikitext/tree/b08601e04326c79dfdd32d625aee71d232d685c3/wikitext-2-v1?recursive=true&expand=false "HTTP/1.1 200 OK"
+INFO  | 03/03/2026 10:08:27 AM | File lm_runner.py         | Line 43    | Dataset (train) ready. 2051910 tokens, vocab=10000
+INFO  | 03/03/2026 10:08:27 AM | File lm_runner.py         | Line 28    | Loading WikiText-2 (validation)...
+INFO  | 03/03/2026 10:08:27 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/wikitext/resolve/main/README.md "HTTP/1.1 307 Temporary Redirect"
+INFO  | 03/03/2026 10:08:27 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/Salesforce/wikitext/resolve/main/README.md "HTTP/1.1 307 Temporary Redirect"
+INFO  | 03/03/2026 10:08:27 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/datasets/Salesforce/wikitext/b08601e04326c79dfdd32d625aee71d232d685c3/README.md "HTTP/1.1 200 OK"
+INFO  | 03/03/2026 10:08:28 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/wikitext.py "HTTP/1.1 307 Temporary Redirect"
+INFO  | 03/03/2026 10:08:28 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/Salesforce/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/wikitext.py "HTTP/1.1 404 Not Found"
+INFO  | 03/03/2026 10:08:28 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://s3.amazonaws.com/datasets.huggingface.co/datasets/datasets/wikitext/wikitext.py "HTTP/1.1 200 OK"
+INFO  | 03/03/2026 10:08:28 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/.huggingface.yaml "HTTP/1.1 307 Temporary Redirect"
+INFO  | 03/03/2026 10:08:28 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/Salesforce/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/.huggingface.yaml "HTTP/1.1 404 Not Found"
+INFO  | 03/03/2026 10:08:28 AM | File _client.py           | Line 1025  | HTTP Request: GET https://datasets-server.huggingface.co/info?dataset=wikitext "HTTP/1.1 404 Not Found"
+INFO  | 03/03/2026 10:08:28 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/dataset_infos.json "HTTP/1.1 307 Temporary Redirect"
+INFO  | 03/03/2026 10:08:28 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/Salesforce/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/dataset_infos.json "HTTP/1.1 404 Not Found"
+INFO  | 03/03/2026 10:08:29 AM | File lm_runner.py         | Line 43    | Dataset (validation) ready. 213886 tokens, vocab=10000
+INFO  | 03/03/2026 10:08:29 AM | File lm_runner.py         | Line 157   | [Seed 42] (1/5) Training StandardTransformer for 10 epochs...
+INFO  | 03/03/2026 10:10:17 AM | File lm_runner.py         | Line 231   |   Seed 42 Ep 1/10: PPL = 278.38
+INFO  | 03/03/2026 10:12:10 AM | File lm_runner.py         | Line 231   |   Seed 42 Ep 2/10: PPL = 206.10
+INFO  | 03/03/2026 10:14:02 AM | File lm_runner.py         | Line 231   |   Seed 42 Ep 3/10: PPL = 167.96
+INFO  | 03/03/2026 10:15:50 AM | File lm_runner.py         | Line 231   |   Seed 42 Ep 4/10: PPL = 145.35
+INFO  | 03/03/2026 10:17:39 AM | File lm_runner.py         | Line 231   |   Seed 42 Ep 5/10: PPL = 130.51
+INFO  | 03/03/2026 10:19:27 AM | File lm_runner.py         | Line 231   |   Seed 42 Ep 6/10: PPL = 118.52
+INFO  | 03/03/2026 10:21:17 AM | File lm_runner.py         | Line 231   |   Seed 42 Ep 7/10: PPL = 111.66
+INFO  | 03/03/2026 10:23:06 AM | File lm_runner.py         | Line 231   |   Seed 42 Ep 8/10: PPL = 104.52
+INFO  | 03/03/2026 10:24:55 AM | File lm_runner.py         | Line 231   |   Seed 42 Ep 9/10: PPL = 99.62
+INFO  | 03/03/2026 10:26:46 AM | File lm_runner.py         | Line 231   |   Seed 42 Ep 10/10: PPL = 95.65
+INFO  | 03/03/2026 10:26:46 AM | File lm_runner.py         | Line 163   | [Seed 42] Done. Best PPL: 95.65
+INFO  | 03/03/2026 10:26:46 AM | File lm_runner.py         | Line 157   | [Seed 43] (2/5) Training StandardTransformer for 10 epochs...
+INFO  | 03/03/2026 10:28:33 AM | File lm_runner.py         | Line 231   |   Seed 43 Ep 1/10: PPL = 276.73
+INFO  | 03/03/2026 10:30:21 AM | File lm_runner.py         | Line 231   |   Seed 43 Ep 2/10: PPL = 200.26
+INFO  | 03/03/2026 10:32:12 AM | File lm_runner.py         | Line 231   |   Seed 43 Ep 3/10: PPL = 165.97
+INFO  | 03/03/2026 10:34:01 AM | File lm_runner.py         | Line 231   |   Seed 43 Ep 4/10: PPL = 142.59
+INFO  | 03/03/2026 10:35:49 AM | File lm_runner.py         | Line 231   |   Seed 43 Ep 5/10: PPL = 128.00
+INFO  | 03/03/2026 10:37:40 AM | File lm_runner.py         | Line 231   |   Seed 43 Ep 6/10: PPL = 117.73
+INFO  | 03/03/2026 10:39:26 AM | File lm_runner.py         | Line 231   |   Seed 43 Ep 7/10: PPL = 110.27
+INFO  | 03/03/2026 10:41:17 AM | File lm_runner.py         | Line 231   |   Seed 43 Ep 8/10: PPL = 103.63
+INFO  | 03/03/2026 10:43:06 AM | File lm_runner.py         | Line 231   |   Seed 43 Ep 9/10: PPL = 99.59
+INFO  | 03/03/2026 10:44:53 AM | File lm_runner.py         | Line 231   |   Seed 43 Ep 10/10: PPL = 95.16
+INFO  | 03/03/2026 10:44:53 AM | File lm_runner.py         | Line 163   | [Seed 43] Done. Best PPL: 95.16
+INFO  | 03/03/2026 10:44:53 AM | File lm_runner.py         | Line 157   | [Seed 44] (3/5) Training StandardTransformer for 10 epochs...
+INFO  | 03/03/2026 10:46:42 AM | File lm_runner.py         | Line 231   |   Seed 44 Ep 1/10: PPL = 280.70
+INFO  | 03/03/2026 10:48:31 AM | File lm_runner.py         | Line 231   |   Seed 44 Ep 2/10: PPL = 206.95
+INFO  | 03/03/2026 10:50:20 AM | File lm_runner.py         | Line 231   |   Seed 44 Ep 3/10: PPL = 171.65
+INFO  | 03/03/2026 10:52:10 AM | File lm_runner.py         | Line 231   |   Seed 44 Ep 4/10: PPL = 148.35
+INFO  | 03/03/2026 10:53:58 AM | File lm_runner.py         | Line 231   |   Seed 44 Ep 5/10: PPL = 132.12
+INFO  | 03/03/2026 10:55:47 AM | File lm_runner.py         | Line 231   |   Seed 44 Ep 6/10: PPL = 121.93
+INFO  | 03/03/2026 10:57:39 AM | File lm_runner.py         | Line 231   |   Seed 44 Ep 7/10: PPL = 113.43
+INFO  | 03/03/2026 10:59:27 AM | File lm_runner.py         | Line 231   |   Seed 44 Ep 8/10: PPL = 106.71
+INFO  | 03/03/2026 11:01:16 AM | File lm_runner.py         | Line 231   |   Seed 44 Ep 9/10: PPL = 101.80
+INFO  | 03/03/2026 11:03:05 AM | File lm_runner.py         | Line 231   |   Seed 44 Ep 10/10: PPL = 97.36
+INFO  | 03/03/2026 11:03:05 AM | File lm_runner.py         | Line 163   | [Seed 44] Done. Best PPL: 97.36
+INFO  | 03/03/2026 11:03:05 AM | File lm_runner.py         | Line 157   | [Seed 45] (4/5) Training StandardTransformer for 10 epochs...
+INFO  | 03/03/2026 11:04:56 AM | File lm_runner.py         | Line 231   |   Seed 45 Ep 1/10: PPL = 288.00
+INFO  | 03/03/2026 11:06:42 AM | File lm_runner.py         | Line 231   |   Seed 45 Ep 2/10: PPL = 207.49
+INFO  | 03/03/2026 11:08:30 AM | File lm_runner.py         | Line 231   |   Seed 45 Ep 3/10: PPL = 170.42
+INFO  | 03/03/2026 11:10:21 AM | File lm_runner.py         | Line 231   |   Seed 45 Ep 4/10: PPL = 148.65
+INFO  | 03/03/2026 11:12:08 AM | File lm_runner.py         | Line 231   |   Seed 45 Ep 5/10: PPL = 132.50
+INFO  | 03/03/2026 11:13:58 AM | File lm_runner.py         | Line 231   |   Seed 45 Ep 6/10: PPL = 121.69
+INFO  | 03/03/2026 11:15:49 AM | File lm_runner.py         | Line 231   |   Seed 45 Ep 7/10: PPL = 113.32
+INFO  | 03/03/2026 11:17:37 AM | File lm_runner.py         | Line 231   |   Seed 45 Ep 8/10: PPL = 106.00
+INFO  | 03/03/2026 11:19:27 AM | File lm_runner.py         | Line 231   |   Seed 45 Ep 9/10: PPL = 100.25
+INFO  | 03/03/2026 11:21:14 AM | File lm_runner.py         | Line 231   |   Seed 45 Ep 10/10: PPL = 97.87
+INFO  | 03/03/2026 11:21:14 AM | File lm_runner.py         | Line 163   | [Seed 45] Done. Best PPL: 97.87
+INFO  | 03/03/2026 11:21:14 AM | File lm_runner.py         | Line 157   | [Seed 46] (5/5) Training StandardTransformer for 10 epochs...
+INFO  | 03/03/2026 11:22:59 AM | File lm_runner.py         | Line 231   |   Seed 46 Ep 1/10: PPL = 278.48
+INFO  | 03/03/2026 11:24:48 AM | File lm_runner.py         | Line 231   |   Seed 46 Ep 2/10: PPL = 203.29
+INFO  | 03/03/2026 11:26:35 AM | File lm_runner.py         | Line 231   |   Seed 46 Ep 3/10: PPL = 168.50
+INFO  | 03/03/2026 11:28:24 AM | File lm_runner.py         | Line 231   |   Seed 46 Ep 4/10: PPL = 146.19
+INFO  | 03/03/2026 11:30:10 AM | File lm_runner.py         | Line 231   |   Seed 46 Ep 5/10: PPL = 131.36
+INFO  | 03/03/2026 11:31:58 AM | File lm_runner.py         | Line 231   |   Seed 46 Ep 6/10: PPL = 120.90
+INFO  | 03/03/2026 11:33:47 AM | File lm_runner.py         | Line 231   |   Seed 46 Ep 7/10: PPL = 112.35
+INFO  | 03/03/2026 11:35:33 AM | File lm_runner.py         | Line 231   |   Seed 46 Ep 8/10: PPL = 107.06
+INFO  | 03/03/2026 11:37:20 AM | File lm_runner.py         | Line 231   |   Seed 46 Ep 9/10: PPL = 102.39
+INFO  | 03/03/2026 11:39:09 AM | File lm_runner.py         | Line 231   |   Seed 46 Ep 10/10: PPL = 98.06
+INFO  | 03/03/2026 11:39:09 AM | File lm_runner.py         | Line 163   | [Seed 46] Done. Best PPL: 98.06
+INFO  | 03/03/2026 11:39:09 AM | File lm_runner.py         | Line 180   | All seeds done. Best mean PPL: 96.82
+INFO  | 03/03/2026 11:39:09 AM | File lm_runner.py         | Line 181   | Results saved to exp/transformer_wikitext_baseline_20260303_100822_6c85e187/lm_results.p
+INFO  | 03/03/2026 11:39:09 AM | File run.py               | Line 197   | Experiment completed!
