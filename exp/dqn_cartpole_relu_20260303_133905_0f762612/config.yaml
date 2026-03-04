@@ -1,0 +1,23 @@
+exp_dir: exp
+exp_name: dqn_cartpole_relu
+model:
+  hidden_dim: 128
+  name: BaselineDQN
+rl:
+  batch_size: 64
+  env_name: CartPole-v1
+  epsilon_decay: 0.995
+  epsilon_end: 0.01
+  epsilon_start: 1.0
+  gamma: 0.99
+  log_interval: 50
+  lr: 0.001
+  memory_size: 10000
+  num_episodes: 500
+  num_seeds: 10
+  target_update: 10
+run_id: '227679'
+save_dir: exp/dqn_cartpole_relu_20260303_133905_0f762612
+seed: 1234
+task_type: rl
+use_gpu: true
