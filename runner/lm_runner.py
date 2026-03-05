@@ -94,11 +94,11 @@ class LMRunner:
         # Model config
         self.model_name = config.model.name
         self.is_innernet = self.model_name in ('InnerNetLSTMModel', 'InnerNetTransformer')
-        self.is_transformer = self.model_name in ('InnerNetTransformer', 'StandardTransformer')
+        self.is_transformer = self.model_name in ('InnerNetTransformer', 'StandardTransformer', 'SwiGLUTransformer')
 
     def _make_model(self, vocab_size):
         if self.is_transformer:
-            from model.transformer import InnerNetTransformer, StandardTransformer
+            from model.transformer import InnerNetTransformer, StandardTransformer, SwiGLUTransformer
             d_model = self.config.model.get('d_model', 128)
             n_heads = self.config.model.get('n_heads', 4)
             d_ff = self.config.model.get('d_ff', 512)
@@ -109,6 +109,9 @@ class LMRunner:
                 inner_hidden = self.config.model.get('inner_hidden', 32)
                 return InnerNetTransformer(vocab_size, d_model, n_heads, d_ff,
                                            n_layers, max_len, inner_hidden, dropout)
+            elif self.model_name == 'SwiGLUTransformer':
+                return SwiGLUTransformer(vocab_size, d_model, n_heads, d_ff,
+                                         n_layers, max_len, dropout)
             else:
                 return StandardTransformer(vocab_size, d_model, n_heads, d_ff,
                                            n_layers, max_len, dropout)
