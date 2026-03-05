@@ -67,7 +67,7 @@ class InnerNet(nn.Module):
         if self.config.model.inner_net == 'mlp':
             out = self.inner_net(x)
         elif self.config.model.inner_net == 'conv':
-            sqrt_batch_size = np.int(np.sqrt(x.shape[0]))
+            sqrt_batch_size = int(np.sqrt(x.shape[0]))
             assert sqrt_batch_size ** 2 == x.shape[0]
             out = x.T.reshape(1, self.arg_in_dim, sqrt_batch_size, sqrt_batch_size)
             out = self.inner_net(out)

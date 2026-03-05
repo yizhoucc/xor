@@ -113,11 +113,13 @@ class ExperimentRunner:
             train_loss = np.mean(train_loss)
             if train_loss < best_train_loss:
                 best_train_loss = train_loss
-                print(f"Pretrain Loss @ epoch {epoch + 1:04d} = {best_train_loss:.6f}")
+                logger.info(f"Pretrain Loss @ epoch {epoch + 1:04d} = {best_train_loss:.6f}")
                 snapshot(
                     model.module.inner_net if self.use_gpu else model.inner_net,
                     optimizer, self.config, epoch + 1,
                     tag=f'best_pretrained{cell_type}')
+            elif (epoch + 1) % 100 == 0:
+                logger.info(f"Pretrain epoch {epoch + 1:04d} (no improvement, best = {best_train_loss:.6f})")
 
     # ==================== Phase 1 (Session II) ==================== #
 
