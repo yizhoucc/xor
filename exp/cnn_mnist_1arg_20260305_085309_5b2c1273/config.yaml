@@ -1,18 +1,18 @@
 dataset:
   data_path: ./data
   loader_name: InnerNetData
-  name: cifar10
+  name: mnist
   split: train
 exp_dir: ./exp
-exp_name: cnn_cifar_2arg
+exp_name: cnn_mnist_1arg
 gpus:
 - 0
 model:
-  arg_in_dim: 2
+  arg_in_dim: 1
   dropout: 0.5
   in_channel: 64
   inner_net: conv
-  input_channel: 3
+  input_channel: 1
   kernel_size:
   - 3
   - 3
@@ -49,8 +49,8 @@ pretrain:
   shuffle: true
   snapshot_epoch: 1000
   wd: 0.0
-run_id: '38340'
-save_dir: ./exp/cnn_cifar_2arg_20260304_230710_e1252721
+run_id: '634279'
+save_dir: ./exp/cnn_mnist_1arg_20260305_085309_5b2c1273
 seed: 1234
 test:
   batch_size: 100
