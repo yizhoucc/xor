@@ -274,7 +274,7 @@ Baseline wins decisively. LunarLander has 8 state dimensions; adjacent-dimension
 
 InnerNet uses separate projections from input (`W_cx · x`) and hidden state (`W_ch · h`) as its two arguments — analogous to basal (feedforward) and apical (feedback) dendrites in biology. The improvement is consistent across all seeds, with later onset of overfitting (epoch 6 vs 4).
 
-#### 4. Transformer FFN — WikiText-2 Language Modeling (5 seeds x 10 epochs, in progress)
+#### 4. Transformer FFN — WikiText-2 Language Modeling (5 seeds x 10 epochs)
 
 InnerNet replaces GELU in the Transformer FFN with a GLU-style learned activation:
 ```
@@ -282,12 +282,22 @@ Standard:  FFN(x) = W2 · GELU(W1 · x) + b2
 InnerNet:  FFN(x) = W2 · InnerNet(W1a · x, W1b · x) + b2
 ```
 
-| Model | Best PPL (Seed 42) | Mean PPL (all seeds) | Status |
+| Model | Best Mean PPL | Improvement | All Seeds Better? |
 |---|---|---|---|
-| **InnerNet Transformer** | **93.83** | — | In progress |
-| Standard Transformer (GELU) | 95.65 | 96.82 | Complete |
+| **InnerNet Transformer** | **95.26** | -1.6% | **4/5 below baseline mean** |
+| Standard Transformer (GELU) | 96.82 | — | — |
 
-Preliminary result (1 seed) shows InnerNet Transformer achieving lower perplexity than the baseline mean. The two projections naturally take on value vs gate roles, similar to SwiGLU but with a fully learned gating function.
+Per-seed breakdown:
+
+| Seed | InnerNet PPL | Baseline PPL |
+|---|---|---|
+| 42 | **93.83** | 95.65 |
+| 43 | **95.56** | 95.16 |
+| 44 | **94.52** | 97.36 |
+| 45 | 96.72 | 97.87 |
+| 46 | **95.67** | 98.06 |
+
+The two projections naturally take on value vs gate roles, similar to SwiGLU but with a fully learned gating function. Both models show no overfitting at epoch 10 — longer training may widen the gap.
 
 ### Width Matching
 
