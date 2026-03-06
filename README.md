@@ -188,6 +188,23 @@ python run.py -c config/experiments/transformer_wikitext_baseline.yaml # GELU ba
 python run.py -c config/experiments/transformer_wikitext_swiglu.yaml   # SwiGLU baseline (controlled comparison)
 ```
 
+### GPU 服务器后台运行（推荐）
+
+```bash
+# 0. 准备
+cd ~/repo/xor && git pull
+pip install gymnasium datasets  # 扩展实验依赖
+bash scripts/download_ptb.sh    # 下载 PTB 数据集（RNN 实验需要）
+
+# 1. RNN PTB 实验
+nohup python run.py -c config/experiments/rnn_ptb_2arg.yaml > exp/rnn_ptb_2arg_run.log 2>&1 &
+nohup python run.py -c config/experiments/rnn_ptb_1arg.yaml > exp/rnn_ptb_1arg_run.log 2>&1 &
+nohup python run.py -c config/experiments/rnn_ptb_tanh.yaml > exp/rnn_ptb_tanh_run.log 2>&1 &
+
+# 2. SwiGLU Transformer
+nohup python run.py -c config/experiments/transformer_wikitext_swiglu.yaml > exp/swiglu_run.log 2>&1 &
+```
+
 ### 批量运行所有实验
 
 ```bash
