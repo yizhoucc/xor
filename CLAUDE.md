@@ -82,4 +82,47 @@ python scripts/run_exp_local.py -c config/xor_neuron_mlp_mnist.yaml -t
 - config 中的路径需要根据本地环境修改（`exp_dir`, `data_path`）
 - `condaenv.yml` 是 Linux 环境的，Mac 上需要去掉 CUDA/nvidia 依赖
 - `data/` 目录已有 MNIST、FashionMNIST、CIFAR-10 数据
+- PTB 数据需手动下载: `bash scripts/download_ptb.sh`
 - `.gitignore` 只排除了 `data/cifar-100-python/train`
+
+## 当前实验进度 (2026-03-05)
+
+### 已完成的实验
+| 实验 | 我们的结果 | 论文参考 | 匹配？ |
+|------|-----------|---------|--------|
+| MLP MNIST 2-arg | 97.99% | ~98% | 匹配 |
+| MLP MNIST 1-arg | 98.35% | ~97.5% | 略高 |
+| MLP MNIST ReLU | 85.63% | ~97% | 差距大（未参数匹配） |
+| MLP CIFAR 2-arg | 已完成 | ~52-53% | 待确认 |
+| MLP CIFAR 1-arg | 已完成 | ~50% | 待确认 |
+| MLP CIFAR ReLU | 已完成 | ~48-49% | 待确认 |
+| CNN MNIST 2-arg | **99.40%** | ~99% | 匹配 |
+| CNN MNIST 1-arg | **99.37%** | ~98.8% | 略高 |
+| CNN MNIST ReLU | **98.99%** | ~98.5% | 略高 |
+| CNN CIFAR ReLU | 已完成 | ~68-69% | 待确认 |
+
+### 扩展实验（超越论文）
+| 实验 | 结果 | 状态 |
+|------|------|------|
+| DQN CartPole InnerNet | 256.2 avg reward | 完成（宽度匹配后） |
+| DQN CartPole ReLU | 157.1 avg reward | 完成 |
+| DQN LunarLander InnerNet | -38.9 avg reward | 完成（InnerNet 输） |
+| DQN LunarLander ReLU | 152.8 avg reward | 完成 |
+| LSTM WikiText-2 InnerNet | PPL 103.41 | 完成 |
+| LSTM WikiText-2 Standard | PPL 104.38 | 完成 |
+| Transformer WikiText-2 InnerNet | PPL 95.26 | 完成 (5 seeds) |
+| Transformer WikiText-2 GELU | PPL 96.82 | 完成 (5 seeds) |
+| Transformer WikiText-2 SwiGLU | — | 待运行 |
+
+### TODO
+1. **CNN CIFAR 2-arg/1-arg** — 正在 WSL 上跑 (2-arg ~Ep 88/200)
+2. **RNN PTB 3个实验** — 需先下载 PTB 数据 (`bash scripts/download_ptb.sh`)
+3. **SwiGLU Transformer** — 代码已 push，WSL 需 pull 运行
+4. **多 seed 支持** — 论文用 4 seeds 取平均，我们 CNN/MLP 只有 1 seed（低优先级）
+5. **汇总报告** — 等上述实验完成后更新 README
+
+### 关键发现
+- **InnerNet 在 Transformer FFN 最有前景**: GLU 风格双投影，PPL 95.26 vs GELU 96.82 (-1.6%)
+- **语义配对很重要**: InnerNet 的两个输入需要语义不同（value vs gate）
+- **Xaq 反馈**: 注意 InnerNet 与已有乘法交互（attention, LSTM gating）的关系。我们 Transformer 只替换了 FFN（无乘法交互的地方），attention 完全没动
+- **SwiGLU 对比实验** 回答：InnerNet 是否比固定乘法门控学到更多？
