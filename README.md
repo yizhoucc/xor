@@ -110,6 +110,23 @@ conda activate xor
 
 > GPU 用户安装 PyTorch 时按官方指引选择对应 CUDA 版本: https://pytorch.org/get-started/locally/
 
+### 数据集准备
+
+MNIST、FashionMNIST、CIFAR-10 会由 PyTorch 自动下载。WikiText-2 会由 HuggingFace datasets 自动下载。
+
+PTB (Penn Treebank) 需要手动下载：
+
+```bash
+# 下载 PTB 数据集 (Mikolov 预处理版本, ~5MB)
+bash scripts/download_ptb.sh
+
+# 或手动下载:
+mkdir -p data/ptb
+for split in train valid test; do
+  curl -sL "https://raw.githubusercontent.com/wojzaremba/lstm/master/data/ptb.${split}.txt" -o "data/ptb/${split}.txt"
+done
+```
+
 ### 复现论文实验（推荐）
 
 使用 `run.py` 统一入口，自动执行完整流程：pretrain → phase1 → phase2 → test。
@@ -168,6 +185,7 @@ python run.py -c config/experiments/lstm_wikitext_baseline.yaml # Standard LSTM 
 # InnerNet 用 GLU 风格双投影替换 GELU: InnerNet(W1a·x, W1b·x)
 python run.py -c config/experiments/transformer_wikitext_2arg.yaml     # InnerNet FFN (5 seeds × 10 epochs)
 python run.py -c config/experiments/transformer_wikitext_baseline.yaml # GELU baseline
+python run.py -c config/experiments/transformer_wikitext_swiglu.yaml   # SwiGLU baseline (controlled comparison)
 ```
 
 ### 批量运行所有实验
