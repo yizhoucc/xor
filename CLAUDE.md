@@ -55,23 +55,41 @@ python scripts/run_exp_local.py -c config/xor_neuron_mlp_mnist.yaml -t
 ```
 
 ## 论文实验配置（config/experiments/）
-| 实验 | 配置文件 | 模型 | 论文表格 |
+
+论文只包含 MLP 和 CNN 的分类实验（Figure 4d）+ AutoAttack 鲁棒性（Table 1）+ CIFAR-10-C 鲁棒性（Figure 9）。
+RNN PTB 是原作者代码中存在但**未写入论文**的实验，属于扩展实验。
+
+### 论文实验（Figure 4d, Table 1）
+| 实验 | 配置文件 | 模型 | 论文位置 |
 |------|----------|------|----------|
-| MLP MNIST 2-arg | mlp_mnist_2arg.yaml | XorNeuronMLP | Table 1 |
-| MLP MNIST 1-arg | mlp_mnist_1arg.yaml | XorNeuronMLP | Table 1 |
-| MLP MNIST ReLU | mlp_mnist_relu.yaml | BaselineMLP | Table 1 |
-| MLP CIFAR 2-arg | mlp_cifar_2arg.yaml | XorNeuronMLP | Table 1 |
-| MLP CIFAR 1-arg | mlp_cifar_1arg.yaml | XorNeuronMLP | Table 1 |
-| MLP CIFAR ReLU | mlp_cifar_relu.yaml | BaselineMLP | Table 1 |
-| CNN MNIST 2-arg | cnn_mnist_2arg.yaml | XorNeuronConv | Table 2 |
-| CNN MNIST 1-arg | cnn_mnist_1arg.yaml | XorNeuronConv | Table 2 |
-| CNN MNIST ReLU | cnn_mnist_relu.yaml | BaselineCNN | Table 2 |
-| CNN CIFAR 2-arg | cnn_cifar_2arg.yaml | XorNeuronConv | Table 2 |
-| CNN CIFAR 1-arg | cnn_cifar_1arg.yaml | XorNeuronConv | Table 2 |
-| CNN CIFAR ReLU | cnn_cifar_relu.yaml | BaselineCNN | Table 2 |
-| RNN PTB 2-arg | rnn_ptb_2arg.yaml | ComplexNeuronRNN | Table 3 |
-| RNN PTB 1-arg | rnn_ptb_1arg.yaml | ComplexNeuronRNN | Table 3 |
-| RNN PTB tanh | rnn_ptb_tanh.yaml | BaselineRNN | Table 3 |
+| MLP MNIST 2-arg | mlp_mnist_2arg.yaml | XorNeuronMLP | Figure 4d |
+| MLP MNIST 1-arg | mlp_mnist_1arg.yaml | XorNeuronMLP | Figure 4d |
+| MLP MNIST ReLU | mlp_mnist_relu.yaml | BaselineMLP | Figure 4d |
+| MLP CIFAR 2-arg | mlp_cifar_2arg.yaml | XorNeuronMLP | Figure 4d |
+| MLP CIFAR 1-arg | mlp_cifar_1arg.yaml | XorNeuronMLP | Figure 4d |
+| MLP CIFAR ReLU | mlp_cifar_relu.yaml | BaselineMLP | Figure 4d |
+| CNN MNIST 2-arg | cnn_mnist_2arg.yaml | XorNeuronConv | Figure 4d |
+| CNN MNIST 1-arg | cnn_mnist_1arg.yaml | XorNeuronConv | Figure 4d |
+| CNN MNIST ReLU | cnn_mnist_relu.yaml | BaselineCNN | Figure 4d |
+| CNN CIFAR 2-arg | cnn_cifar_2arg.yaml | XorNeuronConv | Figure 4d |
+| CNN CIFAR 1-arg | cnn_cifar_1arg.yaml | XorNeuronConv | Figure 4d |
+| CNN CIFAR ReLU | cnn_cifar_relu.yaml | BaselineCNN | Figure 4d |
+
+### 扩展实验（超越论文）
+| 实验 | 配置文件 | 模型 | 备注 |
+|------|----------|------|------|
+| RNN PTB 2-arg | rnn_ptb_2arg.yaml | ComplexNeuronRNN | 原作者代码中有但未写入论文 |
+| RNN PTB 1-arg | rnn_ptb_1arg.yaml | ComplexNeuronRNN | 同上 |
+| RNN PTB tanh | rnn_ptb_tanh.yaml | BaselineRNN | 同上 |
+| LSTM WikiText-2 InnerNet | lstm_wikitext_2arg.yaml | InnerNetLSTMModel | 我们新增 |
+| LSTM WikiText-2 baseline | lstm_wikitext_baseline.yaml | StandardLSTMModel | 我们新增 |
+| Transformer WikiText-2 InnerNet | transformer_wikitext_2arg.yaml | InnerNetTransformer | 我们新增 |
+| Transformer WikiText-2 GELU | transformer_wikitext_baseline.yaml | StandardTransformer | 我们新增 |
+| Transformer WikiText-2 SwiGLU | transformer_wikitext_swiglu.yaml | SwiGLUTransformer | 我们新增 |
+| DQN CartPole InnerNet | dqn_cartpole_2arg.yaml | InnerNetDQN | 我们新增 |
+| DQN CartPole ReLU | dqn_cartpole_relu.yaml | BaselineDQN | 我们新增 |
+| DQN LunarLander InnerNet | dqn_lunarlander_2arg.yaml | InnerNetDQN | 我们新增 |
+| DQN LunarLander ReLU | dqn_lunarlander_relu.yaml | BaselineDQN | 我们新增 |
 
 ## 论文对应的基线架构
 - MLP: 3 层隐藏层 × 64 units
@@ -85,11 +103,11 @@ python scripts/run_exp_local.py -c config/xor_neuron_mlp_mnist.yaml -t
 - PTB 数据需手动下载: `bash scripts/download_ptb.sh`
 - `.gitignore` 只排除了 `data/cifar-100-python/train`
 
-## 当前实验进度 (2026-03-05)
+## 当前实验进度 (2026-03-06)
 
-### 已完成的实验
-| 实验 | 我们的结果 | 论文参考 | 匹配？ |
-|------|-----------|---------|--------|
+### 论文复现结果（1 seed，论文用 4 seeds）
+| 实验 | 我们的结果 | 论文参考 (Figure 4d 目测) | 匹配？ |
+|------|-----------|-------------------------|--------|
 | MLP MNIST 2-arg | 97.99% | ~98% | 匹配 |
 | MLP MNIST 1-arg | 98.35% | ~97.5% | 略高 |
 | MLP MNIST ReLU | 85.63% | ~97% | 差距大（未参数匹配） |
@@ -99,7 +117,9 @@ python scripts/run_exp_local.py -c config/xor_neuron_mlp_mnist.yaml -t
 | CNN MNIST 2-arg | **99.40%** | ~99% | 匹配 |
 | CNN MNIST 1-arg | **99.37%** | ~98.8% | 略高 |
 | CNN MNIST ReLU | **98.99%** | ~98.5% | 略高 |
-| CNN CIFAR ReLU | 已完成 | ~68-69% | 待确认 |
+| CNN CIFAR 2-arg | **78.68%** | ~72-73% | 趋势一致，数值偏高 |
+| CNN CIFAR 1-arg | **80.24%** | ~70% | 趋势一致，数值偏高 |
+| CNN CIFAR ReLU | **73.98%** | ~68-69% | 趋势一致，数值偏高 |
 
 ### 扩展实验（超越论文）
 | 实验 | 结果 | 状态 |
@@ -112,7 +132,10 @@ python scripts/run_exp_local.py -c config/xor_neuron_mlp_mnist.yaml -t
 | LSTM WikiText-2 Standard | PPL 104.38 | 完成 |
 | Transformer WikiText-2 InnerNet | PPL 95.26 | 完成 (5 seeds) |
 | Transformer WikiText-2 GELU | PPL 96.82 | 完成 (5 seeds) |
-| Transformer WikiText-2 SwiGLU | — | 待运行 |
+| RNN PTB tanh | PPL 140.13 | 完成 |
+| RNN PTB 2-arg | — | Phase 1 进行中 |
+| RNN PTB 1-arg | — | Phase 1 进行中 |
+| Transformer WikiText-2 SwiGLU | — | 进行中 |
 
 ### TODO
 1. **CNN CIFAR 2-arg/1-arg** — 正在 WSL 上跑 (2-arg ~Ep 88/200)
