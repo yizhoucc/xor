@@ -28,24 +28,28 @@ run_config() {
 }
 
 if [[ "$CONFIG" == "all" ]]; then
-    # All 12 paper experiments (Figure 4d) + 4 fair LayerNorm baselines
+    # Ordered fast→slow: baselines (no pretrain) first, then 1-arg, then 2-arg (3 phases)
+    # Within each group: MLP before CNN, MNIST before CIFAR
     CONFIGS=(
-        config/experiments/mlp_mnist_2arg.yaml
-        config/experiments/mlp_mnist_1arg.yaml
+        # --- Baselines (fastest: phase1 only) ---
         config/experiments/mlp_mnist_relu.yaml
         config/experiments/mlp_mnist_relu_ln.yaml
-        config/experiments/mlp_cifar_2arg.yaml
-        config/experiments/mlp_cifar_1arg.yaml
         config/experiments/mlp_cifar_relu.yaml
         config/experiments/mlp_cifar_relu_ln.yaml
-        config/experiments/cnn_mnist_2arg.yaml
-        config/experiments/cnn_mnist_1arg.yaml
         config/experiments/cnn_mnist_relu.yaml
         config/experiments/cnn_mnist_relu_ln.yaml
-        config/experiments/cnn_cifar_2arg.yaml
-        config/experiments/cnn_cifar_1arg.yaml
         config/experiments/cnn_cifar_relu.yaml
         config/experiments/cnn_cifar_relu_ln.yaml
+        # --- 1-arg (pretrain + phase1 + phase2) ---
+        config/experiments/mlp_mnist_1arg.yaml
+        config/experiments/mlp_cifar_1arg.yaml
+        config/experiments/cnn_mnist_1arg.yaml
+        config/experiments/cnn_cifar_1arg.yaml
+        # --- 2-arg (pretrain + phase1 + phase2, slowest) ---
+        config/experiments/mlp_mnist_2arg.yaml
+        config/experiments/mlp_cifar_2arg.yaml
+        config/experiments/cnn_mnist_2arg.yaml
+        config/experiments/cnn_cifar_2arg.yaml
     )
     for cfg in "${CONFIGS[@]}"; do
         run_config "$cfg"
