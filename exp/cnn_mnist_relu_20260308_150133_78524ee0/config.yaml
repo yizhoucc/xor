@@ -1,0 +1,73 @@
+dataset:
+  data_path: ./data
+  loader_name: InnerNetData
+  name: mnist
+  split: train
+exp_dir: ./exp
+exp_name: cnn_mnist_relu
+gpus:
+- 0
+model:
+  dropout: 0.5
+  input_channel: 1
+  kernel_size:
+  - 3
+  - 3
+  - 3
+  - 1
+  loss: CrossEntropy
+  name: BaselineCNN
+  num_classes: 10
+  out_channel:
+  - 44
+  - 88
+  - 88
+  - 88
+  stride:
+  - 1
+  - 1
+  - 1
+  - 1
+  zero_pad:
+  - 0
+  - 0
+  - 0
+  - 0
+pretrain:
+  batch_size: 100
+  best_model: []
+  lr: 0.001
+  max_epoch: 500
+  momentum: 0.9
+  num_workers: 0
+  optimizer: Adam
+  shuffle: true
+  snapshot_epoch: 1000
+  wd: 0.0
+run_id: '1971851'
+save_dir: ./exp/cnn_mnist_relu_20260308_150133_78524ee0
+seed: 45
+test:
+  batch_size: 100
+  num_workers: 0
+  test_model: /model_snapshot_best_phase1.pth
+train:
+  batch_size: 100
+  best_model: /model_snapshot_best_phase1.pth
+  display_iter: 5000
+  early_stop_window: 20
+  is_resume: false
+  lr: 0.001
+  lr_decay: 0.1
+  lr_decay_steps:
+  - 10000
+  max_epoch: 400
+  momentum: 0.9
+  num_workers: 0
+  optimizer: Adam
+  resume_model: None
+  shuffle: true
+  snapshot_epoch: 1000
+  valid_epoch: 1
+  wd: 0.0
+use_gpu: true
