@@ -27,6 +27,8 @@ def parse_args():
                         help="Test only (skip training)")
     parser.add_argument('--resume', type=str, default=None,
                         help="Path to existing experiment dir to resume")
+    parser.add_argument('--seed', type=int, default=None,
+                        help="Override seed from config (for multi-seed experiments)")
     return parser.parse_args()
 
 
@@ -87,10 +89,14 @@ def main():
     with open(args.config, 'r') as f:
         config_dict = yaml.load(f, Loader=yaml.FullLoader)
 
+    # Override seed if specified via CLI
+    if args.seed is not None:
+        config_dict['seed'] = args.seed
+
     config = edict(config_dict)
     exp_base_dir = config.get('exp_dir', 'exp')
 
-    # 2. Compute config hash
+    # 2. Compute config hash (includes seed, so different seeds get different dirs)
     config_hash = compute_config_hash(config_dict)
 
     # 3. Determine save directory

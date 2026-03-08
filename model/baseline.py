@@ -8,7 +8,11 @@ __all__ = ['BaselineMLP', 'BaselineCNN', 'BaselineRNN']
 class BaselineMLP(nn.Module):
     """ReLU baseline MLP for comparison with XorNeuronMLP.
 
-    Architecture: Linear → ReLU → Dropout × N layers → Linear(num_classes)
+    Architecture: Linear → [LayerNorm] → ReLU → Dropout × N layers → Linear(num_classes)
+
+    Set model.use_layernorm: true in config to add LayerNorm (matching XorNeuronMLP's
+    normalization for fair comparison). The original paper's DenseLayerWithComplexNeurons
+    always includes LayerNorm before InnerNet.
     """
 
     def __init__(self, config):
@@ -18,11 +22,14 @@ class BaselineMLP(nn.Module):
         self.out_hidden_dim = config.model.out_hidden_dim
         self.num_classes = config.model.num_classes
         self.dropout = config.model.dropout
+        self.use_layernorm = getattr(config.model, 'use_layernorm', False)
 
         layers = []
         in_dim = self.input_dim
         for h_dim in self.out_hidden_dim:
             layers.append(nn.Linear(in_dim, h_dim))
+            if self.use_layernorm:
+                layers.append(nn.LayerNorm(h_dim, elementwise_affine=False))
             layers.append(nn.ReLU())
             layers.append(nn.Dropout(p=self.dropout))
             in_dim = h_dim
@@ -56,7 +63,10 @@ class BaselineMLP(nn.Module):
 class BaselineCNN(nn.Module):
     """ReLU baseline CNN for comparison with XorNeuronConv.
 
-    Architecture: (Conv2d → ReLU → MaxPool2d → Dropout) × N → flatten → Linear(num_classes)
+    Architecture: (Conv2d → [LayerNorm] → ReLU → MaxPool2d → Dropout) × N → flatten → Linear(num_classes)
+
+    Set model.use_layernorm: true in config to add LayerNorm (matching XorNeuronConv's
+    normalization for fair comparison).
     """
 
     def __init__(self, config):
@@ -69,6 +79,7 @@ class BaselineCNN(nn.Module):
         self.stride = config.model.stride
         self.num_classes = config.model.num_classes
         self.dropout = config.model.dropout
+        self.use_layernorm = getattr(config.model, 'use_layernorm', False)
 
         # Compute spatial dimensions through the network
         if config.dataset.name == 'mnist':
@@ -85,8 +96,11 @@ class BaselineCNN(nn.Module):
                                          kernel_size=self.kernel_size[i],
                                          stride=self.stride[i],
                                          padding=self.zero_pad[i]))
-            conv_layers.append(nn.ReLU())
             x_size = (x_size - self.kernel_size[i] + 2 * self.zero_pad[i]) // self.stride[i] + 1
+            if self.use_layernorm:
+                conv_layers.append(nn.LayerNorm([self.out_channel[i], x_size, x_size],
+                                                 elementwise_affine=False))
+            conv_layers.append(nn.ReLU())
             if x_size >= 2:
                 conv_layers.append(nn.MaxPool2d(kernel_size=2))
                 x_size = x_size // 2
