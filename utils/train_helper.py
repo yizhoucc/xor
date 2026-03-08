@@ -35,7 +35,12 @@ def load_model(model, file_name, optimizer=None):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model_snapshot = torch.load(file_name, map_location=device)
 
-    model.load_state_dict(model_snapshot["model"], strict=True)
+    # Strip '_orig_mod.' prefix from keys saved by torch.compile
+    state_dict = model_snapshot["model"]
+    if any(k.startswith('_orig_mod.') for k in state_dict):
+        state_dict = {k.replace('_orig_mod.', '', 1): v for k, v in state_dict.items()}
+
+    model.load_state_dict(state_dict, strict=True)
     model.to(device)
 
     if optimizer is not None:
