@@ -1,2 +1,26 @@
 nohup: ignoring input
-bash: scripts/run_multiseed.sh: No such file or directory
+==========================================
+Config: config/experiments/mlp_mnist_relu.yaml
+Seeds: 42 43 44 45
+==========================================
+--- Seed 42 ---
+INFO  | 2026-03-08 12:54:42,287 | run.py                    | line 147  : Config: config/experiments/mlp_mnist_relu.yaml
+INFO  | 2026-03-08 12:54:42,287 | run.py                    | line 148  : Config hash: c0560402f7c953f8d82da2c31428962799a9373d158e4c67a1dc830eead2d4fc
+INFO  | 2026-03-08 12:54:42,287 | run.py                    | line 149  : Save dir: ./exp/mlp_mnist_relu_20260308_125442_c0560402
+INFO  | 2026-03-08 12:54:42,287 | run.py                    | line 153  : Task type: classification
+INFO  | 2026-03-08 12:54:43,820 | run.py                    | line 180  : === Starting Pretrain ===
+INFO  | 2026-03-08 12:54:43,820 | run.py                    | line 186  : === Starting Phase 1 ===
+INFO  | 2026-03-08 12:54:45,259 | experiment_runner.py      | line 198  : Epoch 1 | Val Loss = 2.687919 | Val Acc = 0.1000
+/home/yc/repo/xor_neuron_yoon/runner/experiment_runner.py:217: UserWarning: Detected call of `lr_scheduler.step()` before `optimizer.step()`. In PyTorch 1.1.0 and later, you should call them in the opposite order: `optimizer.step()` before `lr_scheduler.step()`.  Failure to do this will result in PyTorch skipping the first value of the learning rate schedule. See more details at https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate
+  lr_scheduler.step()
+INFO  | 2026-03-08 12:54:48,327 | experiment_runner.py      | line 198  : Epoch 2 | Val Loss = 0.508831 | Val Acc = 0.8668
+INFO  | 2026-03-08 12:54:51,296 | experiment_runner.py      | line 198  : Epoch 3 | Val Loss = 0.377498 | Val Acc = 0.9005
+INFO  | 2026-03-08 12:54:54,785 | experiment_runner.py      | line 198  : Epoch 4 | Val Loss = 0.357256 | Val Acc = 0.9042
+INFO  | 2026-03-08 12:54:58,682 | experiment_runner.py      | line 198  : Epoch 5 | Val Loss = 0.326290 | Val Acc = 0.9086
+INFO  | 2026-03-08 12:55:02,552 | experiment_runner.py      | line 198  : Epoch 6 | Val Loss = 0.334428 | Val Acc = 0.9087
+INFO  | 2026-03-08 12:55:06,475 | experiment_runner.py      | line 198  : Epoch 7 | Val Loss = 0.308827 | Val Acc = 0.9133
+INFO  | 2026-03-08 12:55:10,374 | experiment_runner.py      | line 198  : Epoch 8 | Val Loss = 0.316882 | Val Acc = 0.9137
+INFO  | 2026-03-08 12:55:14,303 | experiment_runner.py      | line 198  : Epoch 9 | Val Loss = 0.308663 | Val Acc = 0.9126
+INFO  | 2026-03-08 12:55:18,212 | experiment_runner.py      | line 198  : Epoch 10 | Val Loss = 0.311810 | Val Acc = 0.9113
+INFO  | 2026-03-08 12:55:21,566 | experiment_runner.py      | line 231  : Train Loss @ epoch 0010 iter 00005000 = 0.653982
+INFO  | 2026-03-08 12:55:22,094 | experiment_runner.py      | line 198  : Epoch 11 | Val Loss = 0.307282 | Val Acc = 0.9172
