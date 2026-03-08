@@ -205,7 +205,7 @@ class ExperimentRunner:
                 if avg_val_loss < best_val_loss:
                     best_val_loss = avg_val_loss
                     best_val_acc = acc
-                    model_to_save = model.module if hasattr(model, 'module') else model
+                    model_to_save = self._unwrap_model(model)
                     if self.has_inner_net:
                         snapshot(model_to_save.inner_net, optimizer, self.config,
                                  epoch + 1, tag='best_phase1')
@@ -293,7 +293,7 @@ class ExperimentRunner:
 
                 if avg_val_loss < best_val_loss:
                     best_val_loss = avg_val_loss
-                    model_to_save = model.module if hasattr(model, 'module') else model
+                    model_to_save = self._unwrap_model(model)
                     if self.has_inner_net:
                         snapshot(model_to_save.inner_net, optimizer, self.config,
                                  epoch + 1, tag='best_phase1')
@@ -420,7 +420,7 @@ class ExperimentRunner:
                 if avg_val_loss < best_val_loss:
                     best_val_loss = avg_val_loss
                     best_val_acc = acc
-                    model_to_save = model.module if hasattr(model, 'module') else model
+                    model_to_save = self._unwrap_model(model)
                     snapshot(model_to_save, optimizer, self.config,
                              epoch + 1, tag='best_phase2')
 
@@ -501,7 +501,7 @@ class ExperimentRunner:
 
                 if avg_val_loss < best_val_loss:
                     best_val_loss = avg_val_loss
-                    model_to_save = model.module if hasattr(model, 'module') else model
+                    model_to_save = self._unwrap_model(model)
                     snapshot(model_to_save, optimizer, self.config,
                              epoch + 1, tag='best_phase2')
 
@@ -745,6 +745,13 @@ class ExperimentRunner:
             except Exception as e:
                 logger.info(f"torch.compile failed, using eager mode: {e}")
         return model
+
+    def _unwrap_model(self, model):
+        """Unwrap DataParallel and torch.compile wrappers to get raw model."""
+        m = model.module if hasattr(model, 'module') else model
+        if hasattr(m, '_orig_mod'):
+            m = m._orig_mod
+        return m
 
     def _freeze_inner_net(self, model):
         """Freeze InnerNet parameters."""
