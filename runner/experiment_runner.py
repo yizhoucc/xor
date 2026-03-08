@@ -164,6 +164,7 @@ class ExperimentRunner:
         model = model.to(self.device)
         if self.use_gpu and len(self.gpus) > 1:
             model = nn.DataParallel(model, device_ids=self.gpus)
+        model = self._try_compile(model)
 
         optimizer = self._make_optimizer(model)
         early_stop = EarlyStopper([0.0], win_size=self.train_conf.get('early_stop_window', 20), is_decrease=False)
@@ -376,6 +377,7 @@ class ExperimentRunner:
         model = model.to(self.device)
         if self.use_gpu and len(self.gpus) > 1:
             model = nn.DataParallel(model, device_ids=self.gpus)
+        model = self._try_compile(model)
 
         optimizer = self._make_optimizer(model)
         early_stop = EarlyStopper([0.0], win_size=self.train_conf.get('early_stop_window', 20), is_decrease=False)
@@ -389,6 +391,7 @@ class ExperimentRunner:
         best_val_acc = 0.0
 
         phase2_max_epoch = self.train_phase2_conf.get('max_epoch', self.train_conf.max_epoch)
+        val_every = max(1, self.train_conf.valid_epoch)
         for epoch in range(phase2_max_epoch):
             # Validation
             if (epoch + 1) % self.train_conf.valid_epoch == 0 or epoch == 0:
@@ -732,6 +735,16 @@ class ExperimentRunner:
                               weight_decay=self.train_conf.wd)
         else:
             raise ValueError("Non-supported optimizer!")
+
+    def _try_compile(self, model):
+        """Apply torch.compile if available (PyTorch 2.0+)."""
+        if hasattr(torch, 'compile'):
+            try:
+                model = torch.compile(model, mode='reduce-overhead')
+                logger.info("Model compiled with torch.compile(mode='reduce-overhead')")
+            except Exception as e:
+                logger.info(f"torch.compile failed, using eager mode: {e}")
+        return model
 
     def _freeze_inner_net(self, model):
         """Freeze InnerNet parameters."""
