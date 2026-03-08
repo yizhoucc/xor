@@ -669,11 +669,14 @@ class ExperimentRunner:
 
     def _get_classification_loaders(self):
         """Create train/val DataLoaders for classification tasks."""
+        # Always use at least 4 workers for parallel data loading,
+        # regardless of config (num_workers doesn't affect results)
+        num_workers = max(self.train_conf.get('num_workers', 0), 4)
         loader_kwargs = {
             'batch_size': self.train_conf.batch_size,
-            'num_workers': self.train_conf.get('num_workers', 0),
-            'pin_memory': self.use_gpu and self.train_conf.get('num_workers', 0) > 0,
-            'persistent_workers': self.train_conf.get('num_workers', 0) > 0
+            'num_workers': num_workers,
+            'pin_memory': self.use_gpu,
+            'persistent_workers': num_workers > 0
         }
 
         if self.dataset_conf.name == 'mnist':
