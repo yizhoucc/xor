@@ -48,6 +48,10 @@ class ExperimentRunner:
         self.is_rnn = (self.dataset_conf.name == 'ptb')
         self.has_inner_net = self.model_conf.name not in ('BaselineMLP', 'BaselineCNN', 'BaselineRNN')
 
+        # Performance optimizations
+        if self.use_gpu:
+            torch.backends.cudnn.benchmark = True
+
         # For RNN tasks, load corpus
         if self.is_rnn:
             self.corpus = Corpus(self.dataset_conf.data_path + '/ptb')
@@ -568,6 +572,10 @@ class ExperimentRunner:
 
         test_loader = DataLoader(test_dataset, batch_size=self.test_conf.batch_size, shuffle=False)
 
+        # Preload test data to GPU
+        if self.use_gpu:
+            test_loader = self._preload_to_gpu(test_dataset, shuffle=False)
+
         # Create and load model
         model = eval(self.model_conf.name)(self.config)
         if self.has_inner_net:
@@ -668,17 +676,9 @@ class ExperimentRunner:
     # ==================== Helper Methods ==================== #
 
     def _get_classification_loaders(self):
-        """Create train/val DataLoaders for classification tasks."""
-        # Always use at least 4 workers for parallel data loading,
-        # regardless of config (num_workers doesn't affect results)
-        num_workers = max(self.train_conf.get('num_workers', 0), 4)
-        loader_kwargs = {
-            'batch_size': self.train_conf.batch_size,
-            'num_workers': num_workers,
-            'pin_memory': self.use_gpu,
-            'persistent_workers': num_workers > 0
-        }
-
+        """Create train/val DataLoaders for classification tasks.
+        Preloads entire dataset to GPU when possible for maximum throughput.
+        """
         if self.dataset_conf.name == 'mnist':
             transform = transforms.Compose([
                 transforms.ToTensor(), transforms.Normalize([0.5], [0.5])])
@@ -694,9 +694,31 @@ class ExperimentRunner:
         else:
             raise ValueError("Non-supported dataset!")
 
-        train_loader = DataLoader(train_dataset, shuffle=self.train_conf.shuffle, **loader_kwargs)
-        val_loader = DataLoader(val_dataset, shuffle=False, **loader_kwargs)
+        # Preload entire dataset to GPU for maximum speed
+        if self.use_gpu:
+            train_loader = self._preload_to_gpu(train_dataset, shuffle=self.train_conf.shuffle)
+            val_loader = self._preload_to_gpu(val_dataset, shuffle=False)
+        else:
+            num_workers = max(self.train_conf.get('num_workers', 0), 4)
+            loader_kwargs = {
+                'batch_size': self.train_conf.batch_size,
+                'num_workers': num_workers,
+                'pin_memory': False,
+                'persistent_workers': num_workers > 0
+            }
+            train_loader = DataLoader(train_dataset, shuffle=self.train_conf.shuffle, **loader_kwargs)
+            val_loader = DataLoader(val_dataset, shuffle=False, **loader_kwargs)
         return train_loader, val_loader
+
+    def _preload_to_gpu(self, dataset, shuffle=False):
+        """Load entire dataset to GPU memory, return a simple batch iterator."""
+        loader = DataLoader(dataset, batch_size=len(dataset), num_workers=4)
+        data, labels = next(iter(loader))
+        data = data.to(self.device)
+        labels = labels.to(self.device)
+        gpu_dataset = torch.utils.data.TensorDataset(data, labels)
+        return DataLoader(gpu_dataset, batch_size=self.train_conf.batch_size,
+                          shuffle=shuffle, num_workers=0, pin_memory=False)
 
     def _make_optimizer(self, model):
         """Create optimizer from config."""
