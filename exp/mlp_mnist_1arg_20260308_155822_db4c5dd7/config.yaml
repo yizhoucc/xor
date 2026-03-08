@@ -1,0 +1,64 @@
+dataset:
+  data_path: ./data
+  loader_name: InnerNetData
+  name: mnist
+  split: train
+exp_dir: ./exp
+exp_name: mlp_mnist_1arg
+gpus:
+- 0
+model:
+  arg_in_dim: 1
+  dropout: 0.5
+  in_hidden_dim: 64
+  inner_net: mlp
+  input_dim: 784
+  loss: CrossEntropy
+  name: XorNeuronMLP
+  num_cell_types: 1
+  num_classes: 10
+  out_hidden_dim:
+  - 120
+  - 120
+  - 120
+pretrain:
+  batch_size: 100
+  best_model:
+  - /model_snapshot_best_pretrained0.pth
+  lr: 0.001
+  max_epoch: 500
+  momentum: 0.9
+  num_workers: 0
+  optimizer: Adam
+  shuffle: true
+  snapshot_epoch: 1000
+  wd: 0.0
+run_id: '2041415'
+save_dir: ./exp/mlp_mnist_1arg_20260308_155822_db4c5dd7
+seed: 42
+test:
+  batch_size: 100
+  num_workers: 0
+  test_model: /model_snapshot_best_phase2.pth
+train:
+  batch_size: 100
+  best_model: /model_snapshot_best_phase1.pth
+  display_iter: 5000
+  early_stop_window: 20
+  is_resume: false
+  lr: 0.001
+  lr_decay: 0.1
+  lr_decay_steps:
+  - 10000
+  max_epoch: 200
+  momentum: 0.9
+  num_workers: 0
+  optimizer: Adam
+  resume_model: None
+  shuffle: true
+  snapshot_epoch: 1000
+  valid_epoch: 1
+  wd: 0.0
+train_phase2:
+  max_epoch: 400
+use_gpu: true
