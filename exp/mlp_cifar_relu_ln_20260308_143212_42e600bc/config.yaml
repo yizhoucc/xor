@@ -1,0 +1,58 @@
+dataset:
+  data_path: ./data
+  loader_name: InnerNetData
+  name: cifar10
+  split: train
+exp_dir: ./exp
+exp_name: mlp_cifar_relu_ln
+gpus:
+- 0
+model:
+  dropout: 0.5
+  input_dim: 3072
+  loss: CrossEntropy
+  name: BaselineMLP
+  num_classes: 10
+  out_hidden_dim:
+  - 117
+  - 117
+  - 117
+  use_layernorm: true
+pretrain:
+  batch_size: 100
+  best_model: []
+  lr: 0.001
+  max_epoch: 500
+  momentum: 0.9
+  num_workers: 0
+  optimizer: Adam
+  shuffle: true
+  snapshot_epoch: 1000
+  wd: 0.0
+run_id: '1935550'
+save_dir: ./exp/mlp_cifar_relu_ln_20260308_143212_42e600bc
+seed: 42
+test:
+  batch_size: 100
+  num_workers: 0
+  test_model: /model_snapshot_best_phase1.pth
+train:
+  batch_size: 100
+  best_model: /model_snapshot_best_phase1.pth
+  display_iter: 5000
+  early_stop_window: 20
+  is_resume: false
+  lr: 0.001
+  lr_decay: 0.1
+  lr_decay_steps:
+  - 10000
+  max_epoch: 400
+  momentum: 0.9
+  num_workers: 0
+  optimizer: Adam
+  resume_model: None
+  shuffle: true
+  snapshot_epoch: 1000
+  valid_epoch: 1
+  wd: 0.0
+use_gpu: true
