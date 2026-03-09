@@ -37,9 +37,6 @@ def compute_config_hash(config_dict):
     d = copy.deepcopy(config_dict)
     for key in ['exp_dir', 'save_dir', 'run_id']:
         d.pop(key, None)
-    # reuse_from is a runtime shortcut, not a model/training parameter
-    if 'pretrain' in d and isinstance(d['pretrain'], dict):
-        d['pretrain'].pop('reuse_from', None)
     serialized = yaml.dump(d, sort_keys=True)
     return hashlib.sha256(serialized.encode()).hexdigest()
 

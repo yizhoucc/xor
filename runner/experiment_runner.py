@@ -62,19 +62,9 @@ class ExperimentRunner:
     def pretrain(self):
         """Pretrain InnerNet on random smoothed functions.
         Skipped for baseline models.
-
-        If pretrain.reuse_from is set in config, copy pretrained weights
-        from that directory instead of training from scratch.
         """
         if not self.has_inner_net:
             print("Baseline model — skipping pretrain.")
-            self._mark_stage('PRETRAIN_DONE')
-            return
-
-        # Reuse pretrained weights if configured
-        reuse_from = getattr(self.pretrain_conf, 'reuse_from', None)
-        if reuse_from:
-            self._reuse_pretrained(reuse_from)
             self._mark_stage('PRETRAIN_DONE')
             return
 
@@ -83,21 +73,6 @@ class ExperimentRunner:
             self._pretrain_single(cell_type)
 
         self._mark_stage('PRETRAIN_DONE')
-
-    def _reuse_pretrained(self, source_dir):
-        """Copy pretrained InnerNet weights from an existing experiment directory."""
-        import shutil
-        num_cell_types = getattr(self.model_conf, 'num_cell_types', 1)
-        for cell_type in range(num_cell_types):
-            filename = f'model_snapshot_best_pretrained{cell_type}.pth'
-            src = os.path.join(source_dir, filename)
-            dst = os.path.join(self.save_dir, filename)
-            if not os.path.exists(src):
-                raise FileNotFoundError(
-                    f"Pretrained weight not found: {src}\n"
-                    f"Run pretrain first or check pretrain.reuse_from path.")
-            shutil.copy2(src, dst)
-            logger.info(f"Reused pretrained weights: {src} -> {dst}")
 
     def _pretrain_single(self, cell_type):
         """Pretrain a single InnerNet instance."""
