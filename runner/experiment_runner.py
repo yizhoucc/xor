@@ -565,11 +565,21 @@ class ExperimentRunner:
                 transforms.ToTensor(), transforms.Normalize([0.5], [0.5])])
             test_dataset = datasets.MNIST(root=self.dataset_conf.data_path,
                                            train=False, transform=transform, download=True)
+        elif self.dataset_conf.name == 'fashionmnist':
+            transform = transforms.Compose([
+                transforms.ToTensor(), transforms.Normalize([0.5], [0.5])])
+            test_dataset = datasets.FashionMNIST(root=self.dataset_conf.data_path,
+                                                  train=False, transform=transform, download=True)
         elif self.dataset_conf.name == 'cifar10':
             transform = transforms.Compose([
                 transforms.ToTensor(), transforms.Normalize([0.5]*3, [0.5]*3)])
             test_dataset = datasets.CIFAR10(root=self.dataset_conf.data_path,
                                              train=False, transform=transform, download=True)
+        elif self.dataset_conf.name == 'cifar100':
+            transform = transforms.Compose([
+                transforms.ToTensor(), transforms.Normalize([0.5]*3, [0.5]*3)])
+            test_dataset = datasets.CIFAR100(root=self.dataset_conf.data_path,
+                                              train=False, transform=transform, download=True)
         else:
             raise ValueError("Non-supported dataset!")
 
@@ -688,11 +698,23 @@ class ExperimentRunner:
             full_dataset = datasets.MNIST(root=self.dataset_conf.data_path,
                                            train=True, transform=transform, download=True)
             train_dataset, val_dataset = random_split(full_dataset, [50000, 10000])
+        elif self.dataset_conf.name == 'fashionmnist':
+            transform = transforms.Compose([
+                transforms.ToTensor(), transforms.Normalize([0.5], [0.5])])
+            full_dataset = datasets.FashionMNIST(root=self.dataset_conf.data_path,
+                                                  train=True, transform=transform, download=True)
+            train_dataset, val_dataset = random_split(full_dataset, [50000, 10000])
         elif self.dataset_conf.name == 'cifar10':
             transform = transforms.Compose([
                 transforms.ToTensor(), transforms.Normalize([0.5]*3, [0.5]*3)])
             full_dataset = datasets.CIFAR10(root=self.dataset_conf.data_path,
                                              train=True, transform=transform, download=True)
+            train_dataset, val_dataset = random_split(full_dataset, [40000, 10000])
+        elif self.dataset_conf.name == 'cifar100':
+            transform = transforms.Compose([
+                transforms.ToTensor(), transforms.Normalize([0.5]*3, [0.5]*3)])
+            full_dataset = datasets.CIFAR100(root=self.dataset_conf.data_path,
+                                              train=True, transform=transform, download=True)
             train_dataset, val_dataset = random_split(full_dataset, [40000, 10000])
         else:
             raise ValueError("Non-supported dataset!")

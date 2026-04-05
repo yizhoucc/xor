@@ -57,27 +57,39 @@ class MixerRunner:
         self.num_workers = mc.get('num_workers', 4)
 
         self.model_name = config.model.name
-        self.is_innernet = self.model_name == 'InnerNetMLPMixer'
+        self.is_innernet = self.model_name in ('InnerNetMLPMixer', 'InnerNetViT')
 
     def _make_model(self):
-        from model.mlp_mixer import InnerNetMLPMixer, StandardMLPMixer
         mc = self.config.model
-        kwargs = dict(
+        common = dict(
             image_size=mc.get('image_size', 32),
             patch_size=mc.get('patch_size', 4),
             in_channels=mc.get('in_channels', 3),
             d_model=mc.get('d_model', 128),
-            token_hidden=mc.get('token_hidden', 64),
-            channel_hidden=mc.get('channel_hidden', 512),
             num_layers=mc.get('num_layers', 4),
             num_classes=mc.get('num_classes', 10),
             dropout=mc.get('dropout', 0.1),
         )
-        if self.model_name == 'InnerNetMLPMixer':
-            kwargs['inner_hidden'] = mc.get('inner_hidden', 32)
-            return InnerNetMLPMixer(**kwargs)
+        if self.model_name in ('InnerNetMLPMixer', 'StandardMLPMixer'):
+            from model.mlp_mixer import InnerNetMLPMixer, StandardMLPMixer
+            common['token_hidden'] = mc.get('token_hidden', 64)
+            common['channel_hidden'] = mc.get('channel_hidden', 512)
+            if self.model_name == 'InnerNetMLPMixer':
+                common['inner_hidden'] = mc.get('inner_hidden', 32)
+                return InnerNetMLPMixer(**common)
+            else:
+                return StandardMLPMixer(**common)
         else:
-            return StandardMLPMixer(**kwargs)
+            from model.vit import InnerNetViT, StandardViT, SwiGLUViT
+            common['n_heads'] = mc.get('n_heads', 4)
+            common['d_ff'] = mc.get('d_ff', 512)
+            if self.model_name == 'InnerNetViT':
+                common['inner_hidden'] = mc.get('inner_hidden', 32)
+                return InnerNetViT(**common)
+            elif self.model_name == 'SwiGLUViT':
+                return SwiGLUViT(**common)
+            else:
+                return StandardViT(**common)
 
     def _get_loaders(self):
         transform_train = transforms.Compose([
@@ -105,10 +117,16 @@ class MixerRunner:
         gaussian_weights = None
         if self.is_innernet:
             logger.info("Pretraining InnerNet on Gaussian target...")
-            from model.mlp_mixer import InnerNetMixerActivation
-            temp_inner = InnerNetMixerActivation(
-                hidden_dim=self.config.model.get('inner_hidden', 32)
-            ).to(self.device)
+            if self.model_name == 'InnerNetMLPMixer':
+                from model.mlp_mixer import InnerNetMixerActivation
+                temp_inner = InnerNetMixerActivation(
+                    hidden_dim=self.config.model.get('inner_hidden', 32)
+                ).to(self.device)
+            else:
+                from model.transformer import InnerNetFFNActivation
+                temp_inner = InnerNetFFNActivation(
+                    hidden_dim=self.config.model.get('inner_hidden', 32)
+                ).to(self.device)
             gaussian_weights = pretrain_inner_net_gaussian(temp_inner, self.device)
             logger.info("InnerNet pretrained.")
 
@@ -150,7 +168,12 @@ class MixerRunner:
         model = self._make_model().to(self.device)
 
         if self.is_innernet and gaussian_weights is not None:
-            model.inner_net.load_state_dict(gaussian_weights)
+            if self.model_name == 'InnerNetMLPMixer':
+                model.inner_net.load_state_dict(gaussian_weights)
+            else:
+                # ViT: load into each block's FFN inner_net
+                for block in model.blocks:
+                    block.ffn.inner_net.load_state_dict(gaussian_weights)
 
         optimizer = optim.Adam(model.parameters(), lr=self.lr)
         criterion = nn.CrossEntropyLoss()
