@@ -159,6 +159,13 @@ def main():
             runner.test()
         else:
             runner.train()
+    elif task_type == 'mixer':
+        from runner.mixer_runner import MixerRunner
+        runner = MixerRunner(config)
+        if args.test:
+            runner.test()
+        else:
+            runner.train()
     elif task_type == 'language_model':
         from runner.lm_runner import LMRunner
         runner = LMRunner(config)

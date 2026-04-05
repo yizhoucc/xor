@@ -114,12 +114,71 @@ class MultiHeadAttention(nn.Module):
         return self.out(out)
 
 
+class InnerNetAttention(nn.Module):
+    """Multi-head attention with InnerNet replacing softmax.
+
+    Standard attention: weights = softmax(QK^T / sqrt(d_k))
+    InnerNet attention: weights = normalize(InnerNet(score, mean_score))
+
+    For each attention score s_ij, InnerNet takes two inputs:
+      1. s_ij: the raw attention score (Q_i · K_j / sqrt(d_k))
+      2. mean_j(s_i): the mean score for that query (context signal)
+    InnerNet outputs a positive weight (via abs), then L1-normalized.
+    """
+    def __init__(self, d_model, n_heads, inner_net, dropout=0.1):
+        super().__init__()
+        assert d_model % n_heads == 0
+        self.d_k = d_model // n_heads
+        self.n_heads = n_heads
+        self.qkv = nn.Linear(d_model, 3 * d_model)
+        self.out = nn.Linear(d_model, d_model)
+        self.dropout = nn.Dropout(dropout)
+        self.inner_net = inner_net  # shared InnerNet
+
+    def forward(self, x, mask=None):
+        B, S, D = x.shape
+        qkv = self.qkv(x).view(B, S, 3, self.n_heads, self.d_k)
+        qkv = qkv.permute(2, 0, 3, 1, 4)  # [3, B, H, S, d_k]
+        q, k, v = qkv[0], qkv[1], qkv[2]
+
+        scores = (q @ k.transpose(-2, -1)) / math.sqrt(self.d_k)  # [B, H, S, S]
+        if mask is not None:
+            scores = scores.masked_fill(mask == 0, 0.0)
+
+        # Compute mean score per query as context signal
+        if mask is not None:
+            # Count valid positions per query for correct mean
+            valid = mask.float().sum(dim=-1, keepdim=True).clamp(min=1)
+            mean_scores = scores.sum(dim=-1, keepdim=True) / valid  # [B, H, S, 1]
+        else:
+            mean_scores = scores.mean(dim=-1, keepdim=True)
+
+        mean_expanded = mean_scores.expand_as(scores)  # [B, H, S, S]
+
+        # Stack (score, mean_score) → InnerNet
+        pairs = torch.stack([scores, mean_expanded], dim=-1)  # [B, H, S, S, 2]
+        shape = pairs.shape[:-1]  # [B, H, S, S]
+        raw_weights = self.inner_net(pairs.reshape(-1, 2)).view(*shape)
+
+        # Make positive and apply mask
+        raw_weights = raw_weights.abs()
+        if mask is not None:
+            raw_weights = raw_weights.masked_fill(mask == 0, 0.0)
+
+        # L1 normalize (like softmax but learned)
+        attn = raw_weights / (raw_weights.sum(dim=-1, keepdim=True) + 1e-8)
+        attn = self.dropout(attn)
+
+        out = (attn @ v).transpose(1, 2).contiguous().view(B, S, D)
+        return self.out(out)
+
+
 class TransformerBlock(nn.Module):
     """Pre-norm Transformer block: LN → Attn → residual, LN → FFN → residual."""
-    def __init__(self, d_model, n_heads, ffn_module, dropout=0.1):
+    def __init__(self, d_model, n_heads, ffn_module, dropout=0.1, attn_module=None):
         super().__init__()
         self.ln1 = nn.LayerNorm(d_model)
-        self.attn = MultiHeadAttention(d_model, n_heads, dropout)
+        self.attn = attn_module if attn_module is not None else MultiHeadAttention(d_model, n_heads, dropout)
         self.ln2 = nn.LayerNorm(d_model)
         self.ffn = ffn_module
         self.drop1 = nn.Dropout(dropout)
@@ -226,6 +285,44 @@ class SwiGLUTransformer(nn.Module):
                 d_model, n_heads,
                 SwiGLUFFN(d_model, d_ff, dropout),
                 dropout
+            ) for _ in range(n_layers)
+        ])
+        self.ln_f = nn.LayerNorm(d_model)
+        self.head = nn.Linear(d_model, vocab_size)
+        self.d_model = d_model
+
+        self.head.weight = self.embedding.weight
+
+    def forward(self, x):
+        B, S = x.shape
+        mask = torch.tril(torch.ones(S, S, device=x.device)).unsqueeze(0).unsqueeze(0)
+        x = self.pos_enc(self.embedding(x) * math.sqrt(self.d_model))
+        for block in self.blocks:
+            x = block(x, mask)
+        x = self.ln_f(x)
+        return self.head(x[:, -1, :])
+
+
+class InnerNetAttnTransformer(nn.Module):
+    """Decoder-only Transformer with InnerNet replacing softmax in attention.
+
+    FFN uses standard GELU to isolate the effect of InnerNet in attention.
+    The InnerNet is shared across all layers and heads.
+    """
+    def __init__(self, vocab_size, d_model=128, n_heads=4, d_ff=512,
+                 n_layers=4, max_len=64, inner_hidden=32, dropout=0.1):
+        super().__init__()
+        self.embedding = nn.Embedding(vocab_size, d_model)
+        self.pos_enc = PositionalEncoding(d_model, max_len, dropout)
+
+        self.attn_inner_net = InnerNetFFNActivation(hidden_dim=inner_hidden)
+
+        self.blocks = nn.ModuleList([
+            TransformerBlock(
+                d_model, n_heads,
+                StandardFFN(d_model, d_ff, dropout),
+                dropout,
+                attn_module=InnerNetAttention(d_model, n_heads, self.attn_inner_net, dropout)
             ) for _ in range(n_layers)
         ])
         self.ln_f = nn.LayerNorm(d_model)

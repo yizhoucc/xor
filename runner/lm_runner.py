@@ -93,12 +93,13 @@ class LMRunner:
 
         # Model config
         self.model_name = config.model.name
-        self.is_innernet = self.model_name in ('InnerNetLSTMModel', 'InnerNetTransformer')
-        self.is_transformer = self.model_name in ('InnerNetTransformer', 'StandardTransformer', 'SwiGLUTransformer')
+        self.is_innernet = self.model_name in ('InnerNetLSTMModel', 'InnerNetTransformer', 'InnerNetAttnTransformer')
+        self.is_transformer = self.model_name in ('InnerNetTransformer', 'StandardTransformer', 'SwiGLUTransformer', 'InnerNetAttnTransformer')
 
     def _make_model(self, vocab_size):
         if self.is_transformer:
-            from model.transformer import InnerNetTransformer, StandardTransformer, SwiGLUTransformer
+            from model.transformer import (InnerNetTransformer, StandardTransformer,
+                                           SwiGLUTransformer, InnerNetAttnTransformer)
             d_model = self.config.model.get('d_model', 128)
             n_heads = self.config.model.get('n_heads', 4)
             d_ff = self.config.model.get('d_ff', 512)
@@ -109,6 +110,10 @@ class LMRunner:
                 inner_hidden = self.config.model.get('inner_hidden', 32)
                 return InnerNetTransformer(vocab_size, d_model, n_heads, d_ff,
                                            n_layers, max_len, inner_hidden, dropout)
+            elif self.model_name == 'InnerNetAttnTransformer':
+                inner_hidden = self.config.model.get('inner_hidden', 32)
+                return InnerNetAttnTransformer(vocab_size, d_model, n_heads, d_ff,
+                                               n_layers, max_len, inner_hidden, dropout)
             elif self.model_name == 'SwiGLUTransformer':
                 return SwiGLUTransformer(vocab_size, d_model, n_heads, d_ff,
                                          n_layers, max_len, dropout)
@@ -195,10 +200,11 @@ class LMRunner:
 
         # Load pretrained InnerNet
         if self.is_innernet and gaussian_weights is not None:
-            if self.is_transformer:
-                # Load into each block's FFN inner_net
+            if self.model_name == 'InnerNetTransformer':
                 for block in model.blocks:
                     block.ffn.inner_net.load_state_dict(gaussian_weights)
+            elif self.model_name == 'InnerNetAttnTransformer':
+                model.attn_inner_net.load_state_dict(gaussian_weights)
             else:
                 model.cell.inner_net.load_state_dict(gaussian_weights)
 
