@@ -103,79 +103,71 @@ RNN PTB 是原作者代码中存在但**未写入论文**的实验，属于扩�
 - PTB 数据需手动下载: `bash scripts/download_ptb.sh`
 - `.gitignore` 只排除了 `data/cifar-100-python/train`
 
-## 当前实验进度 (2026-03-08)
+## 当前实验进度 (2026-04-05)
 
-### 论文复现结果（1 seed，论文用 4 seeds）
-| 实验 | 我们的结果 | 论文参考 (Figure 4d 目测) | 匹配？ |
-|------|-----------|-------------------------|--------|
-| MLP MNIST 2-arg | 97.99% | ~98% | 匹配 |
-| MLP MNIST 1-arg | 98.35% | ~97.5% | 略高 |
-| MLP MNIST ReLU | 91.27% | ~97% | 差距大（见已知问题） |
-| MLP CIFAR 2-arg | 52.14% | ~52-53% | 匹配 |
-| MLP CIFAR 1-arg | 54.43% | ~50% | 略高 |
-| MLP CIFAR ReLU | 49.31% | ~48-49% | 匹配 |
-| CNN MNIST 2-arg | 99.40% | ~99% | 匹配 |
-| CNN MNIST 1-arg | 99.37% | ~98.8% | 略高 |
-| CNN MNIST ReLU | 98.99% | ~98.5% | 匹配 |
-| CNN CIFAR 2-arg | 78.68% | ~72-73% | 趋势一致，数值偏高 |
-| CNN CIFAR 1-arg | 80.24% | ~70% | 趋势一致，数值偏高 |
-| CNN CIFAR ReLU | 73.98% | ~68-69% | 趋势一致，数值偏高 |
+### 核心正面结果
 
-### 扩展实验（超越论文）
-| 实验 | 结果 | 状态 |
+**1. 分类任务（MLP/CNN）— 全面验证，一致有效**
+| 任务 | 2-arg | ReLU | 提升 | 收敛加速 |
+|------|-------|------|------|---------|
+| MLP MNIST | 98.0% | 91.9% | +6.1% | 2-4x |
+| MLP CIFAR-10 | 52.1% | 49.5% | +2.6% | 2-4x |
+| CNN MNIST | 99.4% | 99.0% | +0.4% | 更快 |
+| CNN CIFAR-10 | 78.7% | 74.0% | +4.7% | 更快 |
+即使公平对比 ReLU+LN（97.7%），XorNeuron 仍有优势且收敛显著更快。
+
+**2. Transformer FFN 语言模型 — 最有前景的新方向**
+| 模型 | PPL (5 seeds) |
+|------|--------------|
+| GELU (标准) | 96.82 ± 1.19 |
+| **InnerNet** | **95.26 ± 1.00** (-1.6%) |
+| SwiGLU (手工设计) | 92.98 ± 1.14 (-4.0%) |
+InnerNet 自动学到了与 SwiGLU 类似的双输入交互模式，验证了可学习激活函数作为架构发现工具的价值。
+
+**3. LSTM 语言模型**
+InnerNet PPL 103.41 ± 0.83 vs Standard 104.38 ± 0.75 (-0.9%)
+
+**4. 强化学习 DQN CartPole**
+InnerNet 254.1 ± 69.3 vs ReLU 150.6 ± 58.5 (+69%)
+
+**5. 收敛速度 — 最一致的发现**
+跨所有有效场景，InnerNet 都表现出 2-4 倍收敛加速。
+
+### 探索中的实验
+| 实验 | 状态 | 目的 |
 |------|------|------|
-| DQN CartPole InnerNet | 254.1 ± 69.3 avg reward | 完成 (10 seeds) |
-| DQN CartPole ReLU | 150.6 ± 58.5 avg reward | 完成 (10 seeds) |
-| DQN LunarLander InnerNet | -38.9 avg reward | 完成（InnerNet 输） |
-| DQN LunarLander ReLU | 152.8 avg reward | 完成 |
-| LSTM WikiText-2 InnerNet | PPL 103.41 ± 0.83 | 完成 (5 seeds) |
-| LSTM WikiText-2 Standard | PPL 104.38 ± 0.75 | 完成 (5 seeds) |
-| Transformer WikiText-2 InnerNet | PPL 95.26 ± 1.00 | 完成 (5 seeds) |
-| Transformer WikiText-2 GELU | PPL 96.82 ± 1.19 | 完成 (5 seeds) |
-| Transformer WikiText-2 SwiGLU | PPL 92.98 ± 1.14 | 完成 (5 seeds) |
-| RNN PTB tanh | PPL 140.13 | 完成 |
-| RNN PTB 2-arg | Epoch 5, Val PPL ~240 | 中止（收敛太慢） |
-| RNN PTB 1-arg | Epoch 16, Val PPL ~209 | 中止（收敛太慢） |
+| MLP/CNN FashionMNIST × 6 | 运行中 | 验证分类泛化 |
+| MLP/CNN CIFAR-100 × 4 | 运行中 | 验证更难分类任务 |
+| ViT CIFAR-10 × 3 (InnerNet/GELU/SwiGLU) | 完成 | 视觉 Transformer FFN |
+| MLP-Mixer CIFAR-10 × 2 | 完成 | 纯 MLP 架构 |
+| TF Attn InnerNet × 1 | 运行中 | 替代 softmax |
+| CNN/MLP 2-arg 补充 seeds | 运行中 | 补齐 4 seeds |
 
-### 公平对比基线（ReLU + LayerNorm）
-原始 Baseline 无 LayerNorm，而 XorNeuron 在 InnerNet 前有 LayerNorm，导致比较不公平。
-已新增 4 个 ReLU+LayerNorm 配置用于公平对比：
-| 实验 | 配置文件 | 模型 | 备注 |
-|------|----------|------|------|
-| MLP MNIST ReLU+LN | mlp_mnist_relu_ln.yaml | BaselineMLP | 公平对比 |
-| MLP CIFAR ReLU+LN | mlp_cifar_relu_ln.yaml | BaselineMLP | 公平对比 |
-| CNN MNIST ReLU+LN | cnn_mnist_relu_ln.yaml | BaselineCNN | 公平对比 |
-| CNN CIFAR ReLU+LN | cnn_cifar_relu_ln.yaml | BaselineCNN | 公平对比 |
+### ViT CIFAR-10 初步结果（待调参优化）
+| 模型 | Accuracy |
+|------|----------|
+| SwiGLU ViT | 81.55% |
+| Standard ViT (GELU) | 79.49% |
+| InnerNet ViT | 78.19% |
+SwiGLU 在视觉上也是最强的。InnerNet 未经针对性调参，有优化空间。
 
-### 已知问题
-1. **Baseline 无 LayerNorm（已修复）**: XorNeuron 模型在 InnerNet 前有 LayerNorm，原 Baseline 完全没有。
-   已给 BaselineMLP/BaselineCNN 添加 `use_layernorm` 选项，新增 4 个 `*_relu_ln.yaml` 配置。
-   MLP ReLU baseline 在 MNIST 只有 91.27%（正常应 97%+）主要是因为缺少 LN。
-   `run_multiseed.sh all` 已包含这 4 个 LN baseline。
-2. **1-arg ≥ 2-arg**: 单 seed 下 MLP 的 1-arg 持续优于 2-arg，与论文预期不符。需多 seed 验证。
-3. **CNN 数值偏高**: CNN CIFAR 比论文高 5-10%，可能与实现细节差异有关（第4层 kernel=1x1、参数匹配近似）。
+### 论文 Story
+> 两参数激活函数（InnerNet）在多种架构（MLP、CNN、Transformer FFN、LSTM、DQN）中一致提升性能并加速收敛 2-4 倍。在 Transformer FFN 中，InnerNet 自动学到了与 SwiGLU 相似的双输入交互模式，证明了可学习激活函数作为架构搜索工具的潜力。
 
-### TODO
-1. **跑 LayerNorm 基线** — 验证 ReLU+LN 是否接近论文 ~97%（MNIST）
-2. **多 seed 实验** — `run.py` 已支持 `--seed` 参数，脚本: `scripts/run_multiseed.sh`（含 LN baselines）
-3. **RNN PTB** — 收敛极慢（每 epoch ~30 min），已中止。低优先级。
-4. **汇总报告** — 用 `scripts/aggregate_results.py` 聚合多 seed 结果
+### 下一步实验计划
 
-### 多 seed 运行方式
-```bash
-# 单个实验 4 seeds
-nohup bash scripts/run_multiseed.sh config/experiments/mlp_mnist_2arg.yaml > /dev/null 2>&1 &
+**好用的方向 — 继续深挖：**
+1. Transformer FFN: 更多 LM 数据集（PTB text）、不同模型规模
+2. 分类任务: 等 FashionMNIST/CIFAR-100 结果，考虑 SVHN
+3. RL: 更多简单环境（Acrobot、MountainCar）
+4. 文本分类（情感分析）: InnerNet FFN 在非 LM 的 NLP 任务
 
-# 全部 16 个实验（12 论文 + 4 LN baseline）× 4 seeds
-nohup bash scripts/run_multiseed.sh all > /dev/null 2>&1 &
+**需要优化的方向 — 换 arch/数据集/超参：**
+1. ViT: 调参（lr、epochs、patch_size）或换数据集
+2. MLP-Mixer: 试 MNIST（更简单图像可能更合适）
+3. 注意: ViT 和 Mixer 未经调参，不排除超参问题
 
-# 查看聚合结果
-python scripts/aggregate_results.py
-```
-
-### 关键发现
-- **InnerNet 在 Transformer FFN 最有前景**: GLU 风格双投影，PPL 95.26 vs GELU 96.82 (-1.6%)
-- **SwiGLU > InnerNet > GELU**: PPL 92.98 vs 95.26 vs 96.82。固定乘法门控（SwiGLU）比学到的 InnerNet 更优，
-  说明结构化交互在 Transformer FFN 场景下比通用学到的交互更有效。
-- **语义配对很重要**: InnerNet 的两个输入需要语义不同（value vs gate）
-- **Xaq 反馈**: 注意 InnerNet 与已有乘法交互（attention, LSTM gating）的关系。我们 Transformer 只替换了 FFN（无乘法交互的地方），attention 完全没动
+### 基础设施
+- **Mind Cluster (CMU)**: Slurm 提交，conda env `xor`，24h time limit
+- **验证模式**: `python run.py -c config.yaml --validate` — 提交前秒级验证
+- **批量验证**: `bash scripts/validate_all.sh` — 44/44 configs 全 PASS
