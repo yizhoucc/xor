@@ -81,6 +81,7 @@ class MixerRunner:
                 return StandardMLPMixer(**common)
         else:
             from model.vit import InnerNetViT, StandardViT, SwiGLUViT
+            common['n_layers'] = common.pop('num_layers')
             common['n_heads'] = mc.get('n_heads', 4)
             common['d_ff'] = mc.get('d_ff', 512)
             if self.model_name == 'InnerNetViT':
