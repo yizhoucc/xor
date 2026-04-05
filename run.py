@@ -96,9 +96,7 @@ def _validate_config(config, logger):
         model = runner._make_model().to(device)
         x = torch.randn(2, 3, 32, 32).to(device)
         out = model(x)
-        loss = out.sum()
-        loss.backward()
-        logger.info(f"Model: {config.model.name}, output={out.shape}, params={sum(p.numel() for p in model.parameters())}")
+        out.sum().backward()
 
     elif task_type == 'language_model':
         from runner.lm_runner import LMRunner
@@ -106,29 +104,42 @@ def _validate_config(config, logger):
         model = runner._make_model(vocab_size=1000).to(device)
         x = torch.randint(0, 1000, (2, 64)).to(device)
         out = model(x)
-        loss = out.sum()
-        loss.backward()
-        logger.info(f"Model: {config.model.name}, output={out.shape}, params={sum(p.numel() for p in model.parameters())}")
+        out.sum().backward()
 
     elif task_type == 'rl':
-        logger.info("RL validation: skipping (needs gym env)")
+        from runner.rl_runner import RLRunner
+        runner = RLRunner(config)
+        state_dim = config.model.get('obs_dim', 4)
+        action_dim = config.model.get('action_dim', 2)
+        model = runner._make_model(state_dim, action_dim).to(device)
+        x = torch.randn(2, state_dim).to(device)
+        out = model(x)
+        out.sum().backward()
 
     else:
         from runner.experiment_runner import ExperimentRunner
         import model as _model_module
         runner = ExperimentRunner(config)
-        # Test model creation
         model_cls = getattr(_model_module, config.model.name)
-        model = model_cls(config).to(device)
-        # Test data loading
-        train_loader, val_loader = runner._get_classification_loaders()
-        imgs, labels = next(iter(train_loader))
-        imgs, labels = imgs.to(device), labels.to(device)
-        out, loss, _ = model(imgs, labels)
-        loss.backward()
-        logger.info(f"Model: {config.model.name}, output={out.shape}, params={sum(p.numel() for p in model.parameters())}")
-        # Test torch.compile compatibility
-        runner._try_compile(model)
+        if runner.is_rnn:
+            model = model_cls(config, ntoken=1000).to(device)
+            seq_len, batch = 35, 2
+            x = torch.randint(0, 1000, (seq_len, batch)).to(device)
+            labels = torch.randint(0, 1000, (seq_len * batch,)).to(device)
+            result = model(x, labels)
+            out = result[0]
+            out.sum().backward()
+        else:
+            model = model_cls(config).to(device)
+            train_loader, _ = runner._get_classification_loaders()
+            imgs, labels = next(iter(train_loader))
+            imgs, labels = imgs.to(device), labels.to(device)
+            out, loss, _ = model(imgs, labels)
+            loss.backward()
+            runner._try_compile(model)
+
+    params = sum(p.numel() for p in model.parameters())
+    logger.info(f"Model: {config.model.name}, output={out.shape}, params={params}")
 
 
 def main():

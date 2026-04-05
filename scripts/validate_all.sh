@@ -23,3 +23,6 @@ done
 
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
+
+# Cleanup temp directories
+rm -rf exp/_validate_tmp 2>/dev/null
