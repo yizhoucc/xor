@@ -585,10 +585,11 @@ class ExperimentRunner:
                 transforms.ToTensor(), transforms.Normalize([0.5]*3, [0.5]*3)])
             test_dataset = datasets.SVHN(root=self.dataset_conf.data_path,
                                           split='test', transform=transform, download=True)
-        elif self.dataset_conf.name in ('adult', 'wine', 'sst2', 'agnews'):
-            from dataset.tabular import load_adult, load_wine, load_sst2, load_agnews
+        elif self.dataset_conf.name in ('adult', 'wine', 'sst2', 'agnews', 'speech_commands', 'ecg'):
+            from dataset.tabular import load_adult, load_wine, load_sst2, load_agnews, load_speech_commands, load_ecg
             loader_fn = {'adult': load_adult, 'wine': load_wine,
-                         'sst2': load_sst2, 'agnews': load_agnews}[self.dataset_conf.name]
+                         'sst2': load_sst2, 'agnews': load_agnews,
+                         'speech_commands': load_speech_commands, 'ecg': load_ecg}[self.dataset_conf.name]
             _, test_dataset, _, _ = loader_fn(self.dataset_conf.data_path, seed=self.seed)
         else:
             raise ValueError("Non-supported dataset!")
@@ -733,10 +734,11 @@ class ExperimentRunner:
                                           split='train', transform=transform, download=True)
             n = len(full_dataset)
             train_dataset, val_dataset = random_split(full_dataset, [n - 10000, 10000])
-        elif self.dataset_conf.name in ('adult', 'wine', 'sst2', 'agnews'):
-            from dataset.tabular import load_adult, load_wine, load_sst2, load_agnews
+        elif self.dataset_conf.name in ('adult', 'wine', 'sst2', 'agnews', 'speech_commands', 'ecg'):
+            from dataset.tabular import load_adult, load_wine, load_sst2, load_agnews, load_speech_commands, load_ecg
             loader_fn = {'adult': load_adult, 'wine': load_wine,
-                         'sst2': load_sst2, 'agnews': load_agnews}[self.dataset_conf.name]
+                         'sst2': load_sst2, 'agnews': load_agnews,
+                         'speech_commands': load_speech_commands, 'ecg': load_ecg}[self.dataset_conf.name]
             full_dataset, self._tabular_test_dataset, input_dim, num_classes = loader_fn(
                 self.dataset_conf.data_path, seed=self.seed)
             n = len(full_dataset)

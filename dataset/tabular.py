@@ -162,3 +162,92 @@ def load_agnews(data_path, seed=42):
     test_dataset = TensorDataset(torch.from_numpy(X_test), torch.from_numpy(labels_test))
 
     return train_dataset, test_dataset, X_train.shape[1], 4
+
+
+def load_speech_commands(data_path, seed=42, max_features=1000):
+    """Load Speech Commands v2 (35 keywords). Mel-spectrogram → flattened for MLP.
+
+    Returns (train_dataset, test_dataset, input_dim, num_classes).
+    """
+    import torchaudio
+
+    root = os.path.join(data_path, 'speech_commands')
+    train_ds = torchaudio.datasets.SPEECHCOMMANDS(root, download=True, subset='training')
+    test_ds = torchaudio.datasets.SPEECHCOMMANDS(root, download=True, subset='testing')
+
+    # Build label map
+    labels_set = sorted(set(s[2] for s in train_ds))
+    label2idx = {l: i for i, l in enumerate(labels_set)}
+
+    def process_dataset(ds, n_mels=40, target_len=32):
+        mel_transform = torchaudio.transforms.MelSpectrogram(
+            sample_rate=16000, n_mels=n_mels, n_fft=400, hop_length=160)
+        features, labels = [], []
+        for waveform, sr, label, *_ in ds:
+            # Resample if needed
+            if sr != 16000:
+                waveform = torchaudio.functional.resample(waveform, sr, 16000)
+            mel = mel_transform(waveform)  # (1, n_mels, time)
+            # Pad/truncate to fixed length
+            if mel.size(-1) < target_len:
+                mel = torch.nn.functional.pad(mel, (0, target_len - mel.size(-1)))
+            else:
+                mel = mel[..., :target_len]
+            features.append(mel.squeeze(0).flatten())
+            labels.append(label2idx[label])
+        return torch.stack(features), torch.tensor(labels, dtype=torch.long)
+
+    X_train, y_train = process_dataset(train_ds)
+    X_test, y_test = process_dataset(test_ds)
+
+    # Standardize
+    mean, std = X_train.mean(0), X_train.std(0)
+    std[std == 0] = 1
+    X_train = (X_train - mean) / std
+    X_test = (X_test - mean) / std
+
+    train_dataset = TensorDataset(X_train, y_train)
+    test_dataset = TensorDataset(X_test, y_test)
+
+    return train_dataset, test_dataset, X_train.shape[1], len(labels_set)
+
+
+def load_ecg(data_path, seed=42):
+    """Load ECG200 from UCR Time Series Archive. Binary classification.
+
+    Returns (train_dataset, test_dataset, input_dim, num_classes).
+    """
+    train_path = os.path.join(data_path, 'ucr', 'ECG200', 'ECG200_TRAIN.tsv')
+    test_path = os.path.join(data_path, 'ucr', 'ECG200', 'ECG200_TEST.tsv')
+
+    # Download if not exists
+    if not os.path.exists(train_path):
+        os.makedirs(os.path.join(data_path, 'ucr', 'ECG200'), exist_ok=True)
+        import urllib.request, zipfile, io
+        url = 'https://www.timeseriesclassification.com/aeon-toolkit/ECG200.zip'
+        resp = urllib.request.urlopen(url)
+        z = zipfile.ZipFile(io.BytesIO(resp.read()))
+        z.extractall(os.path.join(data_path, 'ucr'))
+
+    train_data = np.loadtxt(train_path)
+    test_data = np.loadtxt(test_path)
+
+    X_train = train_data[:, 1:].astype(np.float32)
+    y_train = train_data[:, 0].astype(np.int64)
+    X_test = test_data[:, 1:].astype(np.float32)
+    y_test = test_data[:, 0].astype(np.int64)
+
+    # Remap labels to 0-indexed
+    le = LabelEncoder()
+    y_train = le.fit_transform(y_train)
+    y_test = le.transform(y_test)
+
+    # Standardize
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
+
+    train_dataset = TensorDataset(torch.from_numpy(X_train), torch.from_numpy(y_train))
+    test_dataset = TensorDataset(torch.from_numpy(X_test), torch.from_numpy(y_test))
+
+    return train_dataset, test_dataset, X_train.shape[1], len(le.classes_)
