@@ -149,7 +149,11 @@ def main():
     config_hash = compute_config_hash(config_dict)
 
     # 3. Determine save directory
-    if args.resume:
+    if args.validate:
+        # Validate mode: skip dedup, use temp dir
+        save_dir = os.path.join(exp_base_dir, '_validate_tmp')
+        os.makedirs(save_dir, exist_ok=True)
+    elif args.resume:
         save_dir = args.resume
         print(f"Resuming from: {save_dir}")
     else:
