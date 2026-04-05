@@ -133,41 +133,48 @@ InnerNet 254.1 ± 69.3 vs ReLU 150.6 ± 58.5 (+69%)
 **5. 收敛速度 — 最一致的发现**
 跨所有有效场景，InnerNet 都表现出 2-4 倍收敛加速。
 
-### 探索中的实验
-| 实验 | 状态 | 目的 |
+### 已完成的扩展实验
+| 实验 | 结果 | 状态 |
 |------|------|------|
-| MLP/CNN FashionMNIST × 6 | 运行中 | 验证分类泛化 |
-| MLP/CNN CIFAR-100 × 4 | 运行中 | 验证更难分类任务 |
-| ViT CIFAR-10 × 3 (InnerNet/GELU/SwiGLU) | 完成 | 视觉 Transformer FFN |
-| MLP-Mixer CIFAR-10 × 2 | 完成 | 纯 MLP 架构 |
-| TF Attn InnerNet × 1 | 运行中 | 替代 softmax |
-| CNN/MLP 2-arg 补充 seeds | 运行中 | 补齐 4 seeds |
+| Transformer FFN InnerNet (WikiText-2) | PPL 95.26 ± 1.00 | 完成 (5 seeds) |
+| Transformer FFN GELU (WikiText-2) | PPL 96.82 ± 1.19 | 完成 (5 seeds) |
+| Transformer FFN SwiGLU (WikiText-2) | PPL 92.98 ± 1.14 | 完成 (5 seeds) |
+| LSTM InnerNet (WikiText-2) | PPL 103.41 ± 0.83 | 完成 (5 seeds) |
+| LSTM Standard (WikiText-2) | PPL 104.38 ± 0.75 | 完成 (5 seeds) |
+| DQN CartPole InnerNet | 254.1 ± 69.3 | 完成 (10 seeds) |
+| DQN CartPole ReLU | 150.6 ± 58.5 | 完成 (10 seeds) |
+| MLP-Mixer CIFAR-10 GELU | 81.26% | 完成 (5 seeds) |
+| MLP-Mixer CIFAR-10 InnerNet | 80.21% | 完成 (5 seeds) |
+| ViT CIFAR-10 (默认超参) | InnerNet 78.2% / GELU 79.5% / SwiGLU 81.6% | 完成 (5 seeds) |
+| MLP FashionMNIST ReLU | 86.68% | 完成 |
+| MLP CIFAR-100 ReLU | 15.95% | 完成 |
 
-### ViT CIFAR-10 初步结果（待调参优化）
-| 模型 | Accuracy |
-|------|----------|
-| SwiGLU ViT | 81.55% |
-| Standard ViT (GELU) | 79.49% |
-| InnerNet ViT | 78.19% |
-SwiGLU 在视觉上也是最强的。InnerNet 未经针对性调参，有优化空间。
+### 运行中的实验 (Mind Cluster)
+| 实验 | 类别 | 目的 |
+|------|------|------|
+| Transformer FFN small (d=64) × 2 | 好用方向深挖 | 不同模型规模 |
+| Transformer FFN large (d=256) × 2 | 好用方向深挖 | 不同模型规模 |
+| ViT tuned (lr=3e-4, 100ep) × 2 | 优化方向 | 调参看能否翻盘 |
+| MLP-Mixer MNIST × 2 | 优化方向 | 换简单数据集 |
+| DQN Acrobot × 2 | 好用方向深挖 | 更多 RL 环境 |
+| DQN MountainCar × 2 | 好用方向深挖 | 更多 RL 环境 |
+| CNN SVHN × 2 | 好用方向深挖 | 新数据集 |
+| TF Attn InnerNet | 探索 | 替代 softmax |
+| CNN FashionMNIST 2arg/1arg | 好用方向深挖 | 分类泛化 |
+| CNN CIFAR-100 2arg | 好用方向深挖 | 更难分类 |
+| CNN/MLP 2-arg 补充 seeds | 补数据 | 补齐 4 seeds |
+
+### TODO（待实验完成后）
+- [ ] 收集所有结果，更新汇总表
+- [ ] 文本分类 SST-2（需要新 runner，优先级低）
+- [ ] Transformer FFN on PTB text（需要适配 lm_runner）
+- [ ] 根据结果决定是否需要更多数据集/架构
 
 ### 论文 Story
 > 两参数激活函数（InnerNet）在多种架构（MLP、CNN、Transformer FFN、LSTM、DQN）中一致提升性能并加速收敛 2-4 倍。在 Transformer FFN 中，InnerNet 自动学到了与 SwiGLU 相似的双输入交互模式，证明了可学习激活函数作为架构搜索工具的潜力。
 
-### 下一步实验计划
-
-**好用的方向 — 继续深挖：**
-1. Transformer FFN: 更多 LM 数据集（PTB text）、不同模型规模
-2. 分类任务: 等 FashionMNIST/CIFAR-100 结果，考虑 SVHN
-3. RL: 更多简单环境（Acrobot、MountainCar）
-4. 文本分类（情感分析）: InnerNet FFN 在非 LM 的 NLP 任务
-
-**需要优化的方向 — 换 arch/数据集/超参：**
-1. ViT: 调参（lr、epochs、patch_size）或换数据集
-2. MLP-Mixer: 试 MNIST（更简单图像可能更合适）
-3. 注意: ViT 和 Mixer 未经调参，不排除超参问题
-
 ### 基础设施
 - **Mind Cluster (CMU)**: Slurm 提交，conda env `xor`，24h time limit
 - **验证模式**: `python run.py -c config.yaml --validate` — 提交前秒级验证
-- **批量验证**: `bash scripts/validate_all.sh` — 44/44 configs 全 PASS
+- **批量验证**: `bash scripts/validate_all.sh` — 全 PASS 后再 sbatch
+- **流程**: 写 config → validate → fix → sbatch
