@@ -94,7 +94,9 @@ def _validate_config(config, logger):
         from runner.mixer_runner import MixerRunner
         runner = MixerRunner(config)
         model = runner._make_model().to(device)
-        x = torch.randn(2, 3, 32, 32).to(device)
+        in_ch = config.model.get('in_channels', 3)
+        img_sz = config.model.get('image_size', 32)
+        x = torch.randn(2, in_ch, img_sz, img_sz).to(device)
         out = model(x)
         out.sum().backward()
 

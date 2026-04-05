@@ -580,6 +580,11 @@ class ExperimentRunner:
                 transforms.ToTensor(), transforms.Normalize([0.5]*3, [0.5]*3)])
             test_dataset = datasets.CIFAR100(root=self.dataset_conf.data_path,
                                               train=False, transform=transform, download=True)
+        elif self.dataset_conf.name == 'svhn':
+            transform = transforms.Compose([
+                transforms.ToTensor(), transforms.Normalize([0.5]*3, [0.5]*3)])
+            test_dataset = datasets.SVHN(root=self.dataset_conf.data_path,
+                                          split='test', transform=transform, download=True)
         else:
             raise ValueError("Non-supported dataset!")
 
@@ -716,6 +721,13 @@ class ExperimentRunner:
             full_dataset = datasets.CIFAR100(root=self.dataset_conf.data_path,
                                               train=True, transform=transform, download=True)
             train_dataset, val_dataset = random_split(full_dataset, [40000, 10000])
+        elif self.dataset_conf.name == 'svhn':
+            transform = transforms.Compose([
+                transforms.ToTensor(), transforms.Normalize([0.5]*3, [0.5]*3)])
+            full_dataset = datasets.SVHN(root=self.dataset_conf.data_path,
+                                          split='train', transform=transform, download=True)
+            n = len(full_dataset)
+            train_dataset, val_dataset = random_split(full_dataset, [n - 10000, 10000])
         else:
             raise ValueError("Non-supported dataset!")
 

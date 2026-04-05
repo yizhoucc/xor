@@ -93,18 +93,43 @@ class MixerRunner:
                 return StandardViT(**common)
 
     def _get_loaders(self):
-        transform_train = transforms.Compose([
-            transforms.RandomCrop(32, padding=4),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616)),
-        ])
-        transform_test = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616)),
-        ])
-        train_ds = datasets.CIFAR10('./data', train=True, download=True, transform=transform_train)
-        test_ds = datasets.CIFAR10('./data', train=False, download=True, transform=transform_test)
+        dataset_name = self.config.get('dataset', {}).get('name', 'cifar10')
+        if dataset_name in ('mnist', 'fashionmnist'):
+            ds_cls = datasets.MNIST if dataset_name == 'mnist' else datasets.FashionMNIST
+            transform_train = transforms.Compose([
+                transforms.Resize(32), transforms.ToTensor(),
+                transforms.Normalize([0.5], [0.5]),
+            ])
+            transform_test = transforms.Compose([
+                transforms.Resize(32), transforms.ToTensor(),
+                transforms.Normalize([0.5], [0.5]),
+            ])
+            train_ds = ds_cls('./data', train=True, download=True, transform=transform_train)
+            test_ds = ds_cls('./data', train=False, download=True, transform=transform_test)
+        elif dataset_name == 'svhn':
+            transform_train = transforms.Compose([
+                transforms.RandomCrop(32, padding=4), transforms.ToTensor(),
+                transforms.Normalize((0.4377, 0.4438, 0.4728), (0.1980, 0.2010, 0.1970)),
+            ])
+            transform_test = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize((0.4377, 0.4438, 0.4728), (0.1980, 0.2010, 0.1970)),
+            ])
+            train_ds = datasets.SVHN('./data', split='train', download=True, transform=transform_train)
+            test_ds = datasets.SVHN('./data', split='test', download=True, transform=transform_test)
+        else:
+            ds_cls = datasets.CIFAR100 if dataset_name == 'cifar100' else datasets.CIFAR10
+            transform_train = transforms.Compose([
+                transforms.RandomCrop(32, padding=4), transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616)),
+            ])
+            transform_test = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616)),
+            ])
+            train_ds = ds_cls('./data', train=True, download=True, transform=transform_train)
+            test_ds = ds_cls('./data', train=False, download=True, transform=transform_test)
         train_loader = DataLoader(train_ds, batch_size=self.batch_size, shuffle=True,
                                   num_workers=self.num_workers, pin_memory=True)
         test_loader = DataLoader(test_ds, batch_size=self.batch_size, shuffle=False,

@@ -1,0 +1,28 @@
+# MLP-Mixer + MNIST with GELU
+exp_name: mixer_mnist_gelu
+task_type: mixer
+seed: 1234
+use_gpu: true
+exp_dir: exp
+
+dataset:
+  name: mnist
+
+model:
+  name: StandardMLPMixer
+  image_size: 32
+  patch_size: 4
+  in_channels: 1
+  d_model: 128
+  token_hidden: 64
+  channel_hidden: 512
+  num_layers: 4
+  num_classes: 10
+  dropout: 0.1
+
+mixer:
+  batch_size: 128
+  epochs: 30
+  lr: 0.001
+  num_seeds: 5
+  num_workers: 4
