@@ -82,9 +82,9 @@ class BaselineCNN(nn.Module):
         self.use_layernorm = getattr(config.model, 'use_layernorm', False)
 
         # Compute spatial dimensions through the network
-        if config.dataset.name == 'mnist':
+        if config.dataset.name in ('mnist', 'fashionmnist'):
             x_size = 28
-        elif config.dataset.name == 'cifar10':
+        elif config.dataset.name in ('cifar10', 'cifar100'):
             x_size = 32
         else:
             raise ValueError("Non-supported dataset!")

@@ -241,9 +241,9 @@ class ComplexNeuronConv(nn.Module):
         # max-pooling layer
         self.max_pool = nn.MaxPool2d(kernel_size=2)
         # outer net
-        if self.config.dataset.name == 'mnist':
+        if self.config.dataset.name in ('mnist', 'fashionmnist'):
             input_shape = [1, 1, 28, 28]
-        elif self.config.dataset.name == 'cifar10':
+        elif self.config.dataset.name in ('cifar10', 'cifar100'):
             input_shape = [1, 3, 32, 32]
         else:
             raise ValueError("Non-supported dataset!")
@@ -569,9 +569,9 @@ class XorNeuronConv(nn.Module):
         ]))
 
         # outer net
-        if self.config.dataset.name == 'mnist':
+        if self.config.dataset.name in ('mnist', 'fashionmnist'):
             x_shape = [28]
-        elif self.config.dataset.name == 'cifar10':
+        elif self.config.dataset.name in ('cifar10', 'cifar100'):
             x_shape = [32]
         else:
             raise ValueError("Non-supported dataset!")
@@ -775,9 +775,9 @@ class XorNeuronConv_test(nn.Module):
         ]))
 
         # outer net
-        if self.config.dataset.name == 'mnist':
+        if self.config.dataset.name in ('mnist', 'fashionmnist'):
             x_shape = [28]
-        elif self.config.dataset.name == 'cifar10':
+        elif self.config.dataset.name in ('cifar10', 'cifar100'):
             x_shape = [32]
         else:
             raise ValueError("Non-supported dataset!")

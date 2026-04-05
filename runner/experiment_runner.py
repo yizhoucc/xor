@@ -759,13 +759,19 @@ class ExperimentRunner:
             raise ValueError("Non-supported optimizer!")
 
     def _try_compile(self, model):
-        """Apply torch.compile if available (PyTorch 2.0+)."""
-        if hasattr(torch, 'compile'):
-            try:
-                model = torch.compile(model, mode='reduce-overhead')
-                logger.info("Model compiled with torch.compile(mode='reduce-overhead')")
-            except Exception as e:
-                logger.info(f"torch.compile failed, using eager mode: {e}")
+        """Apply torch.compile if available (PyTorch 2.0+). Skip on old GPUs."""
+        if not hasattr(torch, 'compile'):
+            return model
+        if self.use_gpu and torch.cuda.is_available():
+            cap = torch.cuda.get_device_capability()
+            if cap[0] < 7:
+                logger.info(f"GPU capability {cap[0]}.{cap[1]} < 7.0, skipping torch.compile")
+                return model
+        try:
+            model = torch.compile(model, mode='reduce-overhead')
+            logger.info("Model compiled with torch.compile(mode='reduce-overhead')")
+        except Exception as e:
+            logger.info(f"torch.compile failed, using eager mode: {e}")
         return model
 
     def _unwrap_model(self, model):
