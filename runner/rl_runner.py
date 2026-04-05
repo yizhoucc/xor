@@ -86,11 +86,13 @@ class RLRunner:
         return gym.make(self.env_name)
 
     def _make_model(self, state_dim, action_dim):
-        from model.dqn import InnerNetDQN, BaselineDQN
+        from model.dqn import InnerNetDQN, BaselineDQN, SwiGLUDQN
         hidden_dim = self.config.model.get('hidden_dim', 256 if self.is_innernet else 128)
         if self.is_innernet:
             inner_hidden = self.config.model.get('inner_hidden', 32)
             return InnerNetDQN(state_dim, action_dim, hidden_dim=hidden_dim, inner_hidden=inner_hidden)
+        elif self.model_name == 'SwiGLUDQN':
+            return SwiGLUDQN(state_dim, action_dim, hidden_dim=hidden_dim)
         else:
             return BaselineDQN(state_dim, action_dim, hidden_dim=hidden_dim)
 

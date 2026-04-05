@@ -66,3 +66,30 @@ class BaselineDQN(nn.Module):
 
     def forward(self, x):
         return self.net(x)
+
+
+class SwiGLUDQN(nn.Module):
+    """DQN Q-network with SwiGLU activation: Swish(W1a·x) ⊙ W1b·x.
+
+    Same dual-projection structure as InnerNetDQN but with fixed SwiGLU gating.
+    hidden_dim should be 2× effective width (default 256 → 128 after gating).
+    """
+    def __init__(self, state_dim, action_dim, hidden_dim=256):
+        super().__init__()
+        self.fc1 = nn.Linear(state_dim, hidden_dim)
+        effective_dim = hidden_dim // 2
+        self.w_gate = nn.Linear(effective_dim, effective_dim)
+        self.w_val = nn.Linear(effective_dim, effective_dim)
+        self.fc2 = nn.Linear(effective_dim, 64)
+        self.head = nn.Linear(64, action_dim)
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        x = self.relu(self.fc1(x))
+        # Split into pairs like InnerNet, then apply SwiGLU
+        x_pairs = x.view(x.size(0), -1, 2)
+        a, b = x_pairs[..., 0], x_pairs[..., 1]
+        gate = torch.sigmoid(self.w_gate(a)) * a  # Swish-like
+        x = gate * self.w_val(b)
+        x = self.relu(self.fc2(x))
+        return self.head(x)
