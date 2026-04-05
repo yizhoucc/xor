@@ -29,6 +29,8 @@ def parse_args():
                         help="Path to existing experiment dir to resume")
     parser.add_argument('--seed', type=int, default=None,
                         help="Override seed from config (for multi-seed experiments)")
+    parser.add_argument('--validate', action='store_true',
+                        help="Quick validation: build model, run 1 batch, then exit")
     return parser.parse_args()
 
 
@@ -80,6 +82,53 @@ def edict2dict(edict_obj):
         else:
             result[key] = val
     return result
+
+
+def _validate_config(config, logger):
+    """Quick validation: build model, load 1 batch, run forward+backward."""
+    task_type = config.get('task_type', 'classification')
+    device = torch.device('cuda' if config.use_gpu and torch.cuda.is_available() else 'cpu')
+    logger.info(f"Task: {task_type}, Device: {device}")
+
+    if task_type == 'mixer':
+        from runner.mixer_runner import MixerRunner
+        runner = MixerRunner(config)
+        model = runner._make_model().to(device)
+        x = torch.randn(2, 3, 32, 32).to(device)
+        out = model(x)
+        loss = out.sum()
+        loss.backward()
+        logger.info(f"Model: {config.model.name}, output={out.shape}, params={sum(p.numel() for p in model.parameters())}")
+
+    elif task_type == 'language_model':
+        from runner.lm_runner import LMRunner
+        runner = LMRunner(config)
+        model = runner._make_model(vocab_size=1000).to(device)
+        x = torch.randint(0, 1000, (2, 64)).to(device)
+        out = model(x)
+        loss = out.sum()
+        loss.backward()
+        logger.info(f"Model: {config.model.name}, output={out.shape}, params={sum(p.numel() for p in model.parameters())}")
+
+    elif task_type == 'rl':
+        logger.info("RL validation: skipping (needs gym env)")
+
+    else:
+        from runner.experiment_runner import ExperimentRunner
+        import model as _model_module
+        runner = ExperimentRunner(config)
+        # Test model creation
+        model_cls = getattr(_model_module, config.model.name)
+        model = model_cls(config).to(device)
+        # Test data loading
+        train_loader, val_loader = runner._get_classification_loaders()
+        imgs, labels = next(iter(train_loader))
+        imgs, labels = imgs.to(device), labels.to(device)
+        out, loss, _ = model(imgs, labels)
+        loss.backward()
+        logger.info(f"Model: {config.model.name}, output={out.shape}, params={sum(p.numel() for p in model.parameters())}")
+        # Test torch.compile compatibility
+        runner._try_compile(model)
 
 
 def main():
@@ -148,7 +197,14 @@ def main():
     logger.info(f"Config hash: {config_hash}")
     logger.info(f"Save dir: {save_dir}")
 
-    # 7. Run experiment
+    # 7. Quick validation mode
+    if args.validate:
+        logger.info("=== Validation mode: testing model build + 1 forward pass ===")
+        _validate_config(config, logger)
+        logger.info("Validation PASSED!")
+        return
+
+    # 8. Run experiment
     task_type = config.get('task_type', 'classification')
     logger.info(f"Task type: {task_type}")
 
