@@ -1,18 +1,18 @@
-"""Tabular datasets (UCI Adult, Wine Quality) for classification experiments."""
+"""Tabular/text/audio/timeseries datasets for classification experiments."""
 import os
 import numpy as np
 import torch
 from torch.utils.data import TensorDataset
-from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.model_selection import train_test_split
 
 
 def load_adult(data_path, seed=42):
     """Load UCI Adult Income dataset. Binary classification: >50K vs <=50K.
 
     Returns (train_dataset, test_dataset, input_dim, num_classes).
+    Requires: scikit-learn, pandas
     """
     import pandas as pd
+    from sklearn.preprocessing import StandardScaler, LabelEncoder
 
     columns = ['age', 'workclass', 'fnlwgt', 'education', 'education-num',
                'marital-status', 'occupation', 'relationship', 'race', 'sex',
@@ -76,6 +76,8 @@ def load_wine(data_path, seed=42):
     Returns (train_dataset, test_dataset, input_dim, num_classes).
     """
     import pandas as pd
+    from sklearn.preprocessing import StandardScaler, LabelEncoder
+    from sklearn.model_selection import train_test_split
 
     wine_path = os.path.join(data_path, 'wine', 'winequality-red.csv')
 
@@ -172,6 +174,7 @@ def load_speech_commands(data_path, seed=42, max_features=1000):
     import torchaudio
 
     root = os.path.join(data_path, 'speech_commands')
+    os.makedirs(root, exist_ok=True)
     train_ds = torchaudio.datasets.SPEECHCOMMANDS(root, download=True, subset='training')
     test_ds = torchaudio.datasets.SPEECHCOMMANDS(root, download=True, subset='testing')
 
@@ -217,17 +220,36 @@ def load_ecg(data_path, seed=42):
 
     Returns (train_dataset, test_dataset, input_dim, num_classes).
     """
-    train_path = os.path.join(data_path, 'ucr', 'ECG200', 'ECG200_TRAIN.tsv')
-    test_path = os.path.join(data_path, 'ucr', 'ECG200', 'ECG200_TEST.tsv')
+    from sklearn.preprocessing import StandardScaler, LabelEncoder
 
-    # Download if not exists
-    if not os.path.exists(train_path):
-        os.makedirs(os.path.join(data_path, 'ucr', 'ECG200'), exist_ok=True)
+    ucr_dir = os.path.join(data_path, 'ucr')
+
+    # Try multiple possible file locations and extensions
+    for subdir in ['ECG200', '']:
+        for ext in ['.tsv', '.txt']:
+            tp = os.path.join(ucr_dir, subdir, f'ECG200_TRAIN{ext}')
+            if os.path.exists(tp):
+                train_path = tp
+                test_path = os.path.join(ucr_dir, subdir, f'ECG200_TEST{ext}')
+                break
+        else:
+            continue
+        break
+    else:
+        # Download
+        os.makedirs(ucr_dir, exist_ok=True)
         import urllib.request, zipfile, io
         url = 'https://www.timeseriesclassification.com/aeon-toolkit/ECG200.zip'
         resp = urllib.request.urlopen(url)
         z = zipfile.ZipFile(io.BytesIO(resp.read()))
-        z.extractall(os.path.join(data_path, 'ucr'))
+        z.extractall(ucr_dir)
+        # Find the extracted files
+        for ext in ['.tsv', '.txt']:
+            tp = os.path.join(ucr_dir, f'ECG200_TRAIN{ext}')
+            if os.path.exists(tp):
+                train_path = tp
+                test_path = os.path.join(ucr_dir, f'ECG200_TEST{ext}')
+                break
 
     train_data = np.loadtxt(train_path)
     test_data = np.loadtxt(test_path)
