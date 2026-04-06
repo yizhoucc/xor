@@ -4,7 +4,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:1
 #SBATCH --mem=16GB
-#SBATCH --time=24:00:00
+#SBATCH --time=14-12:00:00
 #SBATCH --output=/home/yizhouc3/xor/logs/slurm_%j.out
 #SBATCH --error=/home/yizhouc3/xor/logs/slurm_%j.err
 
