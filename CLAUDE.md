@@ -174,7 +174,10 @@ InnerNet 254.1 ± 69.3 vs ReLU 150.6 ± 58.5 (+69%)
 > 两参数激活函数（InnerNet）在多种架构（MLP、CNN、Transformer FFN、LSTM、DQN）中一致提升性能并加速收敛 2-4 倍。在 Transformer FFN 中，InnerNet 自动学到了与 SwiGLU 相似的双输入交互模式，证明了可学习激活函数作为架构搜索工具的潜力。
 
 ### 基础设施
-- **Mind Cluster (CMU)**: Slurm 提交，conda env `xor`，24h time limit
+- **Mind Cluster (CMU)**: Slurm 提交，conda env `xor`，14d12h time limit
 - **验证模式**: `python run.py -c config.yaml --validate` — 提交前秒级验证
 - **批量验证**: `bash scripts/validate_all.sh` — 全 PASS 后再 sbatch
 - **流程**: 写 config → validate → fix → sbatch
+
+### 项目文档规则
+- **`SITUATION.md`**: 项目当前状态文档，每次有重要进展或结果时更新。包含：当前运行中的实验、最新结果汇总、下一步计划、已知问题。每次会话结束前或有重大结果时必须更新此文件。
