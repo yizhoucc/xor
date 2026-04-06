@@ -37,8 +37,11 @@ class BaselineMLP(nn.Module):
         self.hidden = nn.Sequential(*layers)
         self.fc_out = nn.Linear(in_dim, self.num_classes)
 
+        self.is_regression = (self.num_classes == 1)
         if self.config.model.loss == 'CrossEntropy':
             self.loss_func = nn.CrossEntropyLoss()
+        elif self.config.model.loss == 'MSE':
+            self.loss_func = nn.MSELoss()
         else:
             raise ValueError("Non-supported loss function!")
 
@@ -56,6 +59,8 @@ class BaselineMLP(nn.Module):
         out = x.reshape(batch_size, -1)
         out = self.hidden(out)
         out = self.fc_out(out)
+        if self.is_regression:
+            out = out.squeeze(-1)
         loss = self.loss_func(out, labels)
         return out, loss, []
 

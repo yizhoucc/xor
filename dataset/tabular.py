@@ -273,3 +273,37 @@ def load_ecg(data_path, seed=42):
     test_dataset = TensorDataset(torch.from_numpy(X_test), torch.from_numpy(y_test))
 
     return train_dataset, test_dataset, X_train.shape[1], len(le.classes_)
+
+
+def load_housing(data_path, seed=42):
+    """Load California Housing regression dataset.
+
+    Returns (train_dataset, test_dataset, input_dim, 1).
+    num_classes=1 signals regression task.
+    """
+    from sklearn.datasets import fetch_california_housing
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.model_selection import train_test_split
+
+    data = fetch_california_housing(data_home=os.path.join(data_path, 'housing'))
+    X = data.data.astype(np.float32)
+    y = data.target.astype(np.float32)
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=seed)
+
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
+
+    # Standardize targets too for stable training
+    y_mean, y_std = y_train.mean(), y_train.std()
+    y_train = (y_train - y_mean) / y_std
+    y_test = (y_test - y_mean) / y_std
+
+    train_dataset = TensorDataset(
+        torch.from_numpy(X_train), torch.from_numpy(y_train))
+    test_dataset = TensorDataset(
+        torch.from_numpy(X_test), torch.from_numpy(y_test))
+
+    return train_dataset, test_dataset, X_train.shape[1], 1

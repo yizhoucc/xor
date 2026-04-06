@@ -166,6 +166,8 @@ class ComplexNeuronMLP(nn.Module):
 
         if self.config.model.loss == 'CrossEntropy':
             self.loss_func = nn.CrossEntropyLoss()
+        elif self.config.model.loss == 'MSE':
+            self.loss_func = nn.MSELoss()
         else:
             raise ValueError("Non-supported loss function!")
 
@@ -293,6 +295,8 @@ class ComplexNeuronConv(nn.Module):
 
         if self.config.model.loss == 'CrossEntropy':
             self.loss_func = nn.CrossEntropyLoss()
+        elif self.config.model.loss == 'MSE':
+            self.loss_func = nn.MSELoss()
         else:
             raise ValueError("Non-supported loss function!")
 
@@ -393,6 +397,8 @@ class ComplexNeuronRNN(nn.Module):
 
         if self.config.model.loss == 'CrossEntropy':
             self.loss_func = nn.CrossEntropyLoss()
+        elif self.config.model.loss == 'MSE':
+            self.loss_func = nn.MSELoss()
         else:
             raise ValueError("Non-supported loss function!")
 
@@ -483,6 +489,8 @@ class XorNeuronMLP(nn.Module):
 
         if self.config.model.loss == 'CrossEntropy':
             self.loss_func = nn.CrossEntropyLoss()
+        elif self.config.model.loss == 'MSE':
+            self.loss_func = nn.MSELoss()
         else:
             raise ValueError("Non-supported loss function!")
 
@@ -615,6 +623,8 @@ class XorNeuronConv(nn.Module):
 
         if self.config.model.loss == 'CrossEntropy':
             self.loss_func = nn.CrossEntropyLoss()
+        elif self.config.model.loss == 'MSE':
+            self.loss_func = nn.MSELoss()
         else:
             raise ValueError("Non-supported loss function!")
 
@@ -710,6 +720,8 @@ class XorNeuronMLP_test(nn.Module):
 
         if self.config.model.loss == 'CrossEntropy':
             self.loss_func = nn.CrossEntropyLoss()
+        elif self.config.model.loss == 'MSE':
+            self.loss_func = nn.MSELoss()
         else:
             raise ValueError("Non-supported loss function!")
 
@@ -821,6 +833,8 @@ class XorNeuronConv_test(nn.Module):
 
         if self.config.model.loss == 'CrossEntropy':
             self.loss_func = nn.CrossEntropyLoss()
+        elif self.config.model.loss == 'MSE':
+            self.loss_func = nn.MSELoss()
         else:
             raise ValueError("Non-supported loss function!")
 
@@ -917,7 +931,10 @@ class XorNeuronMLP_v3(nn.Module):
 
         self.fc_out = nn.Linear(self.out_hidden_dim[-1] // self.arg_in_dim, self.num_classes)
         self.drop_layer = nn.Dropout(p=self.dropout)
-        self.loss_func = nn.CrossEntropyLoss()
+        if getattr(self.config.model, 'loss', 'CrossEntropy') == 'MSE':
+            self.loss_func = nn.MSELoss()
+        else:
+            self.loss_func = nn.CrossEntropyLoss()
         self._init_param()
 
     def _init_param(self):
@@ -1005,6 +1022,8 @@ class XorNeuronMLP_v2(nn.Module):
         
         if self.config.model.loss == 'CrossEntropy':
             self.loss_func = nn.CrossEntropyLoss()
+        elif self.config.model.loss == 'MSE':
+            self.loss_func = nn.MSELoss()
         else:
             raise ValueError("Non-supported loss function!")
 

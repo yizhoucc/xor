@@ -185,22 +185,29 @@ class ExperimentRunner:
                 correct = 0
                 total = 0
 
+                is_regression = (self.model_conf.num_classes == 1)
                 with torch.no_grad():
                     for imgs, labels in val_loader:
                         imgs = imgs.to(self.device, non_blocking=True)
                         labels = labels.to(self.device, non_blocking=True)
                         out, loss, _ = model(imgs, labels)
                         val_loss_sum += loss.item()
-                        _, pred = torch.max(out, 1)
-                        total += labels.size(0)
-                        correct += (pred == labels).sum().item()
+                        if not is_regression:
+                            _, pred = torch.max(out, 1)
+                            total += labels.size(0)
+                            correct += (pred == labels).sum().item()
+                        else:
+                            total += labels.size(0)
 
                 avg_val_loss = val_loss_sum / len(val_loader)
-                acc = correct / total
+                acc = correct / total if not is_regression else 0.0
                 results['val_loss'].append(avg_val_loss)
                 results['val_acc'].append(acc)
 
-                logger.info(f"Epoch {epoch+1} | Val Loss = {avg_val_loss:.6f} | Val Acc = {acc:.4f}")
+                if is_regression:
+                    logger.info(f"Epoch {epoch+1} | Val MSE = {avg_val_loss:.6f}")
+                else:
+                    logger.info(f"Epoch {epoch+1} | Val Loss = {avg_val_loss:.6f} | Val Acc = {acc:.4f}")
 
                 if avg_val_loss < best_val_loss:
                     best_val_loss = avg_val_loss
@@ -400,22 +407,29 @@ class ExperimentRunner:
                 correct = 0
                 total = 0
 
+                is_regression = (self.model_conf.num_classes == 1)
                 with torch.no_grad():
                     for imgs, labels in val_loader:
                         imgs = imgs.to(self.device, non_blocking=True)
                         labels = labels.to(self.device, non_blocking=True)
                         out, loss, _ = model(imgs, labels)
                         val_loss_sum += loss.item()
-                        _, pred = torch.max(out, 1)
-                        total += labels.size(0)
-                        correct += (pred == labels).sum().item()
+                        if not is_regression:
+                            _, pred = torch.max(out, 1)
+                            total += labels.size(0)
+                            correct += (pred == labels).sum().item()
+                        else:
+                            total += labels.size(0)
 
                 avg_val_loss = val_loss_sum / len(val_loader)
-                acc = correct / total
+                acc = correct / total if not is_regression else 0.0
                 results['val_loss'].append(avg_val_loss)
                 results['val_acc'].append(acc)
 
-                logger.info(f"Epoch {epoch+1} | Val Loss = {avg_val_loss:.6f} | Val Acc = {acc:.4f}")
+                if is_regression:
+                    logger.info(f"Epoch {epoch+1} | Val MSE = {avg_val_loss:.6f}")
+                else:
+                    logger.info(f"Epoch {epoch+1} | Val Loss = {avg_val_loss:.6f} | Val Acc = {acc:.4f}")
 
                 if avg_val_loss < best_val_loss:
                     best_val_loss = avg_val_loss
@@ -585,11 +599,12 @@ class ExperimentRunner:
                 transforms.ToTensor(), transforms.Normalize([0.5]*3, [0.5]*3)])
             test_dataset = datasets.SVHN(root=self.dataset_conf.data_path,
                                           split='test', transform=transform, download=True)
-        elif self.dataset_conf.name in ('adult', 'wine', 'sst2', 'agnews', 'speech_commands', 'ecg'):
-            from dataset.tabular import load_adult, load_wine, load_sst2, load_agnews, load_speech_commands, load_ecg
+        elif self.dataset_conf.name in ('adult', 'wine', 'sst2', 'agnews', 'speech_commands', 'ecg', 'housing'):
+            from dataset.tabular import load_adult, load_wine, load_sst2, load_agnews, load_speech_commands, load_ecg, load_housing
             loader_fn = {'adult': load_adult, 'wine': load_wine,
                          'sst2': load_sst2, 'agnews': load_agnews,
-                         'speech_commands': load_speech_commands, 'ecg': load_ecg}[self.dataset_conf.name]
+                         'speech_commands': load_speech_commands, 'ecg': load_ecg,
+                         'housing': load_housing}[self.dataset_conf.name]
             _, test_dataset, _, _ = loader_fn(self.dataset_conf.data_path, seed=self.seed)
         else:
             raise ValueError("Non-supported dataset!")
@@ -634,15 +649,23 @@ class ExperimentRunner:
                             in2cells[i] = np.concatenate((in2cells[i], layer_data), 0)
                 cnt += 1
 
-                _, pred = torch.max(out, 1)
-                total += labels.size(0)
-                correct += (pred == labels).sum().item()
+                is_regression = (self.model_conf.num_classes == 1)
+                if not is_regression:
+                    _, pred = torch.max(out, 1)
+                    total += labels.size(0)
+                    correct += (pred == labels).sum().item()
+                else:
+                    total += labels.size(0)
+                    correct += ((out - labels) ** 2).sum().item()
 
-        test_accuracy = correct / total
-        logger.info(f"Test Accuracy = {test_accuracy:.4f}")
-
-        # Save results
-        test_results = {'test_accuracy': test_accuracy}
+        if not is_regression:
+            test_accuracy = correct / total
+            logger.info(f"Test Accuracy = {test_accuracy:.4f}")
+            test_results = {'test_accuracy': test_accuracy}
+        else:
+            test_mse = correct / total
+            logger.info(f"Test MSE = {test_mse:.6f}")
+            test_results = {'test_mse': test_mse}
         pickle.dump(test_results, open(os.path.join(self.save_dir, 'test_results.p'), 'wb'))
         if in2cells:
             pickle.dump(in2cells, open(os.path.join(self.save_dir, 'in2cells.p'), 'wb'))
@@ -734,11 +757,12 @@ class ExperimentRunner:
                                           split='train', transform=transform, download=True)
             n = len(full_dataset)
             train_dataset, val_dataset = random_split(full_dataset, [n - 10000, 10000])
-        elif self.dataset_conf.name in ('adult', 'wine', 'sst2', 'agnews', 'speech_commands', 'ecg'):
-            from dataset.tabular import load_adult, load_wine, load_sst2, load_agnews, load_speech_commands, load_ecg
+        elif self.dataset_conf.name in ('adult', 'wine', 'sst2', 'agnews', 'speech_commands', 'ecg', 'housing'):
+            from dataset.tabular import load_adult, load_wine, load_sst2, load_agnews, load_speech_commands, load_ecg, load_housing
             loader_fn = {'adult': load_adult, 'wine': load_wine,
                          'sst2': load_sst2, 'agnews': load_agnews,
-                         'speech_commands': load_speech_commands, 'ecg': load_ecg}[self.dataset_conf.name]
+                         'speech_commands': load_speech_commands, 'ecg': load_ecg,
+                         'housing': load_housing}[self.dataset_conf.name]
             full_dataset, self._tabular_test_dataset, input_dim, num_classes = loader_fn(
                 self.dataset_conf.data_path, seed=self.seed)
             n = len(full_dataset)
