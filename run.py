@@ -118,6 +118,16 @@ def _validate_config(config, logger):
         out = model(x)
         out.sum().backward()
 
+    elif task_type == 'ppo':
+        from runner.ppo_runner import PPORunner
+        runner = PPORunner(config)
+        state_dim = config.model.get('obs_dim', 4)
+        action_dim = config.model.get('action_dim', 2)
+        model = runner._make_model(state_dim, action_dim).to(device)
+        x = torch.randn(2, state_dim).to(device)
+        probs, value = model(x)
+        (probs.sum() + value.sum()).backward()
+
     else:
         from runner.experiment_runner import ExperimentRunner
         import model as _model_module
@@ -228,6 +238,13 @@ def main():
     if task_type == 'rl':
         from runner.rl_runner import RLRunner
         runner = RLRunner(config)
+        if args.test:
+            runner.test()
+        else:
+            runner.train()
+    elif task_type == 'ppo':
+        from runner.ppo_runner import PPORunner
+        runner = PPORunner(config)
         if args.test:
             runner.test()
         else:

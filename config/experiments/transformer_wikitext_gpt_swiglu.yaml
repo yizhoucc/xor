@@ -1,0 +1,24 @@
+# GPT-style Transformer + WikiText-2 with SwiGLU
+exp_name: transformer_wikitext_gpt_swiglu
+task_type: language_model
+seed: 1234
+use_gpu: true
+exp_dir: exp
+
+model:
+  name: SwiGLUTransformer
+  d_model: 256
+  n_heads: 8
+  d_ff: 1024
+  n_layers: 6
+  dropout: 0.1
+
+lm:
+  context_size: 128
+  embed_dim: 256
+  batch_size: 64
+  epochs: 20
+  lr: 0.0003
+  grad_clip: 1.0
+  num_seeds: 5
+  num_workers: 4
