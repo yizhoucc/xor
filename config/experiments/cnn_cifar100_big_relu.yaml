@@ -1,0 +1,56 @@
+---
+# Bigger CNN + CIFAR-100 + ReLU baseline
+# Channels [128, 256, 256, 512] with padding for reasonable accuracy (~55-65%)
+exp_name: cnn_cifar100_big_relu
+exp_dir: ./exp
+use_gpu: true
+gpus: [0]
+seed: 1234
+dataset:
+  name: cifar100
+  loader_name: InnerNetData
+  data_path: ./data
+  split: train
+model:
+  name: BaselineCNN
+  input_channel: 3
+  out_channel: [128, 256, 256, 512]
+  kernel_size: [3, 3, 3, 3]
+  zero_pad: [1, 1, 1, 1]
+  stride: [1, 1, 1, 1]
+  dropout: 0.3
+  num_classes: 100
+  loss: CrossEntropy
+pretrain:
+  optimizer: Adam
+  num_workers: 0
+  max_epoch: 500
+  batch_size: 128
+  snapshot_epoch: 1000
+  lr: 1.0e-3
+  wd: 0.0e-4
+  momentum: 0.9
+  shuffle: true
+  best_model: []
+train:
+  optimizer: Adam
+  lr_decay: 0.1
+  lr_decay_steps: [80, 120]
+  num_workers: 0
+  max_epoch: 150
+  batch_size: 128
+  display_iter: 5000
+  snapshot_epoch: 1000
+  valid_epoch: 1
+  lr: 1.0e-3
+  wd: 1.0e-4
+  momentum: 0.9
+  shuffle: true
+  is_resume: false
+  resume_model: None
+  early_stop_window: 30
+  best_model: /model_snapshot_best_phase1.pth
+test:
+  batch_size: 128
+  num_workers: 0
+  test_model: /model_snapshot_best_phase1.pth
