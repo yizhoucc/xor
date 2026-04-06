@@ -35,29 +35,9 @@
 | 19 | Dense Embedding SST-2 (2arg/relu × 5seeds) | `mlp_sst2_emb_*.yaml` | ~85% | 替代 TF-IDF 稀疏特征 |
 | 20 | Dense Embedding AG News (2arg/relu × 5seeds) | `mlp_agnews_emb_*.yaml` | ~90% | 同上 |
 | 21 | Autoencoder MNIST (2arg/relu × 5seeds) | `ae_mnist_*.yaml` | MSE | 无监督重建任务 |
-
-提交命令（等用户确认）：
-```bash
-# ResNet CIFAR-10/100
-for cfg in config/experiments/resnet_cifar_*.yaml config/experiments/resnet_cifar100_*.yaml; do
-  for seed in 1234 42 43 44 45; do sbatch scripts/slurm_run.sh "$cfg" "$seed"; done
-done
-
-# 大 CNN CIFAR-100
-for cfg in config/experiments/cnn_cifar100_big_*.yaml; do
-  for seed in 1234 42 43 44 45; do sbatch scripts/slurm_run.sh "$cfg" "$seed"; done
-done
-
-# Dense Embedding 文本 (需先安装 sentence-transformers)
-for cfg in config/experiments/mlp_sst2_emb_*.yaml config/experiments/mlp_agnews_emb_*.yaml; do
-  for seed in 1234 42 43 44 45; do sbatch scripts/slurm_run.sh "$cfg" "$seed"; done
-done
-
-# Autoencoder MNIST
-for cfg in config/experiments/ae_mnist_*.yaml; do
-  for seed in 1234 42 43 44 45; do sbatch scripts/slurm_run.sh "$cfg" "$seed"; done
-done
-```
+| 22 | PPO RL (4 envs × 3 activations) | `ppo_*.yaml` | 各环境 | 现代 RL 算法替代 DQN |
+| 23 | GPT-style Transformer (6L d=256, 2arg/gelu/swiglu) | `transformer_wikitext_gpt_*.yaml` | PPL ~80 | 更大 Transformer 看 InnerNet 能否更明显地赢 |
+| 24 | 参数效率实验（小 InnerNet 匹配 ReLU baseline） | 待设计 | - | 证明 InnerNet 用更少参数达到同等性能 |
 
 ## 不再追踪（baseline 太低或不适合）
 
