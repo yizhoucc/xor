@@ -46,7 +46,10 @@ class ExperimentRunner:
 
         self.device = torch.device('cuda' if self.use_gpu else 'cpu')
         self.is_rnn = (self.dataset_conf.name == 'ptb')
-        self.has_inner_net = self.model_conf.name not in ('BaselineMLP', 'BaselineCNN', 'BaselineRNN')
+        self.has_inner_net = self.model_conf.name not in (
+            'BaselineMLP', 'BaselineCNN', 'BaselineRNN',
+            'BaselineResNet', 'InnerNetResNet',
+            'BaselineAE', 'InnerNetAE')
 
         # Performance optimizations
         if self.use_gpu:
@@ -599,12 +602,15 @@ class ExperimentRunner:
                 transforms.ToTensor(), transforms.Normalize([0.5]*3, [0.5]*3)])
             test_dataset = datasets.SVHN(root=self.dataset_conf.data_path,
                                           split='test', transform=transform, download=True)
-        elif self.dataset_conf.name in ('adult', 'wine', 'sst2', 'agnews', 'speech_commands', 'ecg', 'housing'):
-            from dataset.tabular import load_adult, load_wine, load_sst2, load_agnews, load_speech_commands, load_ecg, load_housing
-            loader_fn = {'adult': load_adult, 'wine': load_wine,
-                         'sst2': load_sst2, 'agnews': load_agnews,
-                         'speech_commands': load_speech_commands, 'ecg': load_ecg,
-                         'housing': load_housing}[self.dataset_conf.name]
+        elif self.dataset_conf.name in ('adult', 'wine', 'sst2', 'agnews', 'speech_commands', 'ecg', 'housing', 'sst2_emb', 'agnews_emb'):
+            from dataset import tabular
+            loader_fn = {
+                'adult': tabular.load_adult, 'wine': tabular.load_wine,
+                'sst2': tabular.load_sst2, 'agnews': tabular.load_agnews,
+                'speech_commands': tabular.load_speech_commands, 'ecg': tabular.load_ecg,
+                'housing': tabular.load_housing,
+                'sst2_emb': tabular.load_sst2_emb, 'agnews_emb': tabular.load_agnews_emb,
+            }[self.dataset_conf.name]
             _, test_dataset, _, _ = loader_fn(self.dataset_conf.data_path, seed=self.seed)
         else:
             raise ValueError("Non-supported dataset!")
@@ -757,12 +763,15 @@ class ExperimentRunner:
                                           split='train', transform=transform, download=True)
             n = len(full_dataset)
             train_dataset, val_dataset = random_split(full_dataset, [n - 10000, 10000])
-        elif self.dataset_conf.name in ('adult', 'wine', 'sst2', 'agnews', 'speech_commands', 'ecg', 'housing'):
-            from dataset.tabular import load_adult, load_wine, load_sst2, load_agnews, load_speech_commands, load_ecg, load_housing
-            loader_fn = {'adult': load_adult, 'wine': load_wine,
-                         'sst2': load_sst2, 'agnews': load_agnews,
-                         'speech_commands': load_speech_commands, 'ecg': load_ecg,
-                         'housing': load_housing}[self.dataset_conf.name]
+        elif self.dataset_conf.name in ('adult', 'wine', 'sst2', 'agnews', 'speech_commands', 'ecg', 'housing', 'sst2_emb', 'agnews_emb'):
+            from dataset import tabular
+            loader_fn = {
+                'adult': tabular.load_adult, 'wine': tabular.load_wine,
+                'sst2': tabular.load_sst2, 'agnews': tabular.load_agnews,
+                'speech_commands': tabular.load_speech_commands, 'ecg': tabular.load_ecg,
+                'housing': tabular.load_housing,
+                'sst2_emb': tabular.load_sst2_emb, 'agnews_emb': tabular.load_agnews_emb,
+            }[self.dataset_conf.name]
             full_dataset, self._tabular_test_dataset, input_dim, num_classes = loader_fn(
                 self.dataset_conf.data_path, seed=self.seed)
             n = len(full_dataset)

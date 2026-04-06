@@ -275,6 +275,71 @@ def load_ecg(data_path, seed=42):
     return train_dataset, test_dataset, X_train.shape[1], len(le.classes_)
 
 
+def load_sst2_emb(data_path, seed=42):
+    """Load SST-2 with dense sentence embeddings (384-dim) instead of TF-IDF.
+
+    Uses sentence-transformers 'all-MiniLM-L6-v2' for embedding extraction.
+    Returns (train_dataset, test_dataset, input_dim, num_classes).
+    """
+    from datasets import load_dataset
+    from sentence_transformers import SentenceTransformer
+
+    cache_dir = os.path.join(data_path, 'sst2')
+    ds = load_dataset('glue', 'sst2', cache_dir=cache_dir)
+
+    emb_cache = os.path.join(data_path, 'sst2_embeddings.npz')
+    if os.path.exists(emb_cache):
+        cached = np.load(emb_cache)
+        X_train, X_val = cached['X_train'], cached['X_val']
+    else:
+        model = SentenceTransformer('all-MiniLM-L6-v2')
+        X_train = model.encode(ds['train']['sentence'], show_progress_bar=True,
+                               batch_size=256).astype(np.float32)
+        X_val = model.encode(ds['validation']['sentence'], show_progress_bar=True,
+                             batch_size=256).astype(np.float32)
+        np.savez(emb_cache, X_train=X_train, X_val=X_val)
+
+    labels_train = np.array(ds['train']['label'], dtype=np.int64)
+    labels_val = np.array(ds['validation']['label'], dtype=np.int64)
+
+    train_dataset = TensorDataset(torch.from_numpy(X_train), torch.from_numpy(labels_train))
+    test_dataset = TensorDataset(torch.from_numpy(X_val), torch.from_numpy(labels_val))
+
+    return train_dataset, test_dataset, X_train.shape[1], 2
+
+
+def load_agnews_emb(data_path, seed=42):
+    """Load AG News with dense sentence embeddings (384-dim).
+
+    Returns (train_dataset, test_dataset, input_dim, num_classes).
+    """
+    from datasets import load_dataset
+    from sentence_transformers import SentenceTransformer
+
+    cache_dir = os.path.join(data_path, 'agnews')
+    ds = load_dataset('ag_news', cache_dir=cache_dir)
+
+    emb_cache = os.path.join(data_path, 'agnews_embeddings.npz')
+    if os.path.exists(emb_cache):
+        cached = np.load(emb_cache)
+        X_train, X_test = cached['X_train'], cached['X_test']
+    else:
+        model = SentenceTransformer('all-MiniLM-L6-v2')
+        X_train = model.encode(ds['train']['text'], show_progress_bar=True,
+                               batch_size=256).astype(np.float32)
+        X_test = model.encode(ds['test']['text'], show_progress_bar=True,
+                              batch_size=256).astype(np.float32)
+        np.savez(emb_cache, X_train=X_train, X_test=X_test)
+
+    labels_train = np.array(ds['train']['label'], dtype=np.int64)
+    labels_test = np.array(ds['test']['label'], dtype=np.int64)
+
+    train_dataset = TensorDataset(torch.from_numpy(X_train), torch.from_numpy(labels_train))
+    test_dataset = TensorDataset(torch.from_numpy(X_test), torch.from_numpy(labels_test))
+
+    return train_dataset, test_dataset, X_train.shape[1], 4
+
+
 def load_housing(data_path, seed=42):
     """Load California Housing regression dataset.
 
