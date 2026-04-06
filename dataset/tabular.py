@@ -172,6 +172,7 @@ def load_speech_commands(data_path, seed=42, max_features=1000):
     Returns (train_dataset, test_dataset, input_dim, num_classes).
     """
     import torchaudio
+    import soundfile  # noqa: F401 — register soundfile backend for torchaudio
 
     root = os.path.join(data_path, 'speech_commands')
     os.makedirs(root, exist_ok=True)
@@ -182,16 +183,15 @@ def load_speech_commands(data_path, seed=42, max_features=1000):
     labels_set = sorted(set(s[2] for s in train_ds))
     label2idx = {l: i for i, l in enumerate(labels_set)}
 
-    def process_dataset(ds, n_mels=40, target_len=32):
-        mel_transform = torchaudio.transforms.MelSpectrogram(
-            sample_rate=16000, n_mels=n_mels, n_fft=400, hop_length=160)
+    mel_transform = torchaudio.transforms.MelSpectrogram(
+        sample_rate=16000, n_mels=40, n_fft=400, hop_length=160)
+
+    def process_dataset(ds, target_len=32):
         features, labels = [], []
         for waveform, sr, label, *_ in ds:
-            # Resample if needed
             if sr != 16000:
                 waveform = torchaudio.functional.resample(waveform, sr, 16000)
             mel = mel_transform(waveform)  # (1, n_mels, time)
-            # Pad/truncate to fixed length
             if mel.size(-1) < target_len:
                 mel = torch.nn.functional.pad(mel, (0, target_len - mel.size(-1)))
             else:
