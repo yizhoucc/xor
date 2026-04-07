@@ -28,7 +28,7 @@ pretrain:
   optimizer: Adam
   num_workers: 0
   max_epoch: 500
-  batch_size: 128
+  batch_size: 100
   snapshot_epoch: 1000
   lr: 1.0e-3
   wd: 0.0e-4
@@ -41,7 +41,7 @@ train:
   lr_decay_steps: [80, 120]
   num_workers: 0
   max_epoch: 150
-  batch_size: 128
+  batch_size: 100
   display_iter: 5000
   snapshot_epoch: 1000
   valid_epoch: 1
@@ -56,6 +56,6 @@ train:
 train_phase2:
   max_epoch: 200
 test:
-  batch_size: 128
+  batch_size: 100
   num_workers: 0
   test_model: /model_snapshot_best_phase2.pth

@@ -63,8 +63,8 @@ def main():
     parser.add_argument('--exp_dir', type=str, required=True)
     parser.add_argument('--eps', type=str, default='8/255',
                         help='Perturbation budget (e.g., 8/255)')
-    parser.add_argument('--batch_size', type=int, default=100)
-    parser.add_argument('--n_examples', type=int, default=1000,
+    parser.add_argument('--batch_size', type=int, default=50)
+    parser.add_argument('--n_examples', type=int, default=500,
                         help='Number of test examples to evaluate')
     args = parser.parse_args()
 

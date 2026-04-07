@@ -645,7 +645,7 @@ class ExperimentRunner:
             labels = labels.to(self.device, non_blocking=True)
 
             with torch.no_grad():
-                out, _, in2cells_batch = model(imgs, labels, collect=self.has_inner_net)
+                out, test_loss, in2cells_batch = model(imgs, labels, collect=self.has_inner_net)
 
                 if self.has_inner_net:
                     for i, layer_data in enumerate(in2cells_batch):
@@ -662,7 +662,7 @@ class ExperimentRunner:
                     correct += (pred == labels).sum().item()
                 else:
                     total += labels.size(0)
-                    correct += ((out - labels) ** 2).sum().item()
+                    correct += test_loss.item() * labels.size(0)
 
         if not is_regression:
             test_accuracy = correct / total
