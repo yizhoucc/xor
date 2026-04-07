@@ -37,7 +37,7 @@
 | 21 | Autoencoder MNIST (2arg/relu × 5seeds) | `ae_mnist_*.yaml` | MSE | 无监督重建任务 |
 | 22 | PPO RL (4 envs × 3 activations) | `ppo_*.yaml` | 各环境 | 现代 RL 算法替代 DQN |
 | 23 | GPT-style Transformer (6L d=256, 2arg/gelu/swiglu) | `transformer_wikitext_gpt_*.yaml` | PPL ~80 | 更大 Transformer 看 InnerNet 能否更明显地赢 |
-| 24 | 参数效率实验（小 InnerNet 匹配 ReLU baseline） | 待设计 | - | 证明 InnerNet 用更少参数达到同等性能 |
+| 24 | 参数效率分析（方案B: 用容量缩放数据） | 不需要额外实验 | - | 用 #11 的 w=32/64/128/256/512 数据画 acc vs params 曲线，InnerNet 和 ReLU 两条曲线的交点即证明参数效率。等 #11 完成后直接出图 |
 
 ## 不再追踪（baseline 太低或不适合）
 
