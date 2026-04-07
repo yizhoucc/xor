@@ -547,6 +547,8 @@ class XorNeuronMLP(nn.Module):
                 out = self.drop_layer(out)
 
             out = self.fc_out(out)
+            if self.num_classes == 1:
+                out = out.squeeze(-1)
             loss = self.loss_func(out, labels)
 
             # 🚀 关键：返回 3 个值以匹配 Runner 的解包逻辑
