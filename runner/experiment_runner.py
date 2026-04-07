@@ -676,7 +676,7 @@ class ExperimentRunner:
         if in2cells:
             pickle.dump(in2cells, open(os.path.join(self.save_dir, 'in2cells.p'), 'wb'))
 
-        return test_accuracy
+        return test_results.get('test_accuracy', test_results.get('test_mse', 0))
 
     def _test_rnn(self):
         """Test for RNN language modeling."""

@@ -39,8 +39,8 @@ def load_config_and_model(exp_dir):
     config = EasyDict(config_dict)
     config.save_dir = exp_dir
 
-    from model import *
-    model_cls = eval(config.model.name)
+    import model as model_module
+    model_cls = getattr(model_module, config.model.name)
     model = model_cls(config)
 
     has_inner = config.model.name not in ('BaselineMLP', 'BaselineCNN', 'BaselineRNN')

@@ -18,6 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.train_helper import load_model
 from easydict import EasyDict
 import yaml
+import model as model_module
 
 
 def load_config_and_model(exp_dir):
@@ -28,10 +29,7 @@ def load_config_and_model(exp_dir):
     config = EasyDict(config_dict)
     config.save_dir = exp_dir
 
-    # Import model classes
-    from model import *
-
-    model_cls = eval(config.model.name)
+    model_cls = getattr(model_module, config.model.name)
     model = model_cls(config)
 
     # Determine which checkpoint to load
