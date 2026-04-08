@@ -1,0 +1,25 @@
+exp_dir: exp
+exp_name: mixer_cifar_2arg
+mixer:
+  batch_size: 128
+  epochs: 50
+  lr: 0.001
+  num_seeds: 5
+  num_workers: 4
+model:
+  channel_hidden: 512
+  d_model: 128
+  dropout: 0.1
+  image_size: 32
+  in_channels: 3
+  inner_hidden: 32
+  name: InnerNetMLPMixer
+  num_classes: 10
+  num_layers: 4
+  patch_size: 4
+  token_hidden: 64
+run_id: '98164'
+save_dir: exp/mixer_cifar_2arg_20260405_075203_96225e2a
+seed: 1234
+task_type: mixer
+use_gpu: false

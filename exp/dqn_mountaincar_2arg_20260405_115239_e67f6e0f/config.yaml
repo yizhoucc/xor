@@ -1,0 +1,24 @@
+exp_dir: exp
+exp_name: dqn_mountaincar_2arg
+model:
+  hidden_dim: 256
+  inner_hidden: 32
+  name: InnerNetDQN
+rl:
+  batch_size: 64
+  env_name: MountainCar-v0
+  epsilon_decay: 0.995
+  epsilon_end: 0.01
+  epsilon_start: 1.0
+  gamma: 0.99
+  log_interval: 50
+  lr: 0.001
+  memory_size: 10000
+  num_episodes: 500
+  num_seeds: 10
+  target_update: 10
+run_id: '2631293'
+save_dir: exp/dqn_mountaincar_2arg_20260405_115239_e67f6e0f
+seed: 1234
+task_type: rl
+use_gpu: true

@@ -1,0 +1,53 @@
+dataset:
+  data_path: ./data
+  loader_name: InnerNetData
+  name: mnist
+  split: train
+exp_dir: ./exp
+exp_name: ae_mnist_relu
+gpus:
+- 0
+model:
+  input_dim: 784
+  latent_dim: 32
+  loss: MSE
+  name: BaselineAE
+  num_classes: 1
+pretrain:
+  batch_size: 100
+  best_model: []
+  lr: 0.001
+  max_epoch: 500
+  momentum: 0.9
+  num_workers: 0
+  optimizer: Adam
+  shuffle: true
+  snapshot_epoch: 1000
+  wd: 0.0
+run_id: '2447001'
+save_dir: ./exp/ae_mnist_relu_20260407_021649_e7d469e3
+seed: 45
+test:
+  batch_size: 128
+  num_workers: 0
+  test_model: /model_snapshot_best_phase1.pth
+train:
+  batch_size: 128
+  best_model: /model_snapshot_best_phase1.pth
+  display_iter: 5000
+  early_stop_window: 30
+  is_resume: false
+  lr: 0.001
+  lr_decay: 0.1
+  lr_decay_steps:
+  - 10000
+  max_epoch: 200
+  momentum: 0.9
+  num_workers: 0
+  optimizer: Adam
+  resume_model: None
+  shuffle: true
+  snapshot_epoch: 1000
+  valid_epoch: 1
+  wd: 0.0
+use_gpu: true
