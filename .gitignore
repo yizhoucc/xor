@@ -4,10 +4,9 @@ __pycache__/
 .venv/
 .DS_Store
 
-# exp/ — keep small results, exclude large files
+# exp/ — keep results + logs + train stats, exclude large model weights
 exp/**/*.pth
 exp/**/in2cells.p
-exp/**/train_stats_*.p
 exp/_validate_tmp/
 
 # Slurm logs
