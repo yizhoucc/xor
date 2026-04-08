@@ -89,7 +89,7 @@ class BaselineCNN(nn.Module):
         # Compute spatial dimensions through the network
         if config.dataset.name in ('mnist', 'fashionmnist'):
             x_size = 28
-        elif config.dataset.name in ('cifar10', 'cifar100', 'svhn'):
+        elif config.dataset.name in ('cifar10', 'cifar100', 'svhn', 'stl10'):
             x_size = 32
         else:
             raise ValueError("Non-supported dataset!")

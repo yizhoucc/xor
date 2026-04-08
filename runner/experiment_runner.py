@@ -602,13 +602,21 @@ class ExperimentRunner:
                 transforms.ToTensor(), transforms.Normalize([0.5]*3, [0.5]*3)])
             test_dataset = datasets.SVHN(root=self.dataset_conf.data_path,
                                           split='test', transform=transform, download=True)
-        elif self.dataset_conf.name in ('adult', 'wine', 'sst2', 'agnews', 'speech_commands', 'ecg', 'housing', 'sst2_emb', 'agnews_emb'):
+        elif self.dataset_conf.name == 'stl10':
+            transform = transforms.Compose([
+                transforms.Resize(32),
+                transforms.ToTensor(), transforms.Normalize([0.5]*3, [0.5]*3)])
+            test_dataset = datasets.STL10(root=self.dataset_conf.data_path,
+                                           split='test', transform=transform, download=True)
+        elif self.dataset_conf.name in ('adult', 'wine', 'sst2', 'agnews', 'speech_commands', 'ecg',
+                                         'housing', 'sst2_emb', 'agnews_emb', 'diabetes', 'wine_reg'):
             from dataset import tabular
             loader_fn = {
                 'adult': tabular.load_adult, 'wine': tabular.load_wine,
                 'sst2': tabular.load_sst2, 'agnews': tabular.load_agnews,
                 'speech_commands': tabular.load_speech_commands, 'ecg': tabular.load_ecg,
-                'housing': tabular.load_housing,
+                'housing': tabular.load_housing, 'diabetes': tabular.load_diabetes,
+                'wine_reg': tabular.load_wine_reg,
                 'sst2_emb': tabular.load_sst2_emb, 'agnews_emb': tabular.load_agnews_emb,
             }[self.dataset_conf.name]
             _, test_dataset, _, _ = loader_fn(self.dataset_conf.data_path, seed=self.seed)
@@ -763,13 +771,23 @@ class ExperimentRunner:
                                           split='train', transform=transform, download=True)
             n = len(full_dataset)
             train_dataset, val_dataset = random_split(full_dataset, [n - 10000, 10000])
-        elif self.dataset_conf.name in ('adult', 'wine', 'sst2', 'agnews', 'speech_commands', 'ecg', 'housing', 'sst2_emb', 'agnews_emb'):
+        elif self.dataset_conf.name == 'stl10':
+            transform = transforms.Compose([
+                transforms.Resize(32),
+                transforms.ToTensor(), transforms.Normalize([0.5]*3, [0.5]*3)])
+            full_dataset = datasets.STL10(root=self.dataset_conf.data_path,
+                                           split='train', transform=transform, download=True)
+            n = len(full_dataset)
+            train_dataset, val_dataset = random_split(full_dataset, [n - 1000, 1000])
+        elif self.dataset_conf.name in ('adult', 'wine', 'sst2', 'agnews', 'speech_commands', 'ecg',
+                                         'housing', 'sst2_emb', 'agnews_emb', 'diabetes', 'wine_reg'):
             from dataset import tabular
             loader_fn = {
                 'adult': tabular.load_adult, 'wine': tabular.load_wine,
                 'sst2': tabular.load_sst2, 'agnews': tabular.load_agnews,
                 'speech_commands': tabular.load_speech_commands, 'ecg': tabular.load_ecg,
-                'housing': tabular.load_housing,
+                'housing': tabular.load_housing, 'diabetes': tabular.load_diabetes,
+                'wine_reg': tabular.load_wine_reg,
                 'sst2_emb': tabular.load_sst2_emb, 'agnews_emb': tabular.load_agnews_emb,
             }[self.dataset_conf.name]
             full_dataset, self._tabular_test_dataset, input_dim, num_classes = loader_fn(

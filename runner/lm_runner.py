@@ -18,17 +18,28 @@ logger = logging.getLogger('exp_logger')
 
 
 class WikiTextDataset(Dataset):
-    """WikiText-2 dataset for next-token prediction."""
+    """WikiText-2 or PTB dataset for next-token prediction."""
 
-    def __init__(self, split='train', context_size=32, vocab=None):
-        from datasets import load_dataset
+    def __init__(self, split='train', context_size=32, vocab=None, dataset_name='wikitext'):
         from collections import Counter
 
         self.context_size = context_size
-        logger.info(f"Loading WikiText-2 ({split})...")
-        dataset = load_dataset('wikitext', 'wikitext-2-v1', split=split)
-        text = " ".join(dataset['text'])
-        tokens = text.split()
+
+        if dataset_name == 'ptb':
+            logger.info(f"Loading PTB ({split})...")
+            split_map = {'train': 'train', 'validation': 'valid', 'test': 'test'}
+            ptb_split = split_map.get(split, split)
+            import os
+            ptb_path = os.path.join('./data/ptb', f'ptb.{ptb_split}.txt')
+            with open(ptb_path) as f:
+                text = f.read()
+            tokens = text.split()
+        else:
+            from datasets import load_dataset
+            logger.info(f"Loading WikiText-2 ({split})...")
+            dataset = load_dataset('wikitext', 'wikitext-2-v1', split=split)
+            text = " ".join(dataset['text'])
+            tokens = text.split()
 
         if vocab is None:
             counts = Counter(tokens)
@@ -90,6 +101,7 @@ class LMRunner:
         self.grad_clip = lm.get('grad_clip', 1.0)
         self.num_seeds = lm.get('num_seeds', 5)
         self.num_workers = lm.get('num_workers', 4)
+        self.dataset_name = lm.get('dataset', 'wikitext')
 
         # Model config
         self.model_name = config.model.name
@@ -131,9 +143,10 @@ class LMRunner:
     def train(self):
         """Train LSTM across multiple seeds."""
         # Load data once
-        train_ds = WikiTextDataset(split='train', context_size=self.context_size)
+        train_ds = WikiTextDataset(split='train', context_size=self.context_size,
+                                    dataset_name=self.dataset_name)
         val_ds = WikiTextDataset(split='validation', context_size=self.context_size,
-                                 vocab=train_ds.vocab)
+                                 vocab=train_ds.vocab, dataset_name=self.dataset_name)
         vocab_size = train_ds.vocab_size
 
         train_loader = DataLoader(train_ds, batch_size=self.batch_size, shuffle=True,

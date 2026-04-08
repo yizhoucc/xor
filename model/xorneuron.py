@@ -245,7 +245,7 @@ class ComplexNeuronConv(nn.Module):
         # outer net
         if self.config.dataset.name in ('mnist', 'fashionmnist'):
             input_shape = [1, 1, 28, 28]
-        elif self.config.dataset.name in ('cifar10', 'cifar100', 'svhn'):
+        elif self.config.dataset.name in ('cifar10', 'cifar100', 'svhn', 'stl10'):
             input_shape = [1, 3, 32, 32]
         else:
             raise ValueError("Non-supported dataset!")
@@ -581,7 +581,7 @@ class XorNeuronConv(nn.Module):
         # outer net
         if self.config.dataset.name in ('mnist', 'fashionmnist'):
             x_shape = [28]
-        elif self.config.dataset.name in ('cifar10', 'cifar100', 'svhn'):
+        elif self.config.dataset.name in ('cifar10', 'cifar100', 'svhn', 'stl10'):
             x_shape = [32]
         else:
             raise ValueError("Non-supported dataset!")
@@ -791,7 +791,7 @@ class XorNeuronConv_test(nn.Module):
         # outer net
         if self.config.dataset.name in ('mnist', 'fashionmnist'):
             x_shape = [28]
-        elif self.config.dataset.name in ('cifar10', 'cifar100', 'svhn'):
+        elif self.config.dataset.name in ('cifar10', 'cifar100', 'svhn', 'stl10'):
             x_shape = [32]
         else:
             raise ValueError("Non-supported dataset!")

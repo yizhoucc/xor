@@ -19,15 +19,17 @@ class BaselineAE(nn.Module):
         latent_dim = getattr(config.model, 'latent_dim', 32)
         self.num_classes = 1  # signals regression/reconstruction
 
+        h1 = min(512, max(256, input_dim // 4))
+        h2 = min(128, max(64, h1 // 4))
         self.encoder = nn.Sequential(
-            nn.Linear(input_dim, 256), nn.ReLU(),
-            nn.Linear(256, 64), nn.ReLU(),
-            nn.Linear(64, latent_dim), nn.ReLU(),
+            nn.Linear(input_dim, h1), nn.ReLU(),
+            nn.Linear(h1, h2), nn.ReLU(),
+            nn.Linear(h2, latent_dim), nn.ReLU(),
         )
         self.decoder = nn.Sequential(
-            nn.Linear(latent_dim, 64), nn.ReLU(),
-            nn.Linear(64, 256), nn.ReLU(),
-            nn.Linear(256, input_dim), nn.Sigmoid(),
+            nn.Linear(latent_dim, h2), nn.ReLU(),
+            nn.Linear(h2, h1), nn.ReLU(),
+            nn.Linear(h1, input_dim), nn.Sigmoid(),
         )
         self.loss_func = nn.MSELoss()
 
@@ -76,20 +78,24 @@ class InnerNetAE(nn.Module):
 
         self.inner_act = InnerNetAEActivation(inner_hidden)
 
+        h1 = min(1024, max(512, input_dim // 2))
+        h2 = min(256, max(128, h1 // 4))
         # Encoder: 2× width → InnerNet halves
-        self.enc_fc1 = nn.Linear(input_dim, 512)
-        self.enc_ln1 = nn.LayerNorm(512)
-        # After InnerNet: 256
-        self.enc_fc2 = nn.Linear(256, 128)
-        self.enc_ln2 = nn.LayerNorm(128)
-        # After InnerNet: 64
-        self.enc_fc3 = nn.Linear(64, latent_dim)
+        self.enc_fc1 = nn.Linear(input_dim, h1)
+        self.enc_ln1 = nn.LayerNorm(h1)
+        # After InnerNet: h1//2
+        self.enc_fc2 = nn.Linear(h1 // 2, h2)
+        self.enc_ln2 = nn.LayerNorm(h2)
+        # After InnerNet: h2//2
+        self.enc_fc3 = nn.Linear(h2 // 2, latent_dim)
 
         # Decoder uses ReLU (symmetric to baseline)
+        h2b = min(128, max(64, input_dim // 16))
+        h1b = min(512, max(256, input_dim // 4))
         self.decoder = nn.Sequential(
-            nn.Linear(latent_dim, 64), nn.ReLU(),
-            nn.Linear(64, 256), nn.ReLU(),
-            nn.Linear(256, input_dim), nn.Sigmoid(),
+            nn.Linear(latent_dim, h2b), nn.ReLU(),
+            nn.Linear(h2b, h1b), nn.ReLU(),
+            nn.Linear(h1b, input_dim), nn.Sigmoid(),
         )
         self.loss_func = nn.MSELoss()
 

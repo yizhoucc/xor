@@ -340,6 +340,74 @@ def load_agnews_emb(data_path, seed=42):
     return train_dataset, test_dataset, X_train.shape[1], 4
 
 
+def load_diabetes(data_path, seed=42):
+    """Load sklearn Diabetes regression dataset. 10 features, continuous target.
+
+    Returns (train_dataset, test_dataset, input_dim, 1).
+    """
+    from sklearn.datasets import load_diabetes as _load_diabetes
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.model_selection import train_test_split
+
+    data = _load_diabetes()
+    X = data.data.astype(np.float32)
+    y = data.target.astype(np.float32)
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=seed)
+
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
+
+    y_mean, y_std = y_train.mean(), y_train.std()
+    y_train = (y_train - y_mean) / y_std
+    y_test = (y_test - y_mean) / y_std
+
+    train_dataset = TensorDataset(torch.from_numpy(X_train), torch.from_numpy(y_train))
+    test_dataset = TensorDataset(torch.from_numpy(X_test), torch.from_numpy(y_test))
+
+    return train_dataset, test_dataset, X_train.shape[1], 1
+
+
+def load_wine_reg(data_path, seed=42):
+    """Load Wine Quality as regression (predict quality score directly).
+
+    Returns (train_dataset, test_dataset, input_dim, 1).
+    """
+    import pandas as pd
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.model_selection import train_test_split
+
+    wine_path = os.path.join(data_path, 'wine', 'winequality-red.csv')
+    if not os.path.exists(wine_path):
+        os.makedirs(os.path.join(data_path, 'wine'), exist_ok=True)
+        import urllib.request
+        urllib.request.urlretrieve(
+            'https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv',
+            wine_path)
+
+    df = pd.read_csv(wine_path, sep=';')
+    X = df.drop('quality', axis=1).values.astype(np.float32)
+    y = df['quality'].values.astype(np.float32)
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=seed)
+
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
+
+    y_mean, y_std = y_train.mean(), y_train.std()
+    y_train = (y_train - y_mean) / y_std
+    y_test = (y_test - y_mean) / y_std
+
+    train_dataset = TensorDataset(torch.from_numpy(X_train), torch.from_numpy(y_train))
+    test_dataset = TensorDataset(torch.from_numpy(X_test), torch.from_numpy(y_test))
+
+    return train_dataset, test_dataset, X_train.shape[1], 1
+
+
 def load_housing(data_path, seed=42):
     """Load California Housing regression dataset.
 
