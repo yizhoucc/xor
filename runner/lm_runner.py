@@ -30,7 +30,10 @@ class WikiTextDataset(Dataset):
             split_map = {'train': 'train', 'validation': 'valid', 'test': 'test'}
             ptb_split = split_map.get(split, split)
             import os
-            ptb_path = os.path.join('./data/ptb', f'ptb.{ptb_split}.txt')
+            # Try both naming conventions
+            ptb_path = os.path.join('./data/ptb', f'{ptb_split}.txt')
+            if not os.path.exists(ptb_path):
+                ptb_path = os.path.join('./data/ptb', f'ptb.{ptb_split}.txt')
             with open(ptb_path) as f:
                 text = f.read()
             tokens = text.split()
