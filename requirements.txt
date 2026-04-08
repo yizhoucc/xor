@@ -1,4 +1,4 @@
-# Core dependencies for XOR Neuron project
+# Core
 torch>=2.0
 torchvision>=0.15
 torchaudio>=2.0
@@ -7,8 +7,24 @@ scipy>=1.10
 pyyaml>=6.0
 easydict>=1.10
 tqdm>=4.60
-tensorboard>=2.10
 matplotlib>=3.7
 pillow>=9.0
+tensorboard>=2.10
+
+# RL
 gymnasium>=0.29
+gymnasium[box2d]
+
+# Language models / text
 datasets>=2.14
+sentence-transformers>=2.2
+
+# Tabular / regression
+scikit-learn>=1.2
+pandas>=2.0
+
+# Audio
+soundfile>=0.12
+
+# Robustness eval
+autoattack @ git+https://github.com/fra31/auto-attack
