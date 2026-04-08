@@ -1,0 +1,75 @@
+INFO  | 04/08/2026 05:19:51 AM | File run.py               | Line 223   | Config: config/experiments/transformer_wikitext_scale_2arg_d192.yaml
+INFO  | 04/08/2026 05:19:51 AM | File run.py               | Line 224   | Config hash: 24f06807f1ffc8efae8788b00427d8ac1b67d45114ba156cec58e79cac5eb3be
+INFO  | 04/08/2026 05:19:51 AM | File run.py               | Line 225   | Save dir: exp/transformer_wikitext_scale_2arg_d192_20260408_051951_24f06807
+INFO  | 04/08/2026 05:19:51 AM | File run.py               | Line 236   | Task type: language_model
+INFO  | 04/08/2026 05:20:08 AM | File lm_runner.py         | Line 39    | Loading WikiText-2 (train)...
+INFO  | 04/08/2026 05:20:08 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/wikitext/resolve/main/README.md "HTTP/1.1 307 Temporary Redirect"
+INFO  | 04/08/2026 05:20:08 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/Salesforce/wikitext/resolve/main/README.md "HTTP/1.1 307 Temporary Redirect"
+INFO  | 04/08/2026 05:20:08 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/datasets/Salesforce/wikitext/b08601e04326c79dfdd32d625aee71d232d685c3/README.md "HTTP/1.1 200 OK"
+INFO  | 04/08/2026 05:20:08 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/wikitext.py "HTTP/1.1 307 Temporary Redirect"
+INFO  | 04/08/2026 05:20:08 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/Salesforce/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/wikitext.py "HTTP/1.1 404 Not Found"
+INFO  | 04/08/2026 05:20:08 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://s3.amazonaws.com/datasets.huggingface.co/datasets/datasets/wikitext/wikitext.py "HTTP/1.1 200 OK"
+INFO  | 04/08/2026 05:20:08 AM | File _client.py           | Line 1025  | HTTP Request: GET https://huggingface.co/api/datasets/wikitext/revision/b08601e04326c79dfdd32d625aee71d232d685c3 "HTTP/1.1 307 Temporary Redirect"
+INFO  | 04/08/2026 05:20:08 AM | File _client.py           | Line 1025  | HTTP Request: GET https://huggingface.co/api/datasets/Salesforce/wikitext/revision/b08601e04326c79dfdd32d625aee71d232d685c3 "HTTP/1.1 200 OK"
+INFO  | 04/08/2026 05:20:08 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/.huggingface.yaml "HTTP/1.1 307 Temporary Redirect"
+INFO  | 04/08/2026 05:20:08 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/Salesforce/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/.huggingface.yaml "HTTP/1.1 404 Not Found"
+INFO  | 04/08/2026 05:20:09 AM | File _client.py           | Line 1025  | HTTP Request: GET https://datasets-server.huggingface.co/info?dataset=wikitext "HTTP/1.1 404 Not Found"
+INFO  | 04/08/2026 05:20:09 AM | File _client.py           | Line 1025  | HTTP Request: GET https://huggingface.co/api/datasets/wikitext/tree/b08601e04326c79dfdd32d625aee71d232d685c3/wikitext-103-raw-v1?recursive=true&expand=false "HTTP/1.1 307 Temporary Redirect"
+INFO  | 04/08/2026 05:20:09 AM | File _client.py           | Line 1025  | HTTP Request: GET https://huggingface.co/api/datasets/Salesforce/wikitext/tree/b08601e04326c79dfdd32d625aee71d232d685c3/wikitext-103-raw-v1?recursive=true&expand=false "HTTP/1.1 200 OK"
+INFO  | 04/08/2026 05:20:09 AM | File _client.py           | Line 1025  | HTTP Request: GET https://huggingface.co/api/datasets/wikitext/tree/b08601e04326c79dfdd32d625aee71d232d685c3?recursive=false&expand=false "HTTP/1.1 307 Temporary Redirect"
+INFO  | 04/08/2026 05:20:09 AM | File _client.py           | Line 1025  | HTTP Request: GET https://huggingface.co/api/datasets/Salesforce/wikitext/tree/b08601e04326c79dfdd32d625aee71d232d685c3?recursive=false&expand=false "HTTP/1.1 200 OK"
+INFO  | 04/08/2026 05:20:09 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/dataset_infos.json "HTTP/1.1 307 Temporary Redirect"
+INFO  | 04/08/2026 05:20:09 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/Salesforce/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/dataset_infos.json "HTTP/1.1 404 Not Found"
+WARNING | 04/08/2026 05:20:09 AM | File _http.py             | Line 916   | Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+INFO  | 04/08/2026 05:20:09 AM | File _client.py           | Line 1025  | HTTP Request: GET https://huggingface.co/api/datasets/wikitext/tree/b08601e04326c79dfdd32d625aee71d232d685c3/wikitext-2-v1?recursive=true&expand=false "HTTP/1.1 307 Temporary Redirect"
+INFO  | 04/08/2026 05:20:09 AM | File _client.py           | Line 1025  | HTTP Request: GET https://huggingface.co/api/datasets/Salesforce/wikitext/tree/b08601e04326c79dfdd32d625aee71d232d685c3/wikitext-2-v1?recursive=true&expand=false "HTTP/1.1 200 OK"
+INFO  | 04/08/2026 05:20:10 AM | File lm_runner.py         | Line 54    | Dataset (train) ready. 2051910 tokens, vocab=10000
+INFO  | 04/08/2026 05:20:10 AM | File lm_runner.py         | Line 39    | Loading WikiText-2 (validation)...
+INFO  | 04/08/2026 05:20:10 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/wikitext/resolve/main/README.md "HTTP/1.1 307 Temporary Redirect"
+INFO  | 04/08/2026 05:20:10 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/Salesforce/wikitext/resolve/main/README.md "HTTP/1.1 307 Temporary Redirect"
+INFO  | 04/08/2026 05:20:10 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/datasets/Salesforce/wikitext/b08601e04326c79dfdd32d625aee71d232d685c3/README.md "HTTP/1.1 200 OK"
+INFO  | 04/08/2026 05:20:10 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/wikitext.py "HTTP/1.1 307 Temporary Redirect"
+INFO  | 04/08/2026 05:20:10 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/Salesforce/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/wikitext.py "HTTP/1.1 404 Not Found"
+INFO  | 04/08/2026 05:20:10 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://s3.amazonaws.com/datasets.huggingface.co/datasets/datasets/wikitext/wikitext.py "HTTP/1.1 200 OK"
+INFO  | 04/08/2026 05:20:10 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/.huggingface.yaml "HTTP/1.1 307 Temporary Redirect"
+INFO  | 04/08/2026 05:20:10 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/Salesforce/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/.huggingface.yaml "HTTP/1.1 404 Not Found"
+INFO  | 04/08/2026 05:20:10 AM | File _client.py           | Line 1025  | HTTP Request: GET https://datasets-server.huggingface.co/info?dataset=wikitext "HTTP/1.1 404 Not Found"
+INFO  | 04/08/2026 05:20:10 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/dataset_infos.json "HTTP/1.1 307 Temporary Redirect"
+INFO  | 04/08/2026 05:20:10 AM | File _client.py           | Line 1025  | HTTP Request: HEAD https://huggingface.co/datasets/Salesforce/wikitext/resolve/b08601e04326c79dfdd32d625aee71d232d685c3/dataset_infos.json "HTTP/1.1 404 Not Found"
+INFO  | 04/08/2026 05:20:10 AM | File lm_runner.py         | Line 54    | Dataset (validation) ready. 213886 tokens, vocab=10000
+INFO  | 04/08/2026 05:20:10 AM | File lm_runner.py         | Line 160   | Pretraining InnerNet on Gaussian target...
+INFO  | 04/08/2026 05:20:11 AM | File lm_runner.py         | Line 172   | InnerNet pretrained.
+INFO  | 04/08/2026 05:20:11 AM | File lm_runner.py         | Line 178   | [Seed 42] (1/5) Training InnerNetTransformer for 10 epochs...
+INFO  | 04/08/2026 05:45:02 AM | File lm_runner.py         | Line 253   |   Seed 42 Ep 1/10: PPL = 244.35
+INFO  | 04/08/2026 06:09:53 AM | File lm_runner.py         | Line 253   |   Seed 42 Ep 2/10: PPL = 179.85
+INFO  | 04/08/2026 06:34:44 AM | File lm_runner.py         | Line 253   |   Seed 42 Ep 3/10: PPL = 150.75
+INFO  | 04/08/2026 06:59:35 AM | File lm_runner.py         | Line 253   |   Seed 42 Ep 4/10: PPL = 130.12
+INFO  | 04/08/2026 07:24:26 AM | File lm_runner.py         | Line 253   |   Seed 42 Ep 5/10: PPL = 114.12
+INFO  | 04/08/2026 07:49:17 AM | File lm_runner.py         | Line 253   |   Seed 42 Ep 6/10: PPL = 105.42
+INFO  | 04/08/2026 08:14:08 AM | File lm_runner.py         | Line 253   |   Seed 42 Ep 7/10: PPL = 99.20
+INFO  | 04/08/2026 08:38:59 AM | File lm_runner.py         | Line 253   |   Seed 42 Ep 8/10: PPL = 94.20
+INFO  | 04/08/2026 09:03:50 AM | File lm_runner.py         | Line 253   |   Seed 42 Ep 9/10: PPL = 90.80
+INFO  | 04/08/2026 09:28:41 AM | File lm_runner.py         | Line 253   |   Seed 42 Ep 10/10: PPL = 87.06
+INFO  | 04/08/2026 09:28:41 AM | File lm_runner.py         | Line 184   | [Seed 42] Done. Best PPL: 87.06
+INFO  | 04/08/2026 09:28:41 AM | File lm_runner.py         | Line 178   | [Seed 43] (2/5) Training InnerNetTransformer for 10 epochs...
+INFO  | 04/08/2026 09:53:32 AM | File lm_runner.py         | Line 253   |   Seed 43 Ep 1/10: PPL = 248.62
+INFO  | 04/08/2026 10:18:23 AM | File lm_runner.py         | Line 253   |   Seed 43 Ep 2/10: PPL = 182.10
+INFO  | 04/08/2026 10:43:14 AM | File lm_runner.py         | Line 253   |   Seed 43 Ep 3/10: PPL = 153.11
+INFO  | 04/08/2026 11:08:05 AM | File lm_runner.py         | Line 253   |   Seed 43 Ep 4/10: PPL = 130.03
+INFO  | 04/08/2026 11:32:57 AM | File lm_runner.py         | Line 253   |   Seed 43 Ep 5/10: PPL = 115.98
+INFO  | 04/08/2026 11:57:48 AM | File lm_runner.py         | Line 253   |   Seed 43 Ep 6/10: PPL = 106.37
+INFO  | 04/08/2026 12:22:38 PM | File lm_runner.py         | Line 253   |   Seed 43 Ep 7/10: PPL = 99.92
+INFO  | 04/08/2026 12:47:29 PM | File lm_runner.py         | Line 253   |   Seed 43 Ep 8/10: PPL = 95.19
+INFO  | 04/08/2026 01:12:20 PM | File lm_runner.py         | Line 253   |   Seed 43 Ep 9/10: PPL = 91.32
+INFO  | 04/08/2026 01:37:12 PM | File lm_runner.py         | Line 253   |   Seed 43 Ep 10/10: PPL = 89.31
+INFO  | 04/08/2026 01:37:12 PM | File lm_runner.py         | Line 184   | [Seed 43] Done. Best PPL: 89.31
+INFO  | 04/08/2026 01:37:12 PM | File lm_runner.py         | Line 178   | [Seed 44] (3/5) Training InnerNetTransformer for 10 epochs...
+INFO  | 04/08/2026 02:02:03 PM | File lm_runner.py         | Line 253   |   Seed 44 Ep 1/10: PPL = 251.71
+INFO  | 04/08/2026 02:26:54 PM | File lm_runner.py         | Line 253   |   Seed 44 Ep 2/10: PPL = 180.57
+INFO  | 04/08/2026 02:51:45 PM | File lm_runner.py         | Line 253   |   Seed 44 Ep 3/10: PPL = 148.72
+INFO  | 04/08/2026 03:16:37 PM | File lm_runner.py         | Line 253   |   Seed 44 Ep 4/10: PPL = 131.54
+INFO  | 04/08/2026 03:41:28 PM | File lm_runner.py         | Line 253   |   Seed 44 Ep 5/10: PPL = 116.17
+INFO  | 04/08/2026 04:06:19 PM | File lm_runner.py         | Line 253   |   Seed 44 Ep 6/10: PPL = 106.27
+INFO  | 04/08/2026 04:31:10 PM | File lm_runner.py         | Line 253   |   Seed 44 Ep 7/10: PPL = 99.73
+INFO  | 04/08/2026 04:56:01 PM | File lm_runner.py         | Line 253   |   Seed 44 Ep 8/10: PPL = 94.97
+INFO  | 04/08/2026 05:20:53 PM | File lm_runner.py         | Line 253   |   Seed 44 Ep 9/10: PPL = 91.36

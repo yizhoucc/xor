@@ -1,0 +1,23 @@
+exp_dir: exp
+exp_name: transformer_wikitext_gpt_swiglu
+lm:
+  batch_size: 64
+  context_size: 128
+  embed_dim: 256
+  epochs: 20
+  grad_clip: 1.0
+  lr: 0.0003
+  num_seeds: 5
+  num_workers: 4
+model:
+  d_ff: 1024
+  d_model: 256
+  dropout: 0.1
+  n_heads: 8
+  n_layers: 6
+  name: SwiGLUTransformer
+run_id: '2447395'
+save_dir: exp/transformer_wikitext_gpt_swiglu_20260407_023207_8bed66d1
+seed: 1234
+task_type: language_model
+use_gpu: true

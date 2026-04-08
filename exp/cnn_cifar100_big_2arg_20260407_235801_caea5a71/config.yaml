@@ -1,0 +1,81 @@
+dataset:
+  data_path: ./data
+  loader_name: InnerNetData
+  name: cifar100
+  split: train
+exp_dir: ./exp
+exp_name: cnn_cifar100_big_2arg
+gpus:
+- 0
+model:
+  arg_in_dim: 2
+  dropout: 0.3
+  in_channel: 64
+  inner_net: conv
+  input_channel: 3
+  kernel_size:
+  - 3
+  - 3
+  - 3
+  - 3
+  loss: CrossEntropy
+  name: XorNeuronConv
+  num_cell_types: 1
+  num_classes: 100
+  out_channel:
+  - 64
+  - 128
+  - 128
+  - 256
+  stride:
+  - 1
+  - 1
+  - 1
+  - 1
+  zero_pad:
+  - 1
+  - 1
+  - 1
+  - 1
+pretrain:
+  batch_size: 64
+  best_model:
+  - /model_snapshot_best_pretrained0.pth
+  lr: 0.001
+  max_epoch: 500
+  momentum: 0.9
+  num_workers: 0
+  optimizer: Adam
+  shuffle: true
+  snapshot_epoch: 1000
+  wd: 0.0
+run_id: '1457700'
+save_dir: ./exp/cnn_cifar100_big_2arg_20260407_235801_caea5a71
+seed: 43
+test:
+  batch_size: 64
+  num_workers: 0
+  test_model: /model_snapshot_best_phase2.pth
+train:
+  batch_size: 64
+  best_model: /model_snapshot_best_phase1.pth
+  display_iter: 5000
+  early_stop_window: 30
+  is_resume: false
+  lr: 0.001
+  lr_decay: 0.1
+  lr_decay_steps:
+  - 80
+  - 120
+  max_epoch: 150
+  momentum: 0.9
+  num_workers: 0
+  optimizer: Adam
+  resume_model: None
+  shuffle: true
+  snapshot_epoch: 1000
+  valid_epoch: 1
+  wd: 0.0001
+train_phase2:
+  max_epoch: 200
+use_gpu: true

@@ -1,0 +1,24 @@
+exp_dir: exp
+exp_name: transformer_wikitext_gpt_2arg
+lm:
+  batch_size: 32
+  context_size: 128
+  embed_dim: 256
+  epochs: 20
+  grad_clip: 1.0
+  lr: 0.0003
+  num_seeds: 5
+  num_workers: 4
+model:
+  d_ff: 1024
+  d_model: 256
+  dropout: 0.1
+  inner_hidden: 64
+  n_heads: 8
+  n_layers: 6
+  name: InnerNetTransformer
+run_id: '3787654'
+save_dir: exp/transformer_wikitext_gpt_2arg_20260407_122855_47676f5e
+seed: 1234
+task_type: language_model
+use_gpu: true

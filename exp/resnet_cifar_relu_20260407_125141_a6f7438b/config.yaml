@@ -1,0 +1,52 @@
+dataset:
+  data_path: ./data
+  loader_name: InnerNetData
+  name: cifar10
+  split: train
+exp_dir: ./exp
+exp_name: resnet_cifar_relu
+gpus:
+- 0
+model:
+  loss: CrossEntropy
+  name: BaselineResNet
+  num_classes: 10
+pretrain:
+  batch_size: 128
+  best_model: []
+  lr: 0.001
+  max_epoch: 500
+  momentum: 0.9
+  num_workers: 0
+  optimizer: SGD
+  shuffle: true
+  snapshot_epoch: 1000
+  wd: 0.0
+run_id: '1467291'
+save_dir: ./exp/resnet_cifar_relu_20260407_125141_a6f7438b
+seed: 45
+test:
+  batch_size: 128
+  num_workers: 0
+  test_model: /model_snapshot_best_phase1.pth
+train:
+  batch_size: 128
+  best_model: /model_snapshot_best_phase1.pth
+  display_iter: 5000
+  early_stop_window: 30
+  is_resume: false
+  lr: 0.1
+  lr_decay: 0.1
+  lr_decay_steps:
+  - 80
+  - 120
+  max_epoch: 150
+  momentum: 0.9
+  num_workers: 0
+  optimizer: SGD
+  resume_model: None
+  shuffle: true
+  snapshot_epoch: 1000
+  valid_epoch: 1
+  wd: 0.0005
+use_gpu: true

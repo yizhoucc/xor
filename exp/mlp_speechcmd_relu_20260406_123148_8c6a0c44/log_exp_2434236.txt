@@ -1,0 +1,471 @@
+INFO  | 04/06/2026 12:31:48 PM | File run.py               | Line 213   | Config: config/experiments/mlp_speechcmd_relu.yaml
+INFO  | 04/06/2026 12:31:48 PM | File run.py               | Line 214   | Config hash: 8c6a0c4462b081333b62daa032969478751d390b5ebb8f3826d08ebc9c9a1e95
+INFO  | 04/06/2026 12:31:48 PM | File run.py               | Line 215   | Save dir: ./exp/mlp_speechcmd_relu_20260406_123148_8c6a0c44
+INFO  | 04/06/2026 12:31:48 PM | File run.py               | Line 226   | Task type: classification
+INFO  | 04/06/2026 12:31:51 PM | File run.py               | Line 260   | === Starting Pretrain ===
+INFO  | 04/06/2026 12:31:51 PM | File run.py               | Line 266   | === Starting Phase 1 ===
+INFO  | 04/06/2026 01:25:43 PM | File experiment_runner.py | Line 796   | GPU capability 6.1 < 7.0, skipping torch.compile
+INFO  | 04/06/2026 01:25:49 PM | File experiment_runner.py | Line 203   | Epoch 1 | Val Loss = 3.633055 | Val Acc = 0.0339
+INFO  | 04/06/2026 01:25:55 PM | File experiment_runner.py | Line 203   | Epoch 2 | Val Loss = 3.482895 | Val Acc = 0.0480
+INFO  | 04/06/2026 01:25:57 PM | File experiment_runner.py | Line 203   | Epoch 3 | Val Loss = 3.398793 | Val Acc = 0.0646
+INFO  | 04/06/2026 01:25:59 PM | File experiment_runner.py | Line 203   | Epoch 4 | Val Loss = 3.343910 | Val Acc = 0.0736
+INFO  | 04/06/2026 01:26:01 PM | File experiment_runner.py | Line 203   | Epoch 5 | Val Loss = 3.314012 | Val Acc = 0.0781
+INFO  | 04/06/2026 01:26:03 PM | File experiment_runner.py | Line 203   | Epoch 6 | Val Loss = 3.283808 | Val Acc = 0.0808
+INFO  | 04/06/2026 01:26:05 PM | File experiment_runner.py | Line 203   | Epoch 7 | Val Loss = 3.262151 | Val Acc = 0.0875
+INFO  | 04/06/2026 01:26:07 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0007 iter 00005000 = 3.239529
+INFO  | 04/06/2026 01:26:08 PM | File experiment_runner.py | Line 203   | Epoch 8 | Val Loss = 3.242174 | Val Acc = 0.0935
+INFO  | 04/06/2026 01:26:10 PM | File experiment_runner.py | Line 203   | Epoch 9 | Val Loss = 3.221288 | Val Acc = 0.0917
+INFO  | 04/06/2026 01:26:12 PM | File experiment_runner.py | Line 203   | Epoch 10 | Val Loss = 3.205067 | Val Acc = 0.0977
+INFO  | 04/06/2026 01:26:14 PM | File experiment_runner.py | Line 203   | Epoch 11 | Val Loss = 3.190129 | Val Acc = 0.1024
+INFO  | 04/06/2026 01:26:16 PM | File experiment_runner.py | Line 203   | Epoch 12 | Val Loss = 3.181200 | Val Acc = 0.1032
+INFO  | 04/06/2026 01:26:19 PM | File experiment_runner.py | Line 203   | Epoch 13 | Val Loss = 3.164227 | Val Acc = 0.1035
+INFO  | 04/06/2026 01:26:21 PM | File experiment_runner.py | Line 203   | Epoch 14 | Val Loss = 3.162114 | Val Acc = 0.1132
+INFO  | 04/06/2026 01:26:22 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0014 iter 00010000 = 3.133233
+INFO  | 04/06/2026 01:26:23 PM | File experiment_runner.py | Line 203   | Epoch 15 | Val Loss = 3.152278 | Val Acc = 0.1165
+INFO  | 04/06/2026 01:26:26 PM | File experiment_runner.py | Line 203   | Epoch 16 | Val Loss = 3.133541 | Val Acc = 0.1171
+INFO  | 04/06/2026 01:26:28 PM | File experiment_runner.py | Line 203   | Epoch 17 | Val Loss = 3.127392 | Val Acc = 0.1157
+INFO  | 04/06/2026 01:26:30 PM | File experiment_runner.py | Line 203   | Epoch 18 | Val Loss = 3.123315 | Val Acc = 0.1178
+INFO  | 04/06/2026 01:26:32 PM | File experiment_runner.py | Line 203   | Epoch 19 | Val Loss = 3.117701 | Val Acc = 0.1217
+INFO  | 04/06/2026 01:26:35 PM | File experiment_runner.py | Line 203   | Epoch 20 | Val Loss = 3.122403 | Val Acc = 0.1154
+INFO  | 04/06/2026 01:26:37 PM | File experiment_runner.py | Line 203   | Epoch 21 | Val Loss = 3.110952 | Val Acc = 0.1216
+INFO  | 04/06/2026 01:26:37 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0021 iter 00015000 = 3.202032
+INFO  | 04/06/2026 01:26:39 PM | File experiment_runner.py | Line 203   | Epoch 22 | Val Loss = 3.121066 | Val Acc = 0.1210
+INFO  | 04/06/2026 01:26:41 PM | File experiment_runner.py | Line 203   | Epoch 23 | Val Loss = 3.109075 | Val Acc = 0.1290
+INFO  | 04/06/2026 01:26:44 PM | File experiment_runner.py | Line 203   | Epoch 24 | Val Loss = 3.098203 | Val Acc = 0.1234
+INFO  | 04/06/2026 01:26:46 PM | File experiment_runner.py | Line 203   | Epoch 25 | Val Loss = 3.102256 | Val Acc = 0.1277
+INFO  | 04/06/2026 01:26:48 PM | File experiment_runner.py | Line 203   | Epoch 26 | Val Loss = 3.096054 | Val Acc = 0.1284
+INFO  | 04/06/2026 01:26:51 PM | File experiment_runner.py | Line 203   | Epoch 27 | Val Loss = 3.085586 | Val Acc = 0.1322
+INFO  | 04/06/2026 01:26:52 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0027 iter 00020000 = 3.167205
+INFO  | 04/06/2026 01:26:53 PM | File experiment_runner.py | Line 203   | Epoch 28 | Val Loss = 3.078437 | Val Acc = 0.1316
+INFO  | 04/06/2026 01:26:55 PM | File experiment_runner.py | Line 203   | Epoch 29 | Val Loss = 3.082775 | Val Acc = 0.1348
+INFO  | 04/06/2026 01:26:57 PM | File experiment_runner.py | Line 203   | Epoch 30 | Val Loss = 3.084038 | Val Acc = 0.1279
+INFO  | 04/06/2026 01:26:59 PM | File experiment_runner.py | Line 203   | Epoch 31 | Val Loss = 3.068502 | Val Acc = 0.1356
+INFO  | 04/06/2026 01:27:01 PM | File experiment_runner.py | Line 203   | Epoch 32 | Val Loss = 3.072297 | Val Acc = 0.1368
+INFO  | 04/06/2026 01:27:04 PM | File experiment_runner.py | Line 203   | Epoch 33 | Val Loss = 3.063850 | Val Acc = 0.1359
+INFO  | 04/06/2026 01:27:06 PM | File experiment_runner.py | Line 203   | Epoch 34 | Val Loss = 3.067282 | Val Acc = 0.1335
+INFO  | 04/06/2026 01:27:07 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0034 iter 00025000 = 3.022286
+INFO  | 04/06/2026 01:27:08 PM | File experiment_runner.py | Line 203   | Epoch 35 | Val Loss = 3.087866 | Val Acc = 0.1322
+INFO  | 04/06/2026 01:27:10 PM | File experiment_runner.py | Line 203   | Epoch 36 | Val Loss = 3.074315 | Val Acc = 0.1333
+INFO  | 04/06/2026 01:27:12 PM | File experiment_runner.py | Line 203   | Epoch 37 | Val Loss = 3.059084 | Val Acc = 0.1333
+INFO  | 04/06/2026 01:27:15 PM | File experiment_runner.py | Line 203   | Epoch 38 | Val Loss = 3.070971 | Val Acc = 0.1367
+INFO  | 04/06/2026 01:27:17 PM | File experiment_runner.py | Line 203   | Epoch 39 | Val Loss = 3.064999 | Val Acc = 0.1323
+INFO  | 04/06/2026 01:27:19 PM | File experiment_runner.py | Line 203   | Epoch 40 | Val Loss = 3.068772 | Val Acc = 0.1355
+INFO  | 04/06/2026 01:27:22 PM | File experiment_runner.py | Line 203   | Epoch 41 | Val Loss = 3.068855 | Val Acc = 0.1401
+INFO  | 04/06/2026 01:27:22 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0041 iter 00030000 = 2.929098
+INFO  | 04/06/2026 01:27:24 PM | File experiment_runner.py | Line 203   | Epoch 42 | Val Loss = 3.058584 | Val Acc = 0.1399
+INFO  | 04/06/2026 01:27:26 PM | File experiment_runner.py | Line 203   | Epoch 43 | Val Loss = 3.056878 | Val Acc = 0.1393
+INFO  | 04/06/2026 01:27:29 PM | File experiment_runner.py | Line 203   | Epoch 44 | Val Loss = 3.054766 | Val Acc = 0.1392
+INFO  | 04/06/2026 01:27:31 PM | File experiment_runner.py | Line 203   | Epoch 45 | Val Loss = 3.052195 | Val Acc = 0.1400
+INFO  | 04/06/2026 01:27:33 PM | File experiment_runner.py | Line 203   | Epoch 46 | Val Loss = 3.047856 | Val Acc = 0.1433
+INFO  | 04/06/2026 01:27:36 PM | File experiment_runner.py | Line 203   | Epoch 47 | Val Loss = 3.050473 | Val Acc = 0.1423
+INFO  | 04/06/2026 01:27:37 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0047 iter 00035000 = 3.129807
+INFO  | 04/06/2026 01:27:38 PM | File experiment_runner.py | Line 203   | Epoch 48 | Val Loss = 3.043659 | Val Acc = 0.1412
+INFO  | 04/06/2026 01:27:40 PM | File experiment_runner.py | Line 203   | Epoch 49 | Val Loss = 3.043743 | Val Acc = 0.1415
+INFO  | 04/06/2026 01:27:43 PM | File experiment_runner.py | Line 203   | Epoch 50 | Val Loss = 3.045889 | Val Acc = 0.1413
+INFO  | 04/06/2026 01:27:45 PM | File experiment_runner.py | Line 203   | Epoch 51 | Val Loss = 3.045297 | Val Acc = 0.1415
+INFO  | 04/06/2026 01:27:47 PM | File experiment_runner.py | Line 203   | Epoch 52 | Val Loss = 3.030735 | Val Acc = 0.1401
+INFO  | 04/06/2026 01:27:49 PM | File experiment_runner.py | Line 203   | Epoch 53 | Val Loss = 3.050419 | Val Acc = 0.1386
+INFO  | 04/06/2026 01:27:52 PM | File experiment_runner.py | Line 203   | Epoch 54 | Val Loss = 3.052925 | Val Acc = 0.1353
+INFO  | 04/06/2026 01:27:52 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0054 iter 00040000 = 3.208579
+INFO  | 04/06/2026 01:27:54 PM | File experiment_runner.py | Line 203   | Epoch 55 | Val Loss = 3.047163 | Val Acc = 0.1402
+INFO  | 04/06/2026 01:27:56 PM | File experiment_runner.py | Line 203   | Epoch 56 | Val Loss = 3.050093 | Val Acc = 0.1415
+INFO  | 04/06/2026 01:27:58 PM | File experiment_runner.py | Line 203   | Epoch 57 | Val Loss = 3.038779 | Val Acc = 0.1425
+INFO  | 04/06/2026 01:28:00 PM | File experiment_runner.py | Line 203   | Epoch 58 | Val Loss = 3.041418 | Val Acc = 0.1403
+INFO  | 04/06/2026 01:28:02 PM | File experiment_runner.py | Line 203   | Epoch 59 | Val Loss = 3.044658 | Val Acc = 0.1425
+INFO  | 04/06/2026 01:28:05 PM | File experiment_runner.py | Line 203   | Epoch 60 | Val Loss = 3.036932 | Val Acc = 0.1473
+INFO  | 04/06/2026 01:28:07 PM | File experiment_runner.py | Line 203   | Epoch 61 | Val Loss = 3.031419 | Val Acc = 0.1458
+INFO  | 04/06/2026 01:28:07 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0061 iter 00045000 = 3.017830
+INFO  | 04/06/2026 01:28:09 PM | File experiment_runner.py | Line 203   | Epoch 62 | Val Loss = 3.047410 | Val Acc = 0.1409
+INFO  | 04/06/2026 01:28:11 PM | File experiment_runner.py | Line 203   | Epoch 63 | Val Loss = 3.029310 | Val Acc = 0.1450
+INFO  | 04/06/2026 01:28:13 PM | File experiment_runner.py | Line 203   | Epoch 64 | Val Loss = 3.029859 | Val Acc = 0.1426
+INFO  | 04/06/2026 01:28:15 PM | File experiment_runner.py | Line 203   | Epoch 65 | Val Loss = 3.034125 | Val Acc = 0.1459
+INFO  | 04/06/2026 01:28:17 PM | File experiment_runner.py | Line 203   | Epoch 66 | Val Loss = 3.034764 | Val Acc = 0.1415
+INFO  | 04/06/2026 01:28:20 PM | File experiment_runner.py | Line 203   | Epoch 67 | Val Loss = 3.035753 | Val Acc = 0.1414
+INFO  | 04/06/2026 01:28:21 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0067 iter 00050000 = 3.198127
+INFO  | 04/06/2026 01:28:22 PM | File experiment_runner.py | Line 203   | Epoch 68 | Val Loss = 3.030990 | Val Acc = 0.1454
+INFO  | 04/06/2026 01:28:24 PM | File experiment_runner.py | Line 203   | Epoch 69 | Val Loss = 3.031468 | Val Acc = 0.1441
+INFO  | 04/06/2026 01:28:26 PM | File experiment_runner.py | Line 203   | Epoch 70 | Val Loss = 3.029534 | Val Acc = 0.1491
+INFO  | 04/06/2026 01:28:28 PM | File experiment_runner.py | Line 203   | Epoch 71 | Val Loss = 3.032129 | Val Acc = 0.1456
+INFO  | 04/06/2026 01:28:30 PM | File experiment_runner.py | Line 203   | Epoch 72 | Val Loss = 3.034299 | Val Acc = 0.1446
+INFO  | 04/06/2026 01:28:32 PM | File experiment_runner.py | Line 203   | Epoch 73 | Val Loss = 3.022453 | Val Acc = 0.1478
+INFO  | 04/06/2026 01:28:35 PM | File experiment_runner.py | Line 203   | Epoch 74 | Val Loss = 3.018661 | Val Acc = 0.1460
+INFO  | 04/06/2026 01:28:35 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0074 iter 00055000 = 2.993758
+INFO  | 04/06/2026 01:28:37 PM | File experiment_runner.py | Line 203   | Epoch 75 | Val Loss = 3.011985 | Val Acc = 0.1472
+INFO  | 04/06/2026 01:28:39 PM | File experiment_runner.py | Line 203   | Epoch 76 | Val Loss = 3.014071 | Val Acc = 0.1447
+INFO  | 04/06/2026 01:28:41 PM | File experiment_runner.py | Line 203   | Epoch 77 | Val Loss = 3.011842 | Val Acc = 0.1496
+INFO  | 04/06/2026 01:28:43 PM | File experiment_runner.py | Line 203   | Epoch 78 | Val Loss = 3.021839 | Val Acc = 0.1485
+INFO  | 04/06/2026 01:28:46 PM | File experiment_runner.py | Line 203   | Epoch 79 | Val Loss = 3.019983 | Val Acc = 0.1494
+INFO  | 04/06/2026 01:28:48 PM | File experiment_runner.py | Line 203   | Epoch 80 | Val Loss = 3.026490 | Val Acc = 0.1496
+INFO  | 04/06/2026 01:28:50 PM | File experiment_runner.py | Line 203   | Epoch 81 | Val Loss = 3.013466 | Val Acc = 0.1488
+INFO  | 04/06/2026 01:28:50 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0081 iter 00060000 = 2.812796
+INFO  | 04/06/2026 01:28:52 PM | File experiment_runner.py | Line 203   | Epoch 82 | Val Loss = 3.019318 | Val Acc = 0.1472
+INFO  | 04/06/2026 01:28:54 PM | File experiment_runner.py | Line 203   | Epoch 83 | Val Loss = 3.006392 | Val Acc = 0.1520
+INFO  | 04/06/2026 01:28:56 PM | File experiment_runner.py | Line 203   | Epoch 84 | Val Loss = 3.015331 | Val Acc = 0.1496
+INFO  | 04/06/2026 01:28:59 PM | File experiment_runner.py | Line 203   | Epoch 85 | Val Loss = 3.020416 | Val Acc = 0.1509
+INFO  | 04/06/2026 01:29:01 PM | File experiment_runner.py | Line 203   | Epoch 86 | Val Loss = 3.023758 | Val Acc = 0.1443
+INFO  | 04/06/2026 01:29:03 PM | File experiment_runner.py | Line 203   | Epoch 87 | Val Loss = 3.003374 | Val Acc = 0.1533
+INFO  | 04/06/2026 01:29:04 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0087 iter 00065000 = 2.917073
+INFO  | 04/06/2026 01:29:05 PM | File experiment_runner.py | Line 203   | Epoch 88 | Val Loss = 3.022746 | Val Acc = 0.1494
+INFO  | 04/06/2026 01:29:07 PM | File experiment_runner.py | Line 203   | Epoch 89 | Val Loss = 3.020666 | Val Acc = 0.1523
+INFO  | 04/06/2026 01:29:09 PM | File experiment_runner.py | Line 203   | Epoch 90 | Val Loss = 3.010786 | Val Acc = 0.1493
+INFO  | 04/06/2026 01:29:11 PM | File experiment_runner.py | Line 203   | Epoch 91 | Val Loss = 3.015447 | Val Acc = 0.1500
+INFO  | 04/06/2026 01:29:14 PM | File experiment_runner.py | Line 203   | Epoch 92 | Val Loss = 3.013211 | Val Acc = 0.1509
+INFO  | 04/06/2026 01:29:16 PM | File experiment_runner.py | Line 203   | Epoch 93 | Val Loss = 3.010975 | Val Acc = 0.1544
+INFO  | 04/06/2026 01:29:18 PM | File experiment_runner.py | Line 203   | Epoch 94 | Val Loss = 3.014391 | Val Acc = 0.1502
+INFO  | 04/06/2026 01:29:19 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0094 iter 00070000 = 2.974974
+INFO  | 04/06/2026 01:29:20 PM | File experiment_runner.py | Line 203   | Epoch 95 | Val Loss = 3.008565 | Val Acc = 0.1491
+INFO  | 04/06/2026 01:29:23 PM | File experiment_runner.py | Line 203   | Epoch 96 | Val Loss = 3.006397 | Val Acc = 0.1510
+INFO  | 04/06/2026 01:29:25 PM | File experiment_runner.py | Line 203   | Epoch 97 | Val Loss = 3.016147 | Val Acc = 0.1527
+INFO  | 04/06/2026 01:29:27 PM | File experiment_runner.py | Line 203   | Epoch 98 | Val Loss = 3.010978 | Val Acc = 0.1501
+INFO  | 04/06/2026 01:29:30 PM | File experiment_runner.py | Line 203   | Epoch 99 | Val Loss = 3.017542 | Val Acc = 0.1504
+INFO  | 04/06/2026 01:29:32 PM | File experiment_runner.py | Line 203   | Epoch 100 | Val Loss = 3.006882 | Val Acc = 0.1499
+INFO  | 04/06/2026 01:29:34 PM | File experiment_runner.py | Line 203   | Epoch 101 | Val Loss = 3.007839 | Val Acc = 0.1541
+INFO  | 04/06/2026 01:29:34 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0101 iter 00075000 = 3.004281
+INFO  | 04/06/2026 01:29:36 PM | File experiment_runner.py | Line 203   | Epoch 102 | Val Loss = 3.015221 | Val Acc = 0.1526
+INFO  | 04/06/2026 01:29:39 PM | File experiment_runner.py | Line 203   | Epoch 103 | Val Loss = 3.004771 | Val Acc = 0.1510
+INFO  | 04/06/2026 01:29:41 PM | File experiment_runner.py | Line 203   | Epoch 104 | Val Loss = 3.009787 | Val Acc = 0.1484
+INFO  | 04/06/2026 01:29:43 PM | File experiment_runner.py | Line 203   | Epoch 105 | Val Loss = 3.029567 | Val Acc = 0.1491
+INFO  | 04/06/2026 01:29:45 PM | File experiment_runner.py | Line 203   | Epoch 106 | Val Loss = 3.002159 | Val Acc = 0.1568
+INFO  | 04/06/2026 01:29:48 PM | File experiment_runner.py | Line 203   | Epoch 107 | Val Loss = 3.004513 | Val Acc = 0.1525
+INFO  | 04/06/2026 01:29:49 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0107 iter 00080000 = 3.156637
+INFO  | 04/06/2026 01:29:50 PM | File experiment_runner.py | Line 203   | Epoch 108 | Val Loss = 3.008174 | Val Acc = 0.1542
+INFO  | 04/06/2026 01:29:52 PM | File experiment_runner.py | Line 203   | Epoch 109 | Val Loss = 3.002038 | Val Acc = 0.1509
+INFO  | 04/06/2026 01:29:54 PM | File experiment_runner.py | Line 203   | Epoch 110 | Val Loss = 3.005591 | Val Acc = 0.1514
+INFO  | 04/06/2026 01:29:56 PM | File experiment_runner.py | Line 203   | Epoch 111 | Val Loss = 3.008543 | Val Acc = 0.1518
+INFO  | 04/06/2026 01:29:58 PM | File experiment_runner.py | Line 203   | Epoch 112 | Val Loss = 3.003423 | Val Acc = 0.1539
+INFO  | 04/06/2026 01:30:01 PM | File experiment_runner.py | Line 203   | Epoch 113 | Val Loss = 3.004342 | Val Acc = 0.1524
+INFO  | 04/06/2026 01:30:03 PM | File experiment_runner.py | Line 203   | Epoch 114 | Val Loss = 3.003964 | Val Acc = 0.1562
+INFO  | 04/06/2026 01:30:04 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0114 iter 00085000 = 3.095686
+INFO  | 04/06/2026 01:30:05 PM | File experiment_runner.py | Line 203   | Epoch 115 | Val Loss = 3.016004 | Val Acc = 0.1507
+INFO  | 04/06/2026 01:30:07 PM | File experiment_runner.py | Line 203   | Epoch 116 | Val Loss = 3.005182 | Val Acc = 0.1549
+INFO  | 04/06/2026 01:30:09 PM | File experiment_runner.py | Line 203   | Epoch 117 | Val Loss = 3.010888 | Val Acc = 0.1532
+INFO  | 04/06/2026 01:30:11 PM | File experiment_runner.py | Line 203   | Epoch 118 | Val Loss = 2.993873 | Val Acc = 0.1531
+INFO  | 04/06/2026 01:30:14 PM | File experiment_runner.py | Line 203   | Epoch 119 | Val Loss = 2.996607 | Val Acc = 0.1495
+INFO  | 04/06/2026 01:30:16 PM | File experiment_runner.py | Line 203   | Epoch 120 | Val Loss = 3.006183 | Val Acc = 0.1531
+INFO  | 04/06/2026 01:30:18 PM | File experiment_runner.py | Line 203   | Epoch 121 | Val Loss = 3.001563 | Val Acc = 0.1547
+INFO  | 04/06/2026 01:30:18 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0121 iter 00090000 = 2.838739
+INFO  | 04/06/2026 01:30:20 PM | File experiment_runner.py | Line 203   | Epoch 122 | Val Loss = 3.010224 | Val Acc = 0.1514
+INFO  | 04/06/2026 01:30:22 PM | File experiment_runner.py | Line 203   | Epoch 123 | Val Loss = 3.000149 | Val Acc = 0.1564
+INFO  | 04/06/2026 01:30:25 PM | File experiment_runner.py | Line 203   | Epoch 124 | Val Loss = 3.004501 | Val Acc = 0.1550
+INFO  | 04/06/2026 01:30:27 PM | File experiment_runner.py | Line 203   | Epoch 125 | Val Loss = 3.001414 | Val Acc = 0.1545
+INFO  | 04/06/2026 01:30:29 PM | File experiment_runner.py | Line 203   | Epoch 126 | Val Loss = 2.999349 | Val Acc = 0.1544
+INFO  | 04/06/2026 01:30:31 PM | File experiment_runner.py | Line 203   | Epoch 127 | Val Loss = 3.004151 | Val Acc = 0.1527
+INFO  | 04/06/2026 01:30:33 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0127 iter 00095000 = 2.789638
+INFO  | 04/06/2026 01:30:33 PM | File experiment_runner.py | Line 203   | Epoch 128 | Val Loss = 3.006961 | Val Acc = 0.1536
+INFO  | 04/06/2026 01:30:36 PM | File experiment_runner.py | Line 203   | Epoch 129 | Val Loss = 3.002682 | Val Acc = 0.1586
+INFO  | 04/06/2026 01:30:38 PM | File experiment_runner.py | Line 203   | Epoch 130 | Val Loss = 2.993785 | Val Acc = 0.1560
+INFO  | 04/06/2026 01:30:40 PM | File experiment_runner.py | Line 203   | Epoch 131 | Val Loss = 2.988271 | Val Acc = 0.1582
+INFO  | 04/06/2026 01:30:42 PM | File experiment_runner.py | Line 203   | Epoch 132 | Val Loss = 2.994238 | Val Acc = 0.1533
+INFO  | 04/06/2026 01:30:44 PM | File experiment_runner.py | Line 203   | Epoch 133 | Val Loss = 2.989559 | Val Acc = 0.1566
+INFO  | 04/06/2026 01:30:47 PM | File experiment_runner.py | Line 203   | Epoch 134 | Val Loss = 2.992660 | Val Acc = 0.1559
+INFO  | 04/06/2026 01:30:48 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0134 iter 00100000 = 2.856981
+INFO  | 04/06/2026 01:30:49 PM | File experiment_runner.py | Line 203   | Epoch 135 | Val Loss = 3.007304 | Val Acc = 0.1517
+INFO  | 04/06/2026 01:30:52 PM | File experiment_runner.py | Line 203   | Epoch 136 | Val Loss = 3.013264 | Val Acc = 0.1530
+INFO  | 04/06/2026 01:30:54 PM | File experiment_runner.py | Line 203   | Epoch 137 | Val Loss = 2.996967 | Val Acc = 0.1574
+INFO  | 04/06/2026 01:30:56 PM | File experiment_runner.py | Line 203   | Epoch 138 | Val Loss = 3.008268 | Val Acc = 0.1530
+INFO  | 04/06/2026 01:30:58 PM | File experiment_runner.py | Line 203   | Epoch 139 | Val Loss = 2.994282 | Val Acc = 0.1506
+INFO  | 04/06/2026 01:31:01 PM | File experiment_runner.py | Line 203   | Epoch 140 | Val Loss = 2.995342 | Val Acc = 0.1560
+INFO  | 04/06/2026 01:31:03 PM | File experiment_runner.py | Line 203   | Epoch 141 | Val Loss = 2.982117 | Val Acc = 0.1584
+INFO  | 04/06/2026 01:31:04 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0141 iter 00105000 = 3.074154
+INFO  | 04/06/2026 01:31:05 PM | File experiment_runner.py | Line 203   | Epoch 142 | Val Loss = 2.990513 | Val Acc = 0.1538
+INFO  | 04/06/2026 01:31:08 PM | File experiment_runner.py | Line 203   | Epoch 143 | Val Loss = 2.992980 | Val Acc = 0.1561
+INFO  | 04/06/2026 01:31:10 PM | File experiment_runner.py | Line 203   | Epoch 144 | Val Loss = 3.000699 | Val Acc = 0.1543
+INFO  | 04/06/2026 01:31:12 PM | File experiment_runner.py | Line 203   | Epoch 145 | Val Loss = 2.991510 | Val Acc = 0.1573
+INFO  | 04/06/2026 01:31:15 PM | File experiment_runner.py | Line 203   | Epoch 146 | Val Loss = 2.984963 | Val Acc = 0.1584
+INFO  | 04/06/2026 01:31:17 PM | File experiment_runner.py | Line 203   | Epoch 147 | Val Loss = 2.993015 | Val Acc = 0.1555
+INFO  | 04/06/2026 01:31:19 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0147 iter 00110000 = 2.904811
+INFO  | 04/06/2026 01:31:19 PM | File experiment_runner.py | Line 203   | Epoch 148 | Val Loss = 2.993234 | Val Acc = 0.1582
+INFO  | 04/06/2026 01:31:21 PM | File experiment_runner.py | Line 203   | Epoch 149 | Val Loss = 2.995603 | Val Acc = 0.1560
+INFO  | 04/06/2026 01:31:23 PM | File experiment_runner.py | Line 203   | Epoch 150 | Val Loss = 2.995455 | Val Acc = 0.1575
+INFO  | 04/06/2026 01:31:26 PM | File experiment_runner.py | Line 203   | Epoch 151 | Val Loss = 2.994634 | Val Acc = 0.1510
+INFO  | 04/06/2026 01:31:28 PM | File experiment_runner.py | Line 203   | Epoch 152 | Val Loss = 3.008812 | Val Acc = 0.1577
+INFO  | 04/06/2026 01:31:30 PM | File experiment_runner.py | Line 203   | Epoch 153 | Val Loss = 3.002373 | Val Acc = 0.1572
+INFO  | 04/06/2026 01:31:32 PM | File experiment_runner.py | Line 203   | Epoch 154 | Val Loss = 2.994463 | Val Acc = 0.1554
+INFO  | 04/06/2026 01:31:33 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0154 iter 00115000 = 2.966617
+INFO  | 04/06/2026 01:31:34 PM | File experiment_runner.py | Line 203   | Epoch 155 | Val Loss = 2.992006 | Val Acc = 0.1572
+INFO  | 04/06/2026 01:31:37 PM | File experiment_runner.py | Line 203   | Epoch 156 | Val Loss = 2.996635 | Val Acc = 0.1577
+INFO  | 04/06/2026 01:31:39 PM | File experiment_runner.py | Line 203   | Epoch 157 | Val Loss = 2.983542 | Val Acc = 0.1609
+INFO  | 04/06/2026 01:31:41 PM | File experiment_runner.py | Line 203   | Epoch 158 | Val Loss = 2.981760 | Val Acc = 0.1585
+INFO  | 04/06/2026 01:31:43 PM | File experiment_runner.py | Line 203   | Epoch 159 | Val Loss = 2.991347 | Val Acc = 0.1561
+INFO  | 04/06/2026 01:31:45 PM | File experiment_runner.py | Line 203   | Epoch 160 | Val Loss = 2.997699 | Val Acc = 0.1529
+INFO  | 04/06/2026 01:31:47 PM | File experiment_runner.py | Line 203   | Epoch 161 | Val Loss = 2.983345 | Val Acc = 0.1603
+INFO  | 04/06/2026 01:31:48 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0161 iter 00120000 = 3.087227
+INFO  | 04/06/2026 01:31:50 PM | File experiment_runner.py | Line 203   | Epoch 162 | Val Loss = 2.975517 | Val Acc = 0.1618
+INFO  | 04/06/2026 01:31:52 PM | File experiment_runner.py | Line 203   | Epoch 163 | Val Loss = 2.983834 | Val Acc = 0.1581
+INFO  | 04/06/2026 01:31:54 PM | File experiment_runner.py | Line 203   | Epoch 164 | Val Loss = 2.978650 | Val Acc = 0.1625
+INFO  | 04/06/2026 01:31:56 PM | File experiment_runner.py | Line 203   | Epoch 165 | Val Loss = 2.998563 | Val Acc = 0.1595
+INFO  | 04/06/2026 01:31:58 PM | File experiment_runner.py | Line 203   | Epoch 166 | Val Loss = 2.987825 | Val Acc = 0.1580
+INFO  | 04/06/2026 01:32:00 PM | File experiment_runner.py | Line 203   | Epoch 167 | Val Loss = 2.994216 | Val Acc = 0.1585
+INFO  | 04/06/2026 01:32:02 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0167 iter 00125000 = 2.867405
+INFO  | 04/06/2026 01:32:02 PM | File experiment_runner.py | Line 203   | Epoch 168 | Val Loss = 2.988383 | Val Acc = 0.1580
+INFO  | 04/06/2026 01:32:05 PM | File experiment_runner.py | Line 203   | Epoch 169 | Val Loss = 3.002426 | Val Acc = 0.1572
+INFO  | 04/06/2026 01:32:07 PM | File experiment_runner.py | Line 203   | Epoch 170 | Val Loss = 2.994931 | Val Acc = 0.1566
+INFO  | 04/06/2026 01:32:09 PM | File experiment_runner.py | Line 203   | Epoch 171 | Val Loss = 2.991651 | Val Acc = 0.1590
+INFO  | 04/06/2026 01:32:11 PM | File experiment_runner.py | Line 203   | Epoch 172 | Val Loss = 2.985303 | Val Acc = 0.1618
+INFO  | 04/06/2026 01:32:13 PM | File experiment_runner.py | Line 203   | Epoch 173 | Val Loss = 2.980335 | Val Acc = 0.1593
+INFO  | 04/06/2026 01:32:15 PM | File experiment_runner.py | Line 203   | Epoch 174 | Val Loss = 2.988515 | Val Acc = 0.1604
+INFO  | 04/06/2026 01:32:17 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0174 iter 00130000 = 2.823984
+INFO  | 04/06/2026 01:32:18 PM | File experiment_runner.py | Line 203   | Epoch 175 | Val Loss = 2.995274 | Val Acc = 0.1557
+INFO  | 04/06/2026 01:32:20 PM | File experiment_runner.py | Line 203   | Epoch 176 | Val Loss = 2.974410 | Val Acc = 0.1596
+INFO  | 04/06/2026 01:32:22 PM | File experiment_runner.py | Line 203   | Epoch 177 | Val Loss = 2.981451 | Val Acc = 0.1597
+INFO  | 04/06/2026 01:32:24 PM | File experiment_runner.py | Line 203   | Epoch 178 | Val Loss = 2.987861 | Val Acc = 0.1600
+INFO  | 04/06/2026 01:32:26 PM | File experiment_runner.py | Line 203   | Epoch 179 | Val Loss = 2.985069 | Val Acc = 0.1588
+INFO  | 04/06/2026 01:32:29 PM | File experiment_runner.py | Line 203   | Epoch 180 | Val Loss = 2.986469 | Val Acc = 0.1580
+INFO  | 04/06/2026 01:32:31 PM | File experiment_runner.py | Line 203   | Epoch 181 | Val Loss = 2.995349 | Val Acc = 0.1554
+INFO  | 04/06/2026 01:32:31 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0181 iter 00135000 = 2.888942
+INFO  | 04/06/2026 01:32:33 PM | File experiment_runner.py | Line 203   | Epoch 182 | Val Loss = 2.987736 | Val Acc = 0.1579
+INFO  | 04/06/2026 01:32:35 PM | File experiment_runner.py | Line 203   | Epoch 183 | Val Loss = 2.982980 | Val Acc = 0.1597
+INFO  | 04/06/2026 01:32:37 PM | File experiment_runner.py | Line 203   | Epoch 184 | Val Loss = 2.985251 | Val Acc = 0.1583
+INFO  | 04/06/2026 01:32:40 PM | File experiment_runner.py | Line 203   | Epoch 185 | Val Loss = 2.989765 | Val Acc = 0.1592
+INFO  | 04/06/2026 01:32:42 PM | File experiment_runner.py | Line 203   | Epoch 186 | Val Loss = 2.977586 | Val Acc = 0.1638
+INFO  | 04/06/2026 01:32:44 PM | File experiment_runner.py | Line 203   | Epoch 187 | Val Loss = 2.967035 | Val Acc = 0.1655
+INFO  | 04/06/2026 01:32:46 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0187 iter 00140000 = 2.892044
+INFO  | 04/06/2026 01:32:46 PM | File experiment_runner.py | Line 203   | Epoch 188 | Val Loss = 2.985542 | Val Acc = 0.1607
+INFO  | 04/06/2026 01:32:49 PM | File experiment_runner.py | Line 203   | Epoch 189 | Val Loss = 2.980271 | Val Acc = 0.1601
+INFO  | 04/06/2026 01:32:51 PM | File experiment_runner.py | Line 203   | Epoch 190 | Val Loss = 2.982080 | Val Acc = 0.1581
+INFO  | 04/06/2026 01:32:53 PM | File experiment_runner.py | Line 203   | Epoch 191 | Val Loss = 2.987678 | Val Acc = 0.1622
+INFO  | 04/06/2026 01:32:55 PM | File experiment_runner.py | Line 203   | Epoch 192 | Val Loss = 2.963606 | Val Acc = 0.1607
+INFO  | 04/06/2026 01:32:57 PM | File experiment_runner.py | Line 203   | Epoch 193 | Val Loss = 2.972585 | Val Acc = 0.1631
+INFO  | 04/06/2026 01:32:59 PM | File experiment_runner.py | Line 203   | Epoch 194 | Val Loss = 2.977651 | Val Acc = 0.1614
+INFO  | 04/06/2026 01:33:01 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0194 iter 00145000 = 3.049579
+INFO  | 04/06/2026 01:33:02 PM | File experiment_runner.py | Line 203   | Epoch 195 | Val Loss = 2.994318 | Val Acc = 0.1577
+INFO  | 04/06/2026 01:33:04 PM | File experiment_runner.py | Line 203   | Epoch 196 | Val Loss = 2.988734 | Val Acc = 0.1605
+INFO  | 04/06/2026 01:33:06 PM | File experiment_runner.py | Line 203   | Epoch 197 | Val Loss = 2.998348 | Val Acc = 0.1569
+INFO  | 04/06/2026 01:33:08 PM | File experiment_runner.py | Line 203   | Epoch 198 | Val Loss = 2.992076 | Val Acc = 0.1558
+INFO  | 04/06/2026 01:33:10 PM | File experiment_runner.py | Line 203   | Epoch 199 | Val Loss = 2.983817 | Val Acc = 0.1576
+INFO  | 04/06/2026 01:33:12 PM | File experiment_runner.py | Line 203   | Epoch 200 | Val Loss = 2.982341 | Val Acc = 0.1573
+INFO  | 04/06/2026 01:33:15 PM | File experiment_runner.py | Line 203   | Epoch 201 | Val Loss = 2.997206 | Val Acc = 0.1609
+INFO  | 04/06/2026 01:33:15 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0201 iter 00150000 = 3.136884
+INFO  | 04/06/2026 01:33:17 PM | File experiment_runner.py | Line 203   | Epoch 202 | Val Loss = 2.986147 | Val Acc = 0.1589
+INFO  | 04/06/2026 01:33:19 PM | File experiment_runner.py | Line 203   | Epoch 203 | Val Loss = 2.984954 | Val Acc = 0.1594
+INFO  | 04/06/2026 01:33:21 PM | File experiment_runner.py | Line 203   | Epoch 204 | Val Loss = 2.992788 | Val Acc = 0.1601
+INFO  | 04/06/2026 01:33:23 PM | File experiment_runner.py | Line 203   | Epoch 205 | Val Loss = 2.987130 | Val Acc = 0.1614
+INFO  | 04/06/2026 01:33:25 PM | File experiment_runner.py | Line 203   | Epoch 206 | Val Loss = 2.982234 | Val Acc = 0.1620
+INFO  | 04/06/2026 01:33:27 PM | File experiment_runner.py | Line 203   | Epoch 207 | Val Loss = 2.985646 | Val Acc = 0.1611
+INFO  | 04/06/2026 01:33:29 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0207 iter 00155000 = 3.122936
+INFO  | 04/06/2026 01:33:30 PM | File experiment_runner.py | Line 203   | Epoch 208 | Val Loss = 2.998859 | Val Acc = 0.1586
+INFO  | 04/06/2026 01:33:32 PM | File experiment_runner.py | Line 203   | Epoch 209 | Val Loss = 2.991774 | Val Acc = 0.1555
+INFO  | 04/06/2026 01:33:34 PM | File experiment_runner.py | Line 203   | Epoch 210 | Val Loss = 2.980184 | Val Acc = 0.1583
+INFO  | 04/06/2026 01:33:36 PM | File experiment_runner.py | Line 203   | Epoch 211 | Val Loss = 2.990050 | Val Acc = 0.1627
+INFO  | 04/06/2026 01:33:38 PM | File experiment_runner.py | Line 203   | Epoch 212 | Val Loss = 2.997263 | Val Acc = 0.1571
+INFO  | 04/06/2026 01:33:40 PM | File experiment_runner.py | Line 203   | Epoch 213 | Val Loss = 2.999871 | Val Acc = 0.1568
+INFO  | 04/06/2026 01:33:42 PM | File experiment_runner.py | Line 203   | Epoch 214 | Val Loss = 2.990240 | Val Acc = 0.1611
+INFO  | 04/06/2026 01:33:44 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0214 iter 00160000 = 3.181532
+INFO  | 04/06/2026 01:33:45 PM | File experiment_runner.py | Line 203   | Epoch 215 | Val Loss = 2.980030 | Val Acc = 0.1617
+INFO  | 04/06/2026 01:33:47 PM | File experiment_runner.py | Line 203   | Epoch 216 | Val Loss = 2.993663 | Val Acc = 0.1574
+INFO  | 04/06/2026 01:33:49 PM | File experiment_runner.py | Line 203   | Epoch 217 | Val Loss = 2.985207 | Val Acc = 0.1604
+INFO  | 04/06/2026 01:33:51 PM | File experiment_runner.py | Line 203   | Epoch 218 | Val Loss = 2.990453 | Val Acc = 0.1629
+INFO  | 04/06/2026 01:33:54 PM | File experiment_runner.py | Line 203   | Epoch 219 | Val Loss = 2.983302 | Val Acc = 0.1603
+INFO  | 04/06/2026 01:33:56 PM | File experiment_runner.py | Line 203   | Epoch 220 | Val Loss = 2.995418 | Val Acc = 0.1596
+INFO  | 04/06/2026 01:33:58 PM | File experiment_runner.py | Line 203   | Epoch 221 | Val Loss = 2.979817 | Val Acc = 0.1607
+INFO  | 04/06/2026 01:33:59 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0221 iter 00165000 = 3.125434
+INFO  | 04/06/2026 01:34:00 PM | File experiment_runner.py | Line 203   | Epoch 222 | Val Loss = 2.994156 | Val Acc = 0.1619
+INFO  | 04/06/2026 01:34:02 PM | File experiment_runner.py | Line 203   | Epoch 223 | Val Loss = 2.987775 | Val Acc = 0.1568
+INFO  | 04/06/2026 01:34:05 PM | File experiment_runner.py | Line 203   | Epoch 224 | Val Loss = 2.982272 | Val Acc = 0.1631
+INFO  | 04/06/2026 01:34:07 PM | File experiment_runner.py | Line 203   | Epoch 225 | Val Loss = 2.983731 | Val Acc = 0.1611
+INFO  | 04/06/2026 01:34:09 PM | File experiment_runner.py | Line 203   | Epoch 226 | Val Loss = 2.984604 | Val Acc = 0.1628
+INFO  | 04/06/2026 01:34:11 PM | File experiment_runner.py | Line 203   | Epoch 227 | Val Loss = 2.986221 | Val Acc = 0.1598
+INFO  | 04/06/2026 01:34:13 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0227 iter 00170000 = 2.741621
+INFO  | 04/06/2026 01:34:13 PM | File experiment_runner.py | Line 203   | Epoch 228 | Val Loss = 2.994803 | Val Acc = 0.1606
+INFO  | 04/06/2026 01:34:16 PM | File experiment_runner.py | Line 203   | Epoch 229 | Val Loss = 2.983883 | Val Acc = 0.1594
+INFO  | 04/06/2026 01:34:18 PM | File experiment_runner.py | Line 203   | Epoch 230 | Val Loss = 2.987282 | Val Acc = 0.1623
+INFO  | 04/06/2026 01:34:20 PM | File experiment_runner.py | Line 203   | Epoch 231 | Val Loss = 2.993289 | Val Acc = 0.1602
+INFO  | 04/06/2026 01:34:23 PM | File experiment_runner.py | Line 203   | Epoch 232 | Val Loss = 2.977295 | Val Acc = 0.1625
+INFO  | 04/06/2026 01:34:25 PM | File experiment_runner.py | Line 203   | Epoch 233 | Val Loss = 2.991478 | Val Acc = 0.1621
+INFO  | 04/06/2026 01:34:27 PM | File experiment_runner.py | Line 203   | Epoch 234 | Val Loss = 2.988226 | Val Acc = 0.1589
+INFO  | 04/06/2026 01:34:29 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0234 iter 00175000 = 3.129237
+INFO  | 04/06/2026 01:34:30 PM | File experiment_runner.py | Line 203   | Epoch 235 | Val Loss = 2.978759 | Val Acc = 0.1650
+INFO  | 04/06/2026 01:34:32 PM | File experiment_runner.py | Line 203   | Epoch 236 | Val Loss = 2.998086 | Val Acc = 0.1598
+INFO  | 04/06/2026 01:34:34 PM | File experiment_runner.py | Line 203   | Epoch 237 | Val Loss = 2.994740 | Val Acc = 0.1601
+INFO  | 04/06/2026 01:34:37 PM | File experiment_runner.py | Line 203   | Epoch 238 | Val Loss = 2.988619 | Val Acc = 0.1571
+INFO  | 04/06/2026 01:34:39 PM | File experiment_runner.py | Line 203   | Epoch 239 | Val Loss = 2.996750 | Val Acc = 0.1616
+INFO  | 04/06/2026 01:34:41 PM | File experiment_runner.py | Line 203   | Epoch 240 | Val Loss = 2.976689 | Val Acc = 0.1596
+INFO  | 04/06/2026 01:34:44 PM | File experiment_runner.py | Line 203   | Epoch 241 | Val Loss = 2.990020 | Val Acc = 0.1613
+INFO  | 04/06/2026 01:34:44 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0241 iter 00180000 = 3.102288
+INFO  | 04/06/2026 01:34:46 PM | File experiment_runner.py | Line 203   | Epoch 242 | Val Loss = 2.990190 | Val Acc = 0.1575
+INFO  | 04/06/2026 01:34:48 PM | File experiment_runner.py | Line 203   | Epoch 243 | Val Loss = 2.982540 | Val Acc = 0.1634
+INFO  | 04/06/2026 01:34:50 PM | File experiment_runner.py | Line 203   | Epoch 244 | Val Loss = 2.979565 | Val Acc = 0.1610
+INFO  | 04/06/2026 01:34:52 PM | File experiment_runner.py | Line 203   | Epoch 245 | Val Loss = 2.989478 | Val Acc = 0.1639
+INFO  | 04/06/2026 01:34:54 PM | File experiment_runner.py | Line 203   | Epoch 246 | Val Loss = 2.981023 | Val Acc = 0.1605
+INFO  | 04/06/2026 01:34:56 PM | File experiment_runner.py | Line 203   | Epoch 247 | Val Loss = 2.974862 | Val Acc = 0.1626
+INFO  | 04/06/2026 01:34:58 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0247 iter 00185000 = 2.937650
+INFO  | 04/06/2026 01:34:59 PM | File experiment_runner.py | Line 203   | Epoch 248 | Val Loss = 2.984582 | Val Acc = 0.1604
+INFO  | 04/06/2026 01:35:01 PM | File experiment_runner.py | Line 203   | Epoch 249 | Val Loss = 2.974817 | Val Acc = 0.1631
+INFO  | 04/06/2026 01:35:03 PM | File experiment_runner.py | Line 203   | Epoch 250 | Val Loss = 2.976607 | Val Acc = 0.1627
+INFO  | 04/06/2026 01:35:05 PM | File experiment_runner.py | Line 203   | Epoch 251 | Val Loss = 2.991752 | Val Acc = 0.1610
+INFO  | 04/06/2026 01:35:07 PM | File experiment_runner.py | Line 203   | Epoch 252 | Val Loss = 2.982942 | Val Acc = 0.1631
+INFO  | 04/06/2026 01:35:09 PM | File experiment_runner.py | Line 203   | Epoch 253 | Val Loss = 2.982217 | Val Acc = 0.1594
+INFO  | 04/06/2026 01:35:11 PM | File experiment_runner.py | Line 203   | Epoch 254 | Val Loss = 2.981320 | Val Acc = 0.1634
+INFO  | 04/06/2026 01:35:13 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0254 iter 00190000 = 2.956919
+INFO  | 04/06/2026 01:35:14 PM | File experiment_runner.py | Line 203   | Epoch 255 | Val Loss = 2.988537 | Val Acc = 0.1586
+INFO  | 04/06/2026 01:35:16 PM | File experiment_runner.py | Line 203   | Epoch 256 | Val Loss = 2.980195 | Val Acc = 0.1619
+INFO  | 04/06/2026 01:35:18 PM | File experiment_runner.py | Line 203   | Epoch 257 | Val Loss = 2.984014 | Val Acc = 0.1605
+INFO  | 04/06/2026 01:35:20 PM | File experiment_runner.py | Line 203   | Epoch 258 | Val Loss = 2.997206 | Val Acc = 0.1574
+INFO  | 04/06/2026 01:35:22 PM | File experiment_runner.py | Line 203   | Epoch 259 | Val Loss = 2.983704 | Val Acc = 0.1641
+INFO  | 04/06/2026 01:35:25 PM | File experiment_runner.py | Line 203   | Epoch 260 | Val Loss = 2.991725 | Val Acc = 0.1613
+INFO  | 04/06/2026 01:35:27 PM | File experiment_runner.py | Line 203   | Epoch 261 | Val Loss = 2.989383 | Val Acc = 0.1589
+INFO  | 04/06/2026 01:35:27 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0261 iter 00195000 = 2.806054
+INFO  | 04/06/2026 01:35:29 PM | File experiment_runner.py | Line 203   | Epoch 262 | Val Loss = 2.984067 | Val Acc = 0.1624
+INFO  | 04/06/2026 01:35:31 PM | File experiment_runner.py | Line 203   | Epoch 263 | Val Loss = 2.984213 | Val Acc = 0.1556
+INFO  | 04/06/2026 01:35:33 PM | File experiment_runner.py | Line 203   | Epoch 264 | Val Loss = 2.969366 | Val Acc = 0.1632
+INFO  | 04/06/2026 01:35:35 PM | File experiment_runner.py | Line 203   | Epoch 265 | Val Loss = 3.000903 | Val Acc = 0.1562
+INFO  | 04/06/2026 01:35:38 PM | File experiment_runner.py | Line 203   | Epoch 266 | Val Loss = 2.979079 | Val Acc = 0.1628
+INFO  | 04/06/2026 01:35:40 PM | File experiment_runner.py | Line 203   | Epoch 267 | Val Loss = 2.977146 | Val Acc = 0.1594
+INFO  | 04/06/2026 01:35:42 PM | File experiment_runner.py | Line 203   | Epoch 268 | Val Loss = 2.983548 | Val Acc = 0.1629
+INFO  | 04/06/2026 01:35:42 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0268 iter 00200000 = 2.788566
+INFO  | 04/06/2026 01:35:44 PM | File experiment_runner.py | Line 203   | Epoch 269 | Val Loss = 2.987356 | Val Acc = 0.1625
+INFO  | 04/06/2026 01:35:46 PM | File experiment_runner.py | Line 203   | Epoch 270 | Val Loss = 2.986516 | Val Acc = 0.1622
+INFO  | 04/06/2026 01:35:48 PM | File experiment_runner.py | Line 203   | Epoch 271 | Val Loss = 2.987539 | Val Acc = 0.1604
+INFO  | 04/06/2026 01:35:51 PM | File experiment_runner.py | Line 203   | Epoch 272 | Val Loss = 2.990644 | Val Acc = 0.1594
+INFO  | 04/06/2026 01:35:53 PM | File experiment_runner.py | Line 203   | Epoch 273 | Val Loss = 2.972337 | Val Acc = 0.1603
+INFO  | 04/06/2026 01:35:55 PM | File experiment_runner.py | Line 203   | Epoch 274 | Val Loss = 2.980286 | Val Acc = 0.1614
+INFO  | 04/06/2026 01:35:56 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0274 iter 00205000 = 3.121538
+INFO  | 04/06/2026 01:35:57 PM | File experiment_runner.py | Line 203   | Epoch 275 | Val Loss = 2.990712 | Val Acc = 0.1604
+INFO  | 04/06/2026 01:35:59 PM | File experiment_runner.py | Line 203   | Epoch 276 | Val Loss = 2.978821 | Val Acc = 0.1613
+INFO  | 04/06/2026 01:36:01 PM | File experiment_runner.py | Line 203   | Epoch 277 | Val Loss = 2.981318 | Val Acc = 0.1615
+INFO  | 04/06/2026 01:36:03 PM | File experiment_runner.py | Line 203   | Epoch 278 | Val Loss = 2.976664 | Val Acc = 0.1636
+INFO  | 04/06/2026 01:36:06 PM | File experiment_runner.py | Line 203   | Epoch 279 | Val Loss = 2.979860 | Val Acc = 0.1643
+INFO  | 04/06/2026 01:36:08 PM | File experiment_runner.py | Line 203   | Epoch 280 | Val Loss = 2.976827 | Val Acc = 0.1631
+INFO  | 04/06/2026 01:36:10 PM | File experiment_runner.py | Line 203   | Epoch 281 | Val Loss = 2.982988 | Val Acc = 0.1591
+INFO  | 04/06/2026 01:36:11 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0281 iter 00210000 = 3.049951
+INFO  | 04/06/2026 01:36:12 PM | File experiment_runner.py | Line 203   | Epoch 282 | Val Loss = 2.985442 | Val Acc = 0.1609
+INFO  | 04/06/2026 01:36:14 PM | File experiment_runner.py | Line 203   | Epoch 283 | Val Loss = 2.977702 | Val Acc = 0.1625
+INFO  | 04/06/2026 01:36:16 PM | File experiment_runner.py | Line 203   | Epoch 284 | Val Loss = 2.965522 | Val Acc = 0.1634
+INFO  | 04/06/2026 01:36:18 PM | File experiment_runner.py | Line 203   | Epoch 285 | Val Loss = 2.978368 | Val Acc = 0.1640
+INFO  | 04/06/2026 01:36:21 PM | File experiment_runner.py | Line 203   | Epoch 286 | Val Loss = 2.972985 | Val Acc = 0.1606
+INFO  | 04/06/2026 01:36:23 PM | File experiment_runner.py | Line 203   | Epoch 287 | Val Loss = 2.975274 | Val Acc = 0.1623
+INFO  | 04/06/2026 01:36:25 PM | File experiment_runner.py | Line 203   | Epoch 288 | Val Loss = 2.969069 | Val Acc = 0.1658
+INFO  | 04/06/2026 01:36:25 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0288 iter 00215000 = 2.996154
+INFO  | 04/06/2026 01:36:27 PM | File experiment_runner.py | Line 203   | Epoch 289 | Val Loss = 2.958056 | Val Acc = 0.1637
+INFO  | 04/06/2026 01:36:29 PM | File experiment_runner.py | Line 203   | Epoch 290 | Val Loss = 2.979162 | Val Acc = 0.1610
+INFO  | 04/06/2026 01:36:31 PM | File experiment_runner.py | Line 203   | Epoch 291 | Val Loss = 2.983766 | Val Acc = 0.1624
+INFO  | 04/06/2026 01:36:33 PM | File experiment_runner.py | Line 203   | Epoch 292 | Val Loss = 2.983005 | Val Acc = 0.1629
+INFO  | 04/06/2026 01:36:36 PM | File experiment_runner.py | Line 203   | Epoch 293 | Val Loss = 2.973082 | Val Acc = 0.1620
+INFO  | 04/06/2026 01:36:38 PM | File experiment_runner.py | Line 203   | Epoch 294 | Val Loss = 2.975832 | Val Acc = 0.1612
+INFO  | 04/06/2026 01:36:39 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0294 iter 00220000 = 3.055128
+INFO  | 04/06/2026 01:36:40 PM | File experiment_runner.py | Line 203   | Epoch 295 | Val Loss = 2.968754 | Val Acc = 0.1626
+INFO  | 04/06/2026 01:36:42 PM | File experiment_runner.py | Line 203   | Epoch 296 | Val Loss = 2.971351 | Val Acc = 0.1652
+INFO  | 04/06/2026 01:36:44 PM | File experiment_runner.py | Line 203   | Epoch 297 | Val Loss = 2.979642 | Val Acc = 0.1604
+INFO  | 04/06/2026 01:36:47 PM | File experiment_runner.py | Line 203   | Epoch 298 | Val Loss = 2.973152 | Val Acc = 0.1616
+INFO  | 04/06/2026 01:36:49 PM | File experiment_runner.py | Line 203   | Epoch 299 | Val Loss = 2.979509 | Val Acc = 0.1638
+INFO  | 04/06/2026 01:36:51 PM | File experiment_runner.py | Line 203   | Epoch 300 | Val Loss = 2.971690 | Val Acc = 0.1618
+INFO  | 04/06/2026 01:36:53 PM | File experiment_runner.py | Line 203   | Epoch 301 | Val Loss = 2.980446 | Val Acc = 0.1662
+INFO  | 04/06/2026 01:36:54 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0301 iter 00225000 = 2.986022
+INFO  | 04/06/2026 01:36:56 PM | File experiment_runner.py | Line 203   | Epoch 302 | Val Loss = 2.986070 | Val Acc = 0.1623
+INFO  | 04/06/2026 01:36:58 PM | File experiment_runner.py | Line 203   | Epoch 303 | Val Loss = 2.968784 | Val Acc = 0.1610
+INFO  | 04/06/2026 01:37:00 PM | File experiment_runner.py | Line 203   | Epoch 304 | Val Loss = 2.968166 | Val Acc = 0.1662
+INFO  | 04/06/2026 01:37:02 PM | File experiment_runner.py | Line 203   | Epoch 305 | Val Loss = 2.962951 | Val Acc = 0.1648
+INFO  | 04/06/2026 01:37:04 PM | File experiment_runner.py | Line 203   | Epoch 306 | Val Loss = 2.979336 | Val Acc = 0.1645
+INFO  | 04/06/2026 01:37:06 PM | File experiment_runner.py | Line 203   | Epoch 307 | Val Loss = 2.975487 | Val Acc = 0.1647
+INFO  | 04/06/2026 01:37:09 PM | File experiment_runner.py | Line 203   | Epoch 308 | Val Loss = 2.968502 | Val Acc = 0.1656
+INFO  | 04/06/2026 01:37:09 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0308 iter 00230000 = 2.684435
+INFO  | 04/06/2026 01:37:11 PM | File experiment_runner.py | Line 203   | Epoch 309 | Val Loss = 2.974427 | Val Acc = 0.1636
+INFO  | 04/06/2026 01:37:13 PM | File experiment_runner.py | Line 203   | Epoch 310 | Val Loss = 2.984886 | Val Acc = 0.1590
+INFO  | 04/06/2026 01:37:15 PM | File experiment_runner.py | Line 203   | Epoch 311 | Val Loss = 2.983432 | Val Acc = 0.1623
+INFO  | 04/06/2026 01:37:17 PM | File experiment_runner.py | Line 203   | Epoch 312 | Val Loss = 2.967796 | Val Acc = 0.1611
+INFO  | 04/06/2026 01:37:19 PM | File experiment_runner.py | Line 203   | Epoch 313 | Val Loss = 2.985374 | Val Acc = 0.1621
+INFO  | 04/06/2026 01:37:22 PM | File experiment_runner.py | Line 203   | Epoch 314 | Val Loss = 2.977096 | Val Acc = 0.1619
+INFO  | 04/06/2026 01:37:23 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0314 iter 00235000 = 2.890522
+INFO  | 04/06/2026 01:37:24 PM | File experiment_runner.py | Line 203   | Epoch 315 | Val Loss = 2.966012 | Val Acc = 0.1620
+INFO  | 04/06/2026 01:37:26 PM | File experiment_runner.py | Line 203   | Epoch 316 | Val Loss = 2.973103 | Val Acc = 0.1633
+INFO  | 04/06/2026 01:37:28 PM | File experiment_runner.py | Line 203   | Epoch 317 | Val Loss = 2.971341 | Val Acc = 0.1668
+INFO  | 04/06/2026 01:37:30 PM | File experiment_runner.py | Line 203   | Epoch 318 | Val Loss = 2.975072 | Val Acc = 0.1653
+INFO  | 04/06/2026 01:37:32 PM | File experiment_runner.py | Line 203   | Epoch 319 | Val Loss = 2.971196 | Val Acc = 0.1685
+INFO  | 04/06/2026 01:37:34 PM | File experiment_runner.py | Line 203   | Epoch 320 | Val Loss = 2.965910 | Val Acc = 0.1654
+INFO  | 04/06/2026 01:37:37 PM | File experiment_runner.py | Line 203   | Epoch 321 | Val Loss = 2.968627 | Val Acc = 0.1652
+INFO  | 04/06/2026 01:37:37 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0321 iter 00240000 = 2.932885
+INFO  | 04/06/2026 01:37:39 PM | File experiment_runner.py | Line 203   | Epoch 322 | Val Loss = 2.983165 | Val Acc = 0.1621
+INFO  | 04/06/2026 01:37:41 PM | File experiment_runner.py | Line 203   | Epoch 323 | Val Loss = 2.973523 | Val Acc = 0.1648
+INFO  | 04/06/2026 01:37:43 PM | File experiment_runner.py | Line 203   | Epoch 324 | Val Loss = 2.978766 | Val Acc = 0.1632
+INFO  | 04/06/2026 01:37:45 PM | File experiment_runner.py | Line 203   | Epoch 325 | Val Loss = 2.968576 | Val Acc = 0.1660
+INFO  | 04/06/2026 01:37:47 PM | File experiment_runner.py | Line 203   | Epoch 326 | Val Loss = 2.980242 | Val Acc = 0.1646
+INFO  | 04/06/2026 01:37:49 PM | File experiment_runner.py | Line 203   | Epoch 327 | Val Loss = 2.965420 | Val Acc = 0.1658
+INFO  | 04/06/2026 01:37:52 PM | File experiment_runner.py | Line 203   | Epoch 328 | Val Loss = 2.972660 | Val Acc = 0.1638
+INFO  | 04/06/2026 01:37:52 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0328 iter 00245000 = 2.852942
+INFO  | 04/06/2026 01:37:54 PM | File experiment_runner.py | Line 203   | Epoch 329 | Val Loss = 2.973751 | Val Acc = 0.1646
+INFO  | 04/06/2026 01:37:56 PM | File experiment_runner.py | Line 203   | Epoch 330 | Val Loss = 2.971960 | Val Acc = 0.1663
+INFO  | 04/06/2026 01:37:58 PM | File experiment_runner.py | Line 203   | Epoch 331 | Val Loss = 2.978829 | Val Acc = 0.1638
+INFO  | 04/06/2026 01:38:00 PM | File experiment_runner.py | Line 203   | Epoch 332 | Val Loss = 2.983138 | Val Acc = 0.1631
+INFO  | 04/06/2026 01:38:02 PM | File experiment_runner.py | Line 203   | Epoch 333 | Val Loss = 2.971443 | Val Acc = 0.1641
+INFO  | 04/06/2026 01:38:04 PM | File experiment_runner.py | Line 203   | Epoch 334 | Val Loss = 2.969733 | Val Acc = 0.1598
+INFO  | 04/06/2026 01:38:06 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0334 iter 00250000 = 2.882766
+INFO  | 04/06/2026 01:38:07 PM | File experiment_runner.py | Line 203   | Epoch 335 | Val Loss = 2.963675 | Val Acc = 0.1667
+INFO  | 04/06/2026 01:38:09 PM | File experiment_runner.py | Line 203   | Epoch 336 | Val Loss = 2.992720 | Val Acc = 0.1628
+INFO  | 04/06/2026 01:38:11 PM | File experiment_runner.py | Line 203   | Epoch 337 | Val Loss = 2.977726 | Val Acc = 0.1632
+INFO  | 04/06/2026 01:38:13 PM | File experiment_runner.py | Line 203   | Epoch 338 | Val Loss = 2.976839 | Val Acc = 0.1641
+INFO  | 04/06/2026 01:38:15 PM | File experiment_runner.py | Line 203   | Epoch 339 | Val Loss = 2.973031 | Val Acc = 0.1638
+INFO  | 04/06/2026 01:38:17 PM | File experiment_runner.py | Line 203   | Epoch 340 | Val Loss = 2.976968 | Val Acc = 0.1605
+INFO  | 04/06/2026 01:38:20 PM | File experiment_runner.py | Line 203   | Epoch 341 | Val Loss = 2.968035 | Val Acc = 0.1635
+INFO  | 04/06/2026 01:38:21 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0341 iter 00255000 = 2.956695
+INFO  | 04/06/2026 01:38:22 PM | File experiment_runner.py | Line 203   | Epoch 342 | Val Loss = 2.985224 | Val Acc = 0.1625
+INFO  | 04/06/2026 01:38:24 PM | File experiment_runner.py | Line 203   | Epoch 343 | Val Loss = 2.981304 | Val Acc = 0.1635
+INFO  | 04/06/2026 01:38:26 PM | File experiment_runner.py | Line 203   | Epoch 344 | Val Loss = 2.986288 | Val Acc = 0.1646
+INFO  | 04/06/2026 01:38:29 PM | File experiment_runner.py | Line 203   | Epoch 345 | Val Loss = 2.983048 | Val Acc = 0.1626
+INFO  | 04/06/2026 01:38:31 PM | File experiment_runner.py | Line 203   | Epoch 346 | Val Loss = 2.969091 | Val Acc = 0.1664
+INFO  | 04/06/2026 01:38:33 PM | File experiment_runner.py | Line 203   | Epoch 347 | Val Loss = 2.964300 | Val Acc = 0.1629
+INFO  | 04/06/2026 01:38:35 PM | File experiment_runner.py | Line 203   | Epoch 348 | Val Loss = 2.963913 | Val Acc = 0.1642
+INFO  | 04/06/2026 01:38:35 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0348 iter 00260000 = 2.840591
+INFO  | 04/06/2026 01:38:37 PM | File experiment_runner.py | Line 203   | Epoch 349 | Val Loss = 2.978940 | Val Acc = 0.1616
+INFO  | 04/06/2026 01:38:39 PM | File experiment_runner.py | Line 203   | Epoch 350 | Val Loss = 2.978275 | Val Acc = 0.1615
+INFO  | 04/06/2026 01:38:42 PM | File experiment_runner.py | Line 203   | Epoch 351 | Val Loss = 2.975628 | Val Acc = 0.1634
+INFO  | 04/06/2026 01:38:44 PM | File experiment_runner.py | Line 203   | Epoch 352 | Val Loss = 2.979275 | Val Acc = 0.1644
+INFO  | 04/06/2026 01:38:46 PM | File experiment_runner.py | Line 203   | Epoch 353 | Val Loss = 2.979007 | Val Acc = 0.1667
+INFO  | 04/06/2026 01:38:48 PM | File experiment_runner.py | Line 203   | Epoch 354 | Val Loss = 2.973917 | Val Acc = 0.1647
+INFO  | 04/06/2026 01:38:50 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0354 iter 00265000 = 3.019549
+INFO  | 04/06/2026 01:38:50 PM | File experiment_runner.py | Line 203   | Epoch 355 | Val Loss = 2.987779 | Val Acc = 0.1595
+INFO  | 04/06/2026 01:38:52 PM | File experiment_runner.py | Line 203   | Epoch 356 | Val Loss = 2.977769 | Val Acc = 0.1645
+INFO  | 04/06/2026 01:38:55 PM | File experiment_runner.py | Line 203   | Epoch 357 | Val Loss = 2.979643 | Val Acc = 0.1631
+INFO  | 04/06/2026 01:38:57 PM | File experiment_runner.py | Line 203   | Epoch 358 | Val Loss = 2.985734 | Val Acc = 0.1595
+INFO  | 04/06/2026 01:38:59 PM | File experiment_runner.py | Line 203   | Epoch 359 | Val Loss = 2.973924 | Val Acc = 0.1659
+INFO  | 04/06/2026 01:39:01 PM | File experiment_runner.py | Line 203   | Epoch 360 | Val Loss = 2.975946 | Val Acc = 0.1661
+INFO  | 04/06/2026 01:39:03 PM | File experiment_runner.py | Line 203   | Epoch 361 | Val Loss = 2.971143 | Val Acc = 0.1636
+INFO  | 04/06/2026 01:39:04 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0361 iter 00270000 = 3.073682
+INFO  | 04/06/2026 01:39:05 PM | File experiment_runner.py | Line 203   | Epoch 362 | Val Loss = 2.980042 | Val Acc = 0.1636
+INFO  | 04/06/2026 01:39:08 PM | File experiment_runner.py | Line 203   | Epoch 363 | Val Loss = 2.970052 | Val Acc = 0.1617
+INFO  | 04/06/2026 01:39:10 PM | File experiment_runner.py | Line 203   | Epoch 364 | Val Loss = 2.985367 | Val Acc = 0.1618
+INFO  | 04/06/2026 01:39:12 PM | File experiment_runner.py | Line 203   | Epoch 365 | Val Loss = 2.974589 | Val Acc = 0.1660
+INFO  | 04/06/2026 01:39:14 PM | File experiment_runner.py | Line 203   | Epoch 366 | Val Loss = 2.975816 | Val Acc = 0.1636
+INFO  | 04/06/2026 01:39:16 PM | File experiment_runner.py | Line 203   | Epoch 367 | Val Loss = 2.982304 | Val Acc = 0.1622
+INFO  | 04/06/2026 01:39:18 PM | File experiment_runner.py | Line 203   | Epoch 368 | Val Loss = 2.981281 | Val Acc = 0.1638
+INFO  | 04/06/2026 01:39:19 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0368 iter 00275000 = 2.716083
+INFO  | 04/06/2026 01:39:21 PM | File experiment_runner.py | Line 203   | Epoch 369 | Val Loss = 2.974119 | Val Acc = 0.1642
+INFO  | 04/06/2026 01:39:23 PM | File experiment_runner.py | Line 203   | Epoch 370 | Val Loss = 2.969688 | Val Acc = 0.1646
+INFO  | 04/06/2026 01:39:25 PM | File experiment_runner.py | Line 203   | Epoch 371 | Val Loss = 2.983304 | Val Acc = 0.1632
+INFO  | 04/06/2026 01:39:27 PM | File experiment_runner.py | Line 203   | Epoch 372 | Val Loss = 2.982313 | Val Acc = 0.1639
+INFO  | 04/06/2026 01:39:29 PM | File experiment_runner.py | Line 203   | Epoch 373 | Val Loss = 2.978485 | Val Acc = 0.1608
+INFO  | 04/06/2026 01:39:31 PM | File experiment_runner.py | Line 203   | Epoch 374 | Val Loss = 2.973011 | Val Acc = 0.1659
+INFO  | 04/06/2026 01:39:33 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0374 iter 00280000 = 3.018164
+INFO  | 04/06/2026 01:39:33 PM | File experiment_runner.py | Line 203   | Epoch 375 | Val Loss = 2.979155 | Val Acc = 0.1632
+INFO  | 04/06/2026 01:39:36 PM | File experiment_runner.py | Line 203   | Epoch 376 | Val Loss = 2.973563 | Val Acc = 0.1657
+INFO  | 04/06/2026 01:39:38 PM | File experiment_runner.py | Line 203   | Epoch 377 | Val Loss = 2.982405 | Val Acc = 0.1644
+INFO  | 04/06/2026 01:39:40 PM | File experiment_runner.py | Line 203   | Epoch 378 | Val Loss = 2.984881 | Val Acc = 0.1620
+INFO  | 04/06/2026 01:39:42 PM | File experiment_runner.py | Line 203   | Epoch 379 | Val Loss = 2.992323 | Val Acc = 0.1632
+INFO  | 04/06/2026 01:39:44 PM | File experiment_runner.py | Line 203   | Epoch 380 | Val Loss = 2.980691 | Val Acc = 0.1648
+INFO  | 04/06/2026 01:39:46 PM | File experiment_runner.py | Line 203   | Epoch 381 | Val Loss = 2.981424 | Val Acc = 0.1624
+INFO  | 04/06/2026 01:39:47 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0381 iter 00285000 = 2.885908
+INFO  | 04/06/2026 01:39:49 PM | File experiment_runner.py | Line 203   | Epoch 382 | Val Loss = 2.977738 | Val Acc = 0.1638
+INFO  | 04/06/2026 01:39:51 PM | File experiment_runner.py | Line 203   | Epoch 383 | Val Loss = 2.978340 | Val Acc = 0.1667
+INFO  | 04/06/2026 01:39:53 PM | File experiment_runner.py | Line 203   | Epoch 384 | Val Loss = 2.980446 | Val Acc = 0.1628
+INFO  | 04/06/2026 01:39:55 PM | File experiment_runner.py | Line 203   | Epoch 385 | Val Loss = 2.965853 | Val Acc = 0.1660
+INFO  | 04/06/2026 01:39:57 PM | File experiment_runner.py | Line 203   | Epoch 386 | Val Loss = 2.974785 | Val Acc = 0.1639
+INFO  | 04/06/2026 01:40:00 PM | File experiment_runner.py | Line 203   | Epoch 387 | Val Loss = 2.979227 | Val Acc = 0.1650
+INFO  | 04/06/2026 01:40:02 PM | File experiment_runner.py | Line 203   | Epoch 388 | Val Loss = 2.980326 | Val Acc = 0.1631
+INFO  | 04/06/2026 01:40:02 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0388 iter 00290000 = 2.941883
+INFO  | 04/06/2026 01:40:04 PM | File experiment_runner.py | Line 203   | Epoch 389 | Val Loss = 2.977749 | Val Acc = 0.1641
+INFO  | 04/06/2026 01:40:06 PM | File experiment_runner.py | Line 203   | Epoch 390 | Val Loss = 2.975235 | Val Acc = 0.1622
+INFO  | 04/06/2026 01:40:08 PM | File experiment_runner.py | Line 203   | Epoch 391 | Val Loss = 2.981285 | Val Acc = 0.1603
+INFO  | 04/06/2026 01:40:10 PM | File experiment_runner.py | Line 203   | Epoch 392 | Val Loss = 2.978696 | Val Acc = 0.1666
+INFO  | 04/06/2026 01:40:13 PM | File experiment_runner.py | Line 203   | Epoch 393 | Val Loss = 2.981824 | Val Acc = 0.1648
+INFO  | 04/06/2026 01:40:15 PM | File experiment_runner.py | Line 203   | Epoch 394 | Val Loss = 2.979346 | Val Acc = 0.1635
+INFO  | 04/06/2026 01:40:17 PM | File experiment_runner.py | Line 236   | Train Loss @ epoch 0394 iter 00295000 = 2.833832
+INFO  | 04/06/2026 01:40:17 PM | File experiment_runner.py | Line 203   | Epoch 395 | Val Loss = 2.970343 | Val Acc = 0.1670
+INFO  | 04/06/2026 01:40:19 PM | File experiment_runner.py | Line 203   | Epoch 396 | Val Loss = 2.974942 | Val Acc = 0.1621
+INFO  | 04/06/2026 01:40:21 PM | File experiment_runner.py | Line 203   | Epoch 397 | Val Loss = 2.978922 | Val Acc = 0.1651
+INFO  | 04/06/2026 01:40:24 PM | File experiment_runner.py | Line 203   | Epoch 398 | Val Loss = 2.971992 | Val Acc = 0.1668
+INFO  | 04/06/2026 01:40:26 PM | File experiment_runner.py | Line 203   | Epoch 399 | Val Loss = 2.989346 | Val Acc = 0.1625
+INFO  | 04/06/2026 01:40:28 PM | File experiment_runner.py | Line 203   | Epoch 400 | Val Loss = 2.962135 | Val Acc = 0.1653
+INFO  | 04/06/2026 01:40:30 PM | File experiment_runner.py | Line 243   | Phase1 Best Val Loss = 2.958056 | Best Val Acc = 0.1637
+INFO  | 04/06/2026 01:40:30 PM | File run.py               | Line 272   | === Starting Phase 2 ===
+INFO  | 04/06/2026 01:40:30 PM | File run.py               | Line 278   | === Starting Test ===
+INFO  | 04/06/2026 01:43:49 PM | File experiment_runner.py | Line 642   | Test Accuracy = 0.1531
+INFO  | 04/06/2026 01:43:49 PM | File run.py               | Line 283   | Experiment completed!

@@ -1,0 +1,27 @@
+exp_dir: exp
+exp_name: ppo_cartpole_relu
+model:
+  action_dim: 2
+  hidden_dim: 128
+  name: BaselinePPO
+  obs_dim: 4
+rl:
+  batch_size: 64
+  clip_eps: 0.2
+  ent_coef: 0.01
+  env_name: CartPole-v1
+  gae_lambda: 0.95
+  gamma: 0.99
+  log_interval: 10
+  lr: 0.0003
+  max_grad_norm: 0.5
+  num_seeds: 10
+  num_steps: 2048
+  num_updates: 200
+  ppo_epochs: 4
+  vf_coef: 0.5
+run_id: '3544850'
+save_dir: exp/ppo_cartpole_relu_20260407_131234_68575208
+seed: 1234
+task_type: ppo
+use_gpu: true

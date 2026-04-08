@@ -1,0 +1,20 @@
+INFO  | 04/08/2026 03:56:13 PM | File run.py               | Line 223   | Config: config/experiments/transformer_ptb_2arg.yaml
+INFO  | 04/08/2026 03:56:13 PM | File run.py               | Line 224   | Config hash: d655ec38f6642ce1d06c68e148af34fb61c0ce677b46ad9406bdd34f4eedcde6
+INFO  | 04/08/2026 03:56:13 PM | File run.py               | Line 225   | Save dir: exp/transformer_ptb_2arg_20260408_155613_d655ec38
+INFO  | 04/08/2026 03:56:13 PM | File run.py               | Line 236   | Task type: language_model
+INFO  | 04/08/2026 03:56:25 PM | File lm_runner.py         | Line 29    | Loading PTB (train)...
+INFO  | 04/08/2026 03:56:26 PM | File lm_runner.py         | Line 57    | Dataset (train) ready. 887521 tokens, vocab=10000
+INFO  | 04/08/2026 03:56:26 PM | File lm_runner.py         | Line 29    | Loading PTB (validation)...
+INFO  | 04/08/2026 03:56:26 PM | File lm_runner.py         | Line 57    | Dataset (validation) ready. 70390 tokens, vocab=10000
+INFO  | 04/08/2026 03:56:26 PM | File lm_runner.py         | Line 163   | Pretraining InnerNet on Gaussian target...
+INFO  | 04/08/2026 03:56:27 PM | File lm_runner.py         | Line 175   | InnerNet pretrained.
+INFO  | 04/08/2026 03:56:27 PM | File lm_runner.py         | Line 181   | [Seed 42] (1/5) Training InnerNetTransformer for 10 epochs...
+INFO  | 04/08/2026 04:08:17 PM | File lm_runner.py         | Line 256   |   Seed 42 Ep 1/10: PPL = 554.68
+INFO  | 04/08/2026 04:20:08 PM | File lm_runner.py         | Line 256   |   Seed 42 Ep 2/10: PPL = 403.71
+INFO  | 04/08/2026 04:32:00 PM | File lm_runner.py         | Line 256   |   Seed 42 Ep 3/10: PPL = 317.51
+INFO  | 04/08/2026 04:43:52 PM | File lm_runner.py         | Line 256   |   Seed 42 Ep 4/10: PPL = 280.80
+INFO  | 04/08/2026 04:55:44 PM | File lm_runner.py         | Line 256   |   Seed 42 Ep 5/10: PPL = 258.52
+INFO  | 04/08/2026 05:07:35 PM | File lm_runner.py         | Line 256   |   Seed 42 Ep 6/10: PPL = 242.02
+INFO  | 04/08/2026 05:19:27 PM | File lm_runner.py         | Line 256   |   Seed 42 Ep 7/10: PPL = 231.60
+INFO  | 04/08/2026 05:31:18 PM | File lm_runner.py         | Line 256   |   Seed 42 Ep 8/10: PPL = 220.58
+INFO  | 04/08/2026 05:43:10 PM | File lm_runner.py         | Line 256   |   Seed 42 Ep 9/10: PPL = 214.12
