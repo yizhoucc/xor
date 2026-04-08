@@ -1,0 +1,26 @@
+---
+exp_name: ppo_acrobot_scale_relu_h128
+task_type: ppo
+seed: 1234
+use_gpu: true
+exp_dir: exp
+model:
+  name: BaselinePPO
+  hidden_dim: 128
+  obs_dim: 6
+  action_dim: 3
+rl:
+  env_name: Acrobot-v1
+  num_updates: 200
+  num_steps: 2048
+  num_seeds: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_eps: 0.2
+  ppo_epochs: 4
+  batch_size: 64
+  lr: 3.0e-4
+  vf_coef: 0.5
+  ent_coef: 0.01
+  max_grad_norm: 0.5
+  log_interval: 10

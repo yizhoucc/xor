@@ -1,0 +1,50 @@
+---
+exp_name: ae_mnist_scale_relu_l8
+exp_dir: ./exp
+use_gpu: true
+gpus: [0]
+seed: 1234
+dataset:
+  name: mnist
+  loader_name: InnerNetData
+  data_path: ./data
+  split: train
+model:
+  name: BaselineAE
+  input_dim: 784
+  latent_dim: 8
+  num_classes: 1
+  loss: MSE
+pretrain:
+  optimizer: Adam
+  num_workers: 0
+  max_epoch: 500
+  batch_size: 128
+  snapshot_epoch: 1000
+  lr: 1.0e-3
+  wd: 0.0e-4
+  momentum: 0.9
+  shuffle: true
+  best_model: []
+train:
+  optimizer: Adam
+  lr_decay: 0.1
+  lr_decay_steps: [10000]
+  num_workers: 0
+  max_epoch: 200
+  batch_size: 128
+  display_iter: 5000
+  snapshot_epoch: 1000
+  valid_epoch: 1
+  lr: 1.0e-3
+  wd: 0.0e-4
+  momentum: 0.9
+  shuffle: true
+  is_resume: false
+  resume_model: None
+  early_stop_window: 30
+  best_model: /model_snapshot_best_phase1.pth
+test:
+  batch_size: 128
+  num_workers: 0
+  test_model: /model_snapshot_best_phase1.pth
