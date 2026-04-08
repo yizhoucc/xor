@@ -19,8 +19,12 @@ class BaselineAE(nn.Module):
         latent_dim = getattr(config.model, 'latent_dim', 32)
         self.num_classes = 1  # signals regression/reconstruction
 
-        h1 = min(512, max(256, input_dim // 4))
-        h2 = min(128, max(64, h1 // 4))
+        enc_dims = getattr(config.model, 'enc_dims', None)
+        if enc_dims:
+            h1, h2 = enc_dims[0], enc_dims[1]
+        else:
+            h1 = min(512, max(256, input_dim // 4))
+            h2 = min(128, max(64, h1 // 4))
         self.encoder = nn.Sequential(
             nn.Linear(input_dim, h1), nn.ReLU(),
             nn.Linear(h1, h2), nn.ReLU(),

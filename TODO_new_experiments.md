@@ -1,50 +1,42 @@
 # 实验 TODO
 
-## 已完成 ✅
+## 🔴 Critical（blocking paper submission）
 
-| # | 实验 | 结果 |
-|---|------|------|
-| 1 | SwiGLU DQN (4 环境) | CP: InnerNet最佳, Acro/MC: SwiGLU最佳, LL: ReLU最佳 |
-| 2 | SST-2 文本分类 (5 seeds) | 2arg 80.00 vs ReLU 81.31 — ReLU更好 |
-| 3 | AG News 文本分类 (5 seeds) | 2arg 90.86 vs ReLU 91.08 — 持平 |
-| 4 | UCI Adult 表格 (5 seeds) | 2arg 84.72 vs ReLU 84.69 — 持平 |
-| 5 | UCI Wine 表格 (5 seeds) | 2arg 63.44 vs ReLU 60.56 — **+2.88%** |
-| 6 | Speech Commands 音频 (5 seeds) | 2arg 16.44 vs ReLU 15.52 — 都很低,不report |
-| 7 | ECG200 时间序列 (5 seeds) | 2arg 80.80 vs ReLU 82.20 — 持平,样本太少 |
-| 8 | Transformer 规模 small/large | small: InnerNet 112.66 vs 116.63 (**-3.4%**) |
-| 9 | 补充 seeds (mlp/cnn 2arg) | 全部完成 |
-
-## 集群运行中 ⏳
-
-| # | 实验 | Jobs | 状态 |
+| # | 项目 | 状态 | 说明 |
 |---|------|------|------|
-| 10 | Transformer large InnerNet (d=256) | 1 | running |
-| 11 | 容量缩放 (MLP CIFAR-10 w=32/64/128/256/512 × 2arg/relu × 5seeds) | 50 | running/pending |
-| 12 | 回归 Housing (2arg/relu × 5seeds) | 10 | running/pending |
-| 13 | AutoAttack eval (CNN CIFAR 2arg + 1arg) | 2 | pending |
-| 14 | CIFAR-10-C eval (CNN CIFAR 2arg + 1arg) | 2 | pending |
-| 15 | CNN CIFAR ReLU 重训 (给 robustness eval 用) | 1 | pending |
+| C1 | 补齐 5 seeds | 🔜 | FashionMNIST CNN/SVHN CNN/STL-10/AE FMNIST/AE CIFAR-10/CIFAR-100 big |
+| C2 | CNN 参数公平对比 | 🔜 | 创建 ~127K params 的 ReLU CNN，与 InnerNet 127K 直接对比 |
+| C3 | AE 参数匹配 | 🔜 | 创建 ~660K params 的 BaselineAE，消除 params 差异 |
+| C4 | 1-arg 系统对比 | 🔜 | 在所有 CNN 实验加 1-arg，展示 2-arg > 1-arg > ReLU |
+| C5 | ReLU+LN ablation | 🔜 | 加 ReLU+LN 列，证明改进不只来自 LayerNorm |
+| M1 | 训练曲线 | 🔜 | 从 train_stats 提取 epoch vs acc 曲线 |
 
-## 代码已写好，待用户确认后提交 🔜
+## 🟡 Major
 
-| # | 实验 | Configs | 预期baseline | 目的 |
-|---|------|---------|-------------|------|
-| 16 | ResNet-18 CIFAR-10 (2arg/relu × 5seeds) | `resnet_cifar_*.yaml` | ~93% | skip connection 是否让 InnerNet 冗余 |
-| 17 | ResNet-18 CIFAR-100 (2arg/relu × 5seeds) | `resnet_cifar100_*.yaml` | ~75% | 替代 30% 的小 CNN |
-| 18 | 大 CNN CIFAR-100 (2arg/relu × 5seeds) | `cnn_cifar100_big_*.yaml` | ~55-65% | 更实际的 CNN baseline |
-| 19 | Dense Embedding SST-2 (2arg/relu × 5seeds) | `mlp_sst2_emb_*.yaml` | ~85% | 替代 TF-IDF 稀疏特征 |
-| 20 | Dense Embedding AG News (2arg/relu × 5seeds) | `mlp_agnews_emb_*.yaml` | ~90% | 同上 |
-| 21 | Autoencoder MNIST (2arg/relu × 5seeds) | `ae_mnist_*.yaml` | MSE | 无监督重建任务 |
-| 22 | PPO RL (4 envs × 3 activations) | `ppo_*.yaml` | 各环境 | 现代 RL 算法替代 DQN |
-| 23 | GPT-style Transformer (6L d=256, 2arg/gelu/swiglu) | `transformer_wikitext_gpt_*.yaml` | PPL ~80 | 更大 Transformer 看 InnerNet 能否更明显地赢 |
-| 24 | 参数效率分析（方案B: 用容量缩放数据） | 不需要额外实验 | - | 用 #11 的 w=32/64/128/256/512 数据画 acc vs params 曲线，InnerNet 和 ReLU 两条曲线的交点即证明参数效率。等 #11 完成后直接出图 |
+| # | 项目 | 状态 |
+|---|------|------|
+| M2 | XOR 可视化（学到的 2D 激活函数表面） | TODO |
+| M3 | CNN 小 scale 反转解释 | TODO |
+| M4 | 回归 inconsistency 解释 | TODO |
+| M5 | RL inconsistency（降级 preliminary） | TODO |
+| M6 | PReLU/Swish baseline 对比 | TODO |
 
-## 不再追踪（baseline 太低或不适合）
+## 🟢 Minor
 
-| 实验 | 原因 |
-|------|------|
-| MLP CIFAR-100 (18.20%) | MLP 对 100 类图像太弱 |
-| Speech Commands MLP (16.44%) | MLP 不适合音频 |
-| ECG200 (80.80%) | 数据集太小(200样本)，方差太大 |
-| Cora 图分类 | 需要 GNN，改动太大 |
-| S4/Mamba | 复杂度高，优先级低 |
+| # | 项目 | 状态 |
+|---|------|------|
+| m1 | ResNet baseline 提升（data augmentation） | TODO |
+| m2 | 论文原始数字复现对比表 | TODO |
+| m3 | 更多 LM dataset（PTB 在跑） | ⏳ |
+| m4 | 计算开销分析（FLOPs + wall-clock） | TODO |
+| m5 | 显著性检验 p-value | TODO |
+
+## 之前的 TODO（保留追踪）
+
+| # | 实验 | 状态 |
+|---|------|------|
+| 24 | 参数效率分析（容量缩放曲线） | 数据已有，需出图 |
+| — | GPT Transformer (d=256) | ⏳ running |
+| — | Transformer d=192 InnerNet | ⏳ running |
+| — | PTB Transformer | ⏳ running |
+| — | CNN scale s2 2arg | ⏳ running |
