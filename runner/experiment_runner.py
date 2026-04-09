@@ -838,13 +838,18 @@ class ExperimentRunner:
             raise ValueError("Non-supported optimizer!")
 
     def _try_compile(self, model):
-        """Apply torch.compile if available (PyTorch 2.0+). Skip on old GPUs."""
+        """Apply torch.compile if available (PyTorch 2.0+). Skip on old GPUs and InnerNet CNNs."""
         if not hasattr(torch, 'compile'):
             return model
         if self.use_gpu and torch.cuda.is_available():
             cap = torch.cuda.get_device_capability()
             if cap[0] < 7:
                 logger.info(f"GPU capability {cap[0]}.{cap[1]} < 7.0, skipping torch.compile")
+                return model
+            # Skip for models with dynamic reshapes (InnerNet CNN) — CUDA Graphs OOM
+            mem_gb = torch.cuda.get_device_properties(0).total_mem / 1024**3
+            if mem_gb < 20 and self.has_inner_net:
+                logger.info(f"GPU memory {mem_gb:.1f}GB < 20GB with InnerNet, skipping torch.compile")
                 return model
         try:
             model = torch.compile(model, mode='reduce-overhead')
