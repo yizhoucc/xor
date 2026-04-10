@@ -825,8 +825,10 @@ class ExperimentRunner:
         else:
             raise ValueError("Non-supported dataset!")
 
-        # Preload entire dataset to GPU for maximum speed
-        if self.use_gpu:
+        # Preload to GPU for speed, but NOT when using augmentation
+        # (augmentation needs fresh random transforms each epoch)
+        use_aug = getattr(self.dataset_conf, 'augmentation', False)
+        if self.use_gpu and not use_aug:
             train_loader = self._preload_to_gpu(train_dataset, shuffle=self.train_conf.shuffle)
             val_loader = self._preload_to_gpu(val_dataset, shuffle=False)
         else:
