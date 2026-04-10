@@ -1,93 +1,101 @@
-# 项目状态 — 2026-04-08
+# 项目状态 — 2026-04-09
 
-## 集群运行中
+## 集群运行中 (~64 jobs)
 
-| 实验 | Jobs | 状态 |
+| 类别 | 实验 | 状态 |
 |------|------|------|
-| C1: 补齐 5 seeds (CNN FMNIST/SVHN, AE FMNIST/CIFAR, STL-10) | 34 | pending |
-| C2: CNN 参数公平对比 (ReLU ~127K params) | 5 | pending |
-| C3: AE 参数匹配 (ReLU ~660K params) | 5 | pending |
-| C4: 1-arg 系统对比 (SVHN + FMNIST seeds) | 9 | pending |
-| C5: ReLU+LN ablation (FMNIST/SVHN/MNIST/CIFAR) | 18 | pending |
-| GPT Transformer 2arg (d=256) | 1 | running |
-| Transformer d=192 InnerNet | 1 | running |
-| GPT Transformer gelu/swiglu | 2 | running |
-| tf_2arg_large (d=256 续跑) | 1 | running |
-| PTB Transformer (2arg + gelu) | 2 | pending |
-| CNN scale s2 2arg | 1 | running |
+| Critical seeds | CNN SVHN 2arg ×3, FMNIST 1arg ×4, CIFAR 2arg ×1 | running |
+| Urgent | ResNet-18+aug CIFAR-100 (2arg/relu ×5) | running |
+| Urgent | VGG-16+BN CIFAR-100 (×5) | running |
+| Urgent | WideResNet-28-10 CIFAR-100 (×5) | running |
+| Urgent | SwiGLU CNN CIFAR-10/100 (×5 each) | running |
+| Urgent | Representation 分析 (U1) | running |
+| LSTM 消融 | Bounded ×2, Classic ×2, BoundedClassic ×2 (Wiki+PTB) | running |
+| Seeds 补齐 | Diabetes ×4, Wine_reg ×4 | running |
+| GPT | Transformer 2arg + swiglu (d=256) | running (2d+) |
 
 ---
 
 ## TODO — 按优先级
 
-### 🔴 Critical（blocking paper submission）
+### 🔴 Critical
 
-| # | 项目 | 状态 | 说明 |
-|---|------|------|------|
-| C1 | 补齐 5 seeds | ⏳ 已提交 | FashionMNIST/SVHN/STL-10/AE/CIFAR-100 big |
-| C2 | CNN 参数公平对比 | ✅ 完成 | ReLU matched 70.67% vs InnerNet 78.29% (同 127K params) |
-| C3 | AE 参数匹配 | ✅ 完成 | ReLU matched 0.0059 vs InnerNet 0.0039 (同 ~660K params) |
-| C4 | 1-arg 系统对比 | ⏳ SVHN/FMNIST 在跑 | SVHN 1-arg 新增，FMNIST 1-arg 补 seeds |
-| C5 | ReLU+LN ablation | ✅ 完成 | ReLU+LN 仅 +1.15%，InnerNet 额外 +3.15% |
-| M1 | 训练曲线 | ⏳ 数据已有 | 从 log 提取 epoch vs acc 曲线 |
+| # | 项目 | 状态 |
+|---|------|------|
+| C1 | 补齐 5 seeds | ⏳ SVHN 2arg/FMNIST 1arg/CIFAR 2arg 最后几个在跑 |
+| C2 | CNN 参数公平对比 | ✅ ReLU matched 70.67% vs InnerNet 78.29% (同 127K) |
+| C3 | AE 参数匹配 | ✅ ReLU matched 0.0059 vs InnerNet 0.0039 (同 ~660K) |
+| C4 | 1-arg 系统对比 | ⏳ SVHN 1arg 5/5 ✅, FMNIST 1arg 在跑 |
+| C5 | ReLU+LN ablation | ✅ 4 数据集完成 |
+| M1 | 训练曲线 | ⏳ 数据已有，需出图 |
 
-### 🔴 Urgent（新增关键问题）
+### 🔴 Urgent
 
-| # | 项目 | 状态 | 说明 |
-|---|------|------|------|
-| U1 | CNN 60% 参数的 representation 损失 | TODO | InnerNet 用 60% params 赢了，但 reviewer 会问：channel halving 是否丢失了重要 feature map 信息？需要分析中间层 representation quality（如 CKA、feature map 可视化） |
-| U2 | 主流 CNN 架构效果 | ⏳ ResNet-18+aug 在跑 | ResNet-18 目前 86% 无 aug，加 aug 预期 76%+ on CIFAR-100。还需要 VGG-16+BN、WideResNet 对比 |
-| U3 | SwiGLU 图像分类对比 | TODO | Transformer 上 SwiGLU > InnerNet。图像任务（CNN/MLP）上 SwiGLU 是否也赢？需要实现 SwiGLU-CNN 并在 CIFAR-10/100 上对比 |
-| U4 | Classic LSTM（无语义配对） | 🔜 | 消融实验：像 MLP/AE 那样 W@[x,h]→2×hidden→pair→InnerNet，对比 semantic pairing vs classic pairing。WikiText-2 + PTB |
+| # | 项目 | 状态 |
+|---|------|------|
+| U1 | CNN 60% params representation 分析 | ⏳ 脚本在跑 |
+| U2 | 主流 CNN (ResNet-18+aug, VGG-16+BN, WRN-28-10) | ⏳ 全部已提交 |
+| U3 | SwiGLU CNN 图像对比 | ⏳ CIFAR-10/100 已提交 |
+| U4 | LSTM 消融 (2×2: semantic/classic × bounded/unbounded) | ⏳ 全部已提交 |
 
 ### 🟡 Major
 
 | # | 项目 | 状态 |
 |---|------|------|
-| M2 | XOR 可视化（学到的 2D 激活函数表面） | TODO |
-| M3 | CNN 小 scale 反转解释 | TODO（需要在论文中讨论） |
+| M2 | XOR 可视化（2D 激活函数表面） | TODO |
+| M3 | CNN 小 scale 反转解释 | TODO（论文讨论） |
 | M4 | 回归 inconsistency 解释 | TODO |
-| M5 | RL inconsistency（降级 preliminary） | TODO |
+| M5 | RL inconsistency | TODO（降级 preliminary） |
 | M6 | PReLU/Swish baseline 对比 | TODO |
-| M7 | CIFAR-100 合理 baseline: ResNet-18+aug (目标76%+) | ⏳ 已提交 |
-| M8 | 备选: VGG-16+BN on CIFAR-100 (如 ResNet 不够) | TODO |
-| M9 | 备选: WideResNet-28-10 on CIFAR-100 (如需更高 baseline) | TODO |
 
 ### 🟢 Minor
 
 | # | 项目 | 状态 |
 |---|------|------|
-| m1 | ResNet baseline 提升（data augmentation, 200ep） | TODO |
+| m1 | ResNet baseline 提升 | 被 U2 覆盖 |
 | m2 | 论文原始数字复现对比表 | TODO |
-| m3 | 更多 LM dataset | ⏳ PTB 在跑 |
+| m3 | 更多 LM dataset | ✅ PTB 已完成 |
 | m4 | 计算开销分析（FLOPs + wall-clock） | TODO |
 | m5 | 显著性检验 p-value | TODO |
-| 24 | 参数效率分析出图 | 数据已有 |
+| 24 | 参数效率出图 | 数据已有 |
 
 ---
 
-## 当前确认的可 Report 结果
+## 最新确认结果
 
-### InnerNet 有效（baseline 合理）
-- CNN 图像分类: MNIST/CIFAR-10/FashionMNIST/SVHN/CIFAR-100 (+0.4~4.3%)
-- Autoencoder: MNIST/FashionMNIST/CIFAR-10 (-12~43% MSE)
-- Transformer FFN: WikiText-2 d=64/128 (-1.6~3.4% PPL)
-- LSTM: WikiText-2 (-2.9% PPL)
-- 回归: Housing (-5% MSE)
-- Big MLP MNIST (+0.46%)
-- PPO Acrobot (+5.6%)
+### CNN 图像分类（完整 ablation）
+| Dataset | 2-arg | 1-arg | ReLU | ReLU+LN | ReLU matched | Gain |
+|---------|-------|-------|------|---------|-------------|------|
+| MNIST | 99.41±0.04 | 99.42±0.06 | 99.02±0.03 | 99.18±0.02 | — | +0.39 |
+| CIFAR-10 | 78.29±0.54 | 81.02±1.02 | 73.99±0.49 | 75.14±0.34 | 70.67±0.43 | +4.30 |
+| FashionMNIST | 90.91±0.29 | ⏳ | 89.34±0.13 | 89.34±0.16 | — | +1.57 |
+| SVHN | ⏳(1 seed) | 95.16±0.23 | 92.55±0.19 | 92.82±0.09 | — | +2.46 |
+| CIFAR-100 big | 53.74±0.88 | — | 50.00±0.83 | — | — | +3.74 |
 
-### InnerNet 无效
-- ResNet (skip connection 消除优势)
-- 文本分类 (TF-IDF/embedding 持平)
-- Transformer attention 替换 (更差)
-- Wine 回归 (更差)
-- CNN 极小 scale (更差)
+### Transformer LM (PPL↓)
+| 配置 | InnerNet | Baseline | 差异 |
+|------|----------|----------|------|
+| d=64 | **112.66** | 116.63 | -3.4% |
+| d=128 | **95.26** | 96.82 (GELU) | -1.6% |
+| d=192 | **88.14** | 89.11 | -1.1% |
+| d=256 | **85.40** | 86.05 | -0.8% |
+| PTB d=128 | **207.81** | 212.28 | -2.1% |
+| GPT d=256 | ⏳ | 72.54 | — |
 
-### 参数效率
-- CNN: InnerNet 用 60% 参数就赢
-- MLP 容量缩放: InnerNet w=128 ≈ ReLU w=256 (节省 55%)
-- AE: InnerNet 全 latent dim 都更好
+### LSTM 消融矩阵 (WikiText-2)
+| | Unbounded | Bounded |
+|--|-----------|---------|
+| Semantic | **105.30** ✅ | ⏳ |
+| Classic | ⏳ | ⏳ |
+| Standard | — | 108.39 ✅ |
+
+### 其他已确认结果
+- AE: MNIST -39%, FashionMNIST -12%, CIFAR-10 -26%
+- Housing 回归: -5% MSE
+- Big MLP MNIST: +0.46%
+- PPO Acrobot: +5.6%
+- 参数效率: MLP w=128 ≈ ReLU w=256 (55% savings)
+- ResNet: InnerNet ≈ ReLU (skip connection 消除优势)
 
 ---
 
@@ -99,4 +107,5 @@
 | Speech Commands MLP (16%) | MLP 不适合音频 |
 | ECG200 (82%, std=5.8) | 数据集太小 |
 | PPO MountainCar (-200) | 全部失败 |
-| Cora 图分类 / S4/Mamba | 改动太大 |
+| Cora / S4/Mamba | 改动太大 |
+| STL-10 (57% vs 59%) | InnerNet 输，方差大 |
