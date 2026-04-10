@@ -124,8 +124,69 @@ class ClassicInnerNetLSTMCell(nn.Module):
         return h_next, c_next
 
 
+class BoundedInnerNetLSTMCell(nn.Module):
+    """LSTM cell with bounded InnerNet: tanh(InnerNet(input_proj, hidden_proj)).
+
+    Same as InnerNetLSTMCell but wraps InnerNet output with tanh to bound g ∈ [-1, 1],
+    matching the original LSTM's tanh on cell candidate.
+    """
+    def __init__(self, input_size, hidden_size, inner_hidden=32):
+        super().__init__()
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.gate_linear = nn.Linear(input_size + hidden_size, 3 * hidden_size)
+        self.cell_input_proj = nn.Linear(input_size, hidden_size)
+        self.cell_hidden_proj = nn.Linear(hidden_size, hidden_size)
+        self.inner_net = InnerNetLSTMActivation(hidden_dim=inner_hidden)
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        stdv = 1.0 / math.sqrt(self.hidden_size)
+        for weight in self.parameters():
+            weight.data.uniform_(-stdv, stdv)
+
+    def forward(self, x, hidden):
+        h_prev, c_prev = hidden
+        combined = torch.cat((x, h_prev), dim=1)
+
+        gates = self.gate_linear(combined)
+        i_gate, f_gate, o_gate = gates.chunk(3, dim=1)
+        i = torch.sigmoid(i_gate)
+        f = torch.sigmoid(f_gate)
+        o = torch.sigmoid(o_gate)
+
+        arg1 = self.cell_input_proj(x)
+        arg2 = self.cell_hidden_proj(h_prev)
+        cell_pairs = torch.stack([arg1, arg2], dim=-1)
+        g_raw = self.inner_net(cell_pairs.view(-1, 2))
+        g = torch.tanh(g_raw.view(x.size(0), self.hidden_size))  # bound to [-1, 1]
+
+        c_next = f * c_prev + i * g
+        h_next = o * torch.tanh(c_next)
+        return h_next, c_next
+
+
+class BoundedInnerNetLSTMModel(nn.Module):
+    """Language model using LSTM with bounded InnerNet cell."""
+    def __init__(self, vocab_size, embed_dim, hidden_dim, inner_hidden=32):
+        super().__init__()
+        self.embedding = nn.Embedding(vocab_size, embed_dim)
+        self.cell = BoundedInnerNetLSTMCell(embed_dim, hidden_dim, inner_hidden)
+        self.fc = nn.Linear(hidden_dim, vocab_size)
+        self.hidden_dim = hidden_dim
+
+    def forward(self, x):
+        embeds = self.embedding(x)
+        B, S, _ = embeds.shape
+        h = torch.zeros(B, self.hidden_dim, device=x.device)
+        c = torch.zeros(B, self.hidden_dim, device=x.device)
+        for t in range(S):
+            h, c = self.cell(embeds[:, t, :], (h, c))
+        return self.fc(h)
+
+
 class InnerNetLSTMModel(nn.Module):
-    """Language model using LSTM with InnerNet cell (semantic pairing)."""
+    """Language model using LSTM with InnerNet cell (semantic pairing, unbounded)."""
     def __init__(self, vocab_size, embed_dim, hidden_dim, inner_hidden=32):
         super().__init__()
         self.embedding = nn.Embedding(vocab_size, embed_dim)

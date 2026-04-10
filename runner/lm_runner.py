@@ -108,7 +108,7 @@ class LMRunner:
 
         # Model config
         self.model_name = config.model.name
-        self.is_innernet = self.model_name in ('InnerNetLSTMModel', 'ClassicInnerNetLSTMModel', 'InnerNetTransformer', 'InnerNetAttnTransformer')
+        self.is_innernet = self.model_name in ('InnerNetLSTMModel', 'BoundedInnerNetLSTMModel', 'ClassicInnerNetLSTMModel', 'InnerNetTransformer', 'InnerNetAttnTransformer')
         self.is_transformer = self.model_name in ('InnerNetTransformer', 'StandardTransformer', 'SwiGLUTransformer', 'InnerNetAttnTransformer')
 
     def _make_model(self, vocab_size):
@@ -136,10 +136,12 @@ class LMRunner:
                 return StandardTransformer(vocab_size, d_model, n_heads, d_ff,
                                            n_layers, max_len, dropout)
         else:
-            from model.lstm import InnerNetLSTMModel, ClassicInnerNetLSTMModel, StandardLSTMModel
+            from model.lstm import InnerNetLSTMModel, BoundedInnerNetLSTMModel, ClassicInnerNetLSTMModel, StandardLSTMModel
             inner_hidden = self.config.model.get('inner_hidden', 32)
             if self.model_name == 'InnerNetLSTMModel':
                 return InnerNetLSTMModel(vocab_size, self.embed_dim, self.hidden_dim, inner_hidden)
+            elif self.model_name == 'BoundedInnerNetLSTMModel':
+                return BoundedInnerNetLSTMModel(vocab_size, self.embed_dim, self.hidden_dim, inner_hidden)
             elif self.model_name == 'ClassicInnerNetLSTMModel':
                 return ClassicInnerNetLSTMModel(vocab_size, self.embed_dim, self.hidden_dim, inner_hidden)
             else:
