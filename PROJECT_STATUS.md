@@ -34,10 +34,10 @@
 | # | 项目 | 状态 |
 |---|------|------|
 | U1 | CNN 60% params representation 分析 | ⏳ 脚本在跑 |
-| U2 | 主流 CNN (ResNet-18+aug, VGG-16+BN, WRN-28-10) | ⏳ 全部已提交 |
-| U3 | SwiGLU CNN 图像对比 | ⏳ CIFAR-10/100 已提交 |
-| U4 | LSTM 消融 (2×2: semantic/classic × bounded/unbounded) | ⏳ 全部已提交 |
-| U5 | SiLU-InnerNet Transformer (WikiText-2 + PTB) | ⏳ 已提交 | InnerNet 内部 ReLU→SiLU，看能否靠近 SwiGLU |
+| U2 | 主流 CNN (aug fix 后重跑) | ✅ ResNet 73.51%, VGG 68.48%, WRN 74.80% — 合理 baseline |
+| U3 | SwiGLU CNN 图像 | ✅ CIFAR-10: SwiGLU 79.79% > InnerNet 78.57%. CIFAR-100: InnerNet 53.74% > SwiGLU 46.48% |
+| U4 | LSTM 消融 (2×2) | ✅ WikiText-2 完成: Classic unbnd **101.72** > Semantic unbnd 105.30 > Standard 108.39 |
+| U5 | SiLU-InnerNet Transformer | ✅ PTB 完成: 208.43 vs ReLU-InnerNet 207.81 — SiLU 没帮助 | WikiText-2 在跑 |
 | U6 | InnerGate（备选，如 SiLU 不行）| TODO | `b × sigmoid(InnerNet(a,b))`：b 保留直达通路 + gate 双向感知。上限最高但有点"作弊"（结构太接近 SwiGLU） |
 | U7 | 训练阶段消融 | TODO | 对比 3-phase / no-pretrain / end-to-end / no-retrain，验证 3 阶段训练是否必要。在 CNN CIFAR-10 上测试 |
 
