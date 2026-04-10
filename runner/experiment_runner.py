@@ -753,17 +753,43 @@ class ExperimentRunner:
                                                   train=True, transform=transform, download=True)
             train_dataset, val_dataset = random_split(full_dataset, [50000, 10000])
         elif self.dataset_conf.name == 'cifar10':
-            transform = transforms.Compose([
+            use_aug = getattr(self.dataset_conf, 'augmentation', False)
+            if use_aug:
+                train_transform = transforms.Compose([
+                    transforms.RandomCrop(32, padding=4),
+                    transforms.RandomHorizontalFlip(),
+                    transforms.ToTensor(), transforms.Normalize([0.5]*3, [0.5]*3)])
+            else:
+                train_transform = transforms.Compose([
+                    transforms.ToTensor(), transforms.Normalize([0.5]*3, [0.5]*3)])
+            val_transform = transforms.Compose([
                 transforms.ToTensor(), transforms.Normalize([0.5]*3, [0.5]*3)])
-            full_dataset = datasets.CIFAR10(root=self.dataset_conf.data_path,
-                                             train=True, transform=transform, download=True)
-            train_dataset, val_dataset = random_split(full_dataset, [40000, 10000])
+            train_full = datasets.CIFAR10(root=self.dataset_conf.data_path,
+                                           train=True, transform=train_transform, download=True)
+            val_full = datasets.CIFAR10(root=self.dataset_conf.data_path,
+                                         train=True, transform=val_transform, download=True)
+            train_idx, val_idx = random_split(range(len(train_full)), [40000, 10000])
+            train_dataset = torch.utils.data.Subset(train_full, train_idx.indices)
+            val_dataset = torch.utils.data.Subset(val_full, val_idx.indices)
         elif self.dataset_conf.name == 'cifar100':
-            transform = transforms.Compose([
+            use_aug = getattr(self.dataset_conf, 'augmentation', False)
+            if use_aug:
+                train_transform = transforms.Compose([
+                    transforms.RandomCrop(32, padding=4),
+                    transforms.RandomHorizontalFlip(),
+                    transforms.ToTensor(), transforms.Normalize([0.5]*3, [0.5]*3)])
+            else:
+                train_transform = transforms.Compose([
+                    transforms.ToTensor(), transforms.Normalize([0.5]*3, [0.5]*3)])
+            val_transform = transforms.Compose([
                 transforms.ToTensor(), transforms.Normalize([0.5]*3, [0.5]*3)])
-            full_dataset = datasets.CIFAR100(root=self.dataset_conf.data_path,
-                                              train=True, transform=transform, download=True)
-            train_dataset, val_dataset = random_split(full_dataset, [40000, 10000])
+            train_full = datasets.CIFAR100(root=self.dataset_conf.data_path,
+                                            train=True, transform=train_transform, download=True)
+            val_full = datasets.CIFAR100(root=self.dataset_conf.data_path,
+                                          train=True, transform=val_transform, download=True)
+            train_idx, val_idx = random_split(range(len(train_full)), [40000, 10000])
+            train_dataset = torch.utils.data.Subset(train_full, train_idx.indices)
+            val_dataset = torch.utils.data.Subset(val_full, val_idx.indices)
         elif self.dataset_conf.name == 'svhn':
             transform = transforms.Compose([
                 transforms.ToTensor(), transforms.Normalize([0.5]*3, [0.5]*3)])

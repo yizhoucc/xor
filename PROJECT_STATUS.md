@@ -40,6 +40,9 @@
 | M4 | 回归 inconsistency 解释 | TODO |
 | M5 | RL inconsistency（降级 preliminary） | TODO |
 | M6 | PReLU/Swish baseline 对比 | TODO |
+| M7 | CIFAR-100 合理 baseline: ResNet-18+aug (目标76%+) | ⏳ 已提交 |
+| M8 | 备选: VGG-16+BN on CIFAR-100 (如 ResNet 不够) | TODO |
+| M9 | 备选: WideResNet-28-10 on CIFAR-100 (如需更高 baseline) | TODO |
 
 ### 🟢 Minor
 
