@@ -873,7 +873,7 @@ class ExperimentRunner:
                 logger.info(f"GPU capability {cap[0]}.{cap[1]} < 7.0, skipping torch.compile")
                 return model
             # Skip for models with dynamic reshapes (InnerNet CNN) — CUDA Graphs OOM
-            mem_gb = torch.cuda.get_device_properties(0).total_mem / 1024**3
+            mem_gb = torch.cuda.get_device_properties(0).total_memory / 1024**3
             if mem_gb < 20 and self.has_inner_net:
                 logger.info(f"GPU memory {mem_gb:.1f}GB < 20GB with InnerNet, skipping torch.compile")
                 return model
