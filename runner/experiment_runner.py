@@ -49,7 +49,8 @@ class ExperimentRunner:
         self.has_inner_net = self.model_conf.name not in (
             'BaselineMLP', 'BaselineCNN', 'BaselineRNN',
             'BaselineResNet', 'InnerNetResNet',
-            'BaselineAE', 'InnerNetAE')
+            'BaselineAE', 'InnerNetAE',
+            'VGG16BN', 'WideResNet', 'SwiGLUCNN')
 
         # Performance optimizations
         if self.use_gpu:
