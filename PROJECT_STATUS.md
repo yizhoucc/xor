@@ -39,6 +39,7 @@
 | U4 | LSTM 消融 (2×2: semantic/classic × bounded/unbounded) | ⏳ 全部已提交 |
 | U5 | SiLU-InnerNet Transformer (WikiText-2 + PTB) | ⏳ 已提交 | InnerNet 内部 ReLU→SiLU，看能否靠近 SwiGLU |
 | U6 | InnerGate（备选，如 SiLU 不行）| TODO | `b × sigmoid(InnerNet(a,b))`：b 保留直达通路 + gate 双向感知。上限最高但有点"作弊"（结构太接近 SwiGLU） |
+| U7 | 训练阶段消融 | TODO | 对比 3-phase / no-pretrain / end-to-end / no-retrain，验证 3 阶段训练是否必要。在 CNN CIFAR-10 上测试 |
 
 ### 🟡 Major
 
