@@ -37,6 +37,8 @@
 | U2 | 主流 CNN (ResNet-18+aug, VGG-16+BN, WRN-28-10) | ⏳ 全部已提交 |
 | U3 | SwiGLU CNN 图像对比 | ⏳ CIFAR-10/100 已提交 |
 | U4 | LSTM 消融 (2×2: semantic/classic × bounded/unbounded) | ⏳ 全部已提交 |
+| U5 | SiLU-InnerNet Transformer (WikiText-2 + PTB) | ⏳ 已提交 | InnerNet 内部 ReLU→SiLU，看能否靠近 SwiGLU |
+| U6 | InnerGate（备选，如 SiLU 不行）| TODO | `b × sigmoid(InnerNet(a,b))`：b 保留直达通路 + gate 双向感知。上限最高但有点"作弊"（结构太接近 SwiGLU） |
 
 ### 🟡 Major
 
