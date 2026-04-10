@@ -25,11 +25,19 @@
 | # | 项目 | 状态 | 说明 |
 |---|------|------|------|
 | C1 | 补齐 5 seeds | ⏳ 已提交 | FashionMNIST/SVHN/STL-10/AE/CIFAR-100 big |
-| C2 | CNN 参数公平对比 | ⏳ 已提交 | ReLU [36,72,72,72] ~127K params vs InnerNet 127K |
-| C3 | AE 参数匹配 | ⏳ 已提交 | BaselineAE [384,96] ~660K params vs InnerNetAE 660K |
-| C4 | 1-arg 系统对比 | ⏳ 已提交 | SVHN 1-arg 新增，FMNIST 1-arg 补 seeds |
-| C5 | ReLU+LN ablation | ⏳ 已提交 | 4 个数据集 × 5 seeds |
-| M1 | 训练曲线 | ⏳ 脚本运行中 | 从 log 提取 epoch vs acc 曲线 |
+| C2 | CNN 参数公平对比 | ✅ 完成 | ReLU matched 70.67% vs InnerNet 78.29% (同 127K params) |
+| C3 | AE 参数匹配 | ✅ 完成 | ReLU matched 0.0059 vs InnerNet 0.0039 (同 ~660K params) |
+| C4 | 1-arg 系统对比 | ⏳ SVHN/FMNIST 在跑 | SVHN 1-arg 新增，FMNIST 1-arg 补 seeds |
+| C5 | ReLU+LN ablation | ✅ 完成 | ReLU+LN 仅 +1.15%，InnerNet 额外 +3.15% |
+| M1 | 训练曲线 | ⏳ 数据已有 | 从 log 提取 epoch vs acc 曲线 |
+
+### 🔴 Urgent（新增关键问题）
+
+| # | 项目 | 状态 | 说明 |
+|---|------|------|------|
+| U1 | CNN 60% 参数的 representation 损失 | TODO | InnerNet 用 60% params 赢了，但 reviewer 会问：channel halving 是否丢失了重要 feature map 信息？需要分析中间层 representation quality（如 CKA、feature map 可视化） |
+| U2 | 主流 CNN 架构效果 | ⏳ ResNet-18+aug 在跑 | ResNet-18 目前 86% 无 aug，加 aug 预期 76%+ on CIFAR-100。还需要 VGG-16+BN、WideResNet 对比 |
+| U3 | SwiGLU 图像分类对比 | TODO | Transformer 上 SwiGLU > InnerNet。图像任务（CNN/MLP）上 SwiGLU 是否也赢？需要实现 SwiGLU-CNN 并在 CIFAR-10/100 上对比 |
 
 ### 🟡 Major
 
