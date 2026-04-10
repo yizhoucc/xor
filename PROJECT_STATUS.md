@@ -38,6 +38,7 @@
 | U1 | CNN 60% 参数的 representation 损失 | TODO | InnerNet 用 60% params 赢了，但 reviewer 会问：channel halving 是否丢失了重要 feature map 信息？需要分析中间层 representation quality（如 CKA、feature map 可视化） |
 | U2 | 主流 CNN 架构效果 | ⏳ ResNet-18+aug 在跑 | ResNet-18 目前 86% 无 aug，加 aug 预期 76%+ on CIFAR-100。还需要 VGG-16+BN、WideResNet 对比 |
 | U3 | SwiGLU 图像分类对比 | TODO | Transformer 上 SwiGLU > InnerNet。图像任务（CNN/MLP）上 SwiGLU 是否也赢？需要实现 SwiGLU-CNN 并在 CIFAR-10/100 上对比 |
+| U4 | Classic LSTM（无语义配对） | 🔜 | 消融实验：像 MLP/AE 那样 W@[x,h]→2×hidden→pair→InnerNet，对比 semantic pairing vs classic pairing。WikiText-2 + PTB |
 
 ### 🟡 Major
 
