@@ -51,6 +51,42 @@ class InnerNetFFN(nn.Module):
         return self.w2(self.dropout(activated))
 
 
+class SiLUInnerNetFFNActivation(nn.Module):
+    """InnerNet with SiLU instead of ReLU internally. Smoother inductive bias."""
+    def __init__(self, hidden_dim=32):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(2, hidden_dim),
+            nn.SiLU(),
+            nn.Linear(hidden_dim, 1)
+        )
+
+    def forward(self, x):
+        return self.net(x)
+
+
+class SiLUInnerNetFFN(nn.Module):
+    """FFN with SiLU-InnerNet: classic pairing (single proj → 2× → pair adjacent).
+
+    Tests whether SiLU inductive bias helps InnerNet learn SwiGLU-like functions.
+    """
+    def __init__(self, d_model, d_ff, inner_hidden=32, dropout=0.1):
+        super().__init__()
+        self.w1 = nn.Linear(d_model, d_ff * 2)  # single proj, 2× width
+        self.inner_net = SiLUInnerNetFFNActivation(hidden_dim=inner_hidden)
+        self.w2 = nn.Linear(d_ff, d_model)
+        self.dropout = nn.Dropout(dropout)
+        self.d_ff = d_ff
+
+    def forward(self, x):
+        h = self.w1(x)  # [B, S, 2*d_ff]
+        # Pair adjacent dims
+        pairs = h.view(*h.shape[:-1], self.d_ff, 2)  # [B, S, d_ff, 2]
+        shape = pairs.shape[:-1]
+        activated = self.inner_net(pairs.reshape(-1, 2)).view(*shape)
+        return self.w2(self.dropout(activated))
+
+
 class StandardFFN(nn.Module):
     """Standard FFN block with GELU activation."""
     def __init__(self, d_model, d_ff, dropout=0.1):
@@ -205,6 +241,35 @@ class PositionalEncoding(nn.Module):
     def forward(self, x):
         x = x + self.pe[:, :x.size(1)]
         return self.dropout(x)
+
+
+class SiLUInnerNetTransformer(nn.Module):
+    """Decoder-only Transformer with SiLU-InnerNet FFN (classic pairing, smooth bias)."""
+    def __init__(self, vocab_size, d_model=128, n_heads=4, d_ff=512,
+                 n_layers=4, max_len=64, inner_hidden=32, dropout=0.1):
+        super().__init__()
+        self.embedding = nn.Embedding(vocab_size, d_model)
+        self.pos_enc = PositionalEncoding(d_model, max_len, dropout)
+        self.blocks = nn.ModuleList([
+            TransformerBlock(
+                d_model, n_heads,
+                SiLUInnerNetFFN(d_model, d_ff, inner_hidden, dropout),
+                dropout
+            ) for _ in range(n_layers)
+        ])
+        self.ln_f = nn.LayerNorm(d_model)
+        self.head = nn.Linear(d_model, vocab_size)
+        self.d_model = d_model
+        self.head.weight = self.embedding.weight
+
+    def forward(self, x):
+        B, S = x.shape
+        mask = torch.tril(torch.ones(S, S, device=x.device)).unsqueeze(0).unsqueeze(0)
+        x = self.pos_enc(self.embedding(x) * math.sqrt(self.d_model))
+        for block in self.blocks:
+            x = block(x, mask)
+        x = self.ln_f(x)
+        return self.head(x[:, -1, :])
 
 
 class InnerNetTransformer(nn.Module):
