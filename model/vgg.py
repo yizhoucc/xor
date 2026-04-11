@@ -53,6 +53,114 @@ class VGG16BN(nn.Module):
         return out, loss, []
 
 
+class InnerNetVGGActivation(nn.Module):
+    """InnerNet activation for VGG: pairs adjacent channels."""
+    def __init__(self, hidden_dim=32):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(2, hidden_dim), nn.ReLU(), nn.Linear(hidden_dim, 1))
+
+    def forward(self, x):
+        # x: (B, 2C, H, W) → pair → (B, C, H, W)
+        B, C2, H, W = x.shape
+        C = C2 // 2
+        x = x.view(B, C, 2, H, W).permute(0, 1, 3, 4, 2).reshape(-1, 2)
+        return self.net(x).view(B, C, H, W)
+
+
+class InnerNetVGG16(nn.Module):
+    """VGG-16 with InnerNet activation. Conv outputs 2× channels, InnerNet halves."""
+    def __init__(self, config):
+        super().__init__()
+        self.config = config
+        num_classes = config.model.num_classes
+        inner_hidden = getattr(config.model, 'inner_hidden', 32)
+
+        self.inner_net = InnerNetVGGActivation(inner_hidden)
+
+        cfg = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M',
+               512, 512, 512, 'M', 512, 512, 512, 'M']
+        self.features = self._make_layers(cfg)
+        self.classifier = nn.Sequential(
+            nn.Linear(512, 512), nn.ReLU(True), nn.Dropout(0.5),
+            nn.Linear(512, num_classes))
+
+        if config.model.loss == 'CrossEntropy':
+            self.loss_func = nn.CrossEntropyLoss()
+
+    def _make_layers(self, cfg):
+        layers = []
+        in_channels = 3
+        for v in cfg:
+            if v == 'M':
+                layers.append(nn.MaxPool2d(kernel_size=2, stride=2))
+            else:
+                # 2× channels → InnerNet halves
+                layers.extend([
+                    nn.Conv2d(in_channels, v * 2, kernel_size=3, padding=1),
+                    nn.BatchNorm2d(v * 2),
+                    self.inner_net,
+                ])
+                in_channels = v
+        return nn.Sequential(*layers)
+
+    def forward(self, x, labels, collect=False):
+        out = self.features(x)
+        out = out.view(out.size(0), -1)
+        out = self.classifier(out)
+        loss = self.loss_func(out, labels)
+        return out, loss, []
+
+
+class SwiGLUVGGActivation(nn.Module):
+    """SwiGLU activation for VGG: SiLU(gate) * value on paired channels."""
+    def forward(self, x):
+        C = x.size(1) // 2
+        gate, value = x[:, :C], x[:, C:]
+        return torch.nn.functional.silu(gate) * value
+
+
+class SwiGLUVGG16(nn.Module):
+    """VGG-16 with SwiGLU activation."""
+    def __init__(self, config):
+        super().__init__()
+        self.config = config
+        num_classes = config.model.num_classes
+
+        cfg = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M',
+               512, 512, 512, 'M', 512, 512, 512, 'M']
+        self.features = self._make_layers(cfg)
+        self.classifier = nn.Sequential(
+            nn.Linear(512, 512), nn.ReLU(True), nn.Dropout(0.5),
+            nn.Linear(512, num_classes))
+
+        if config.model.loss == 'CrossEntropy':
+            self.loss_func = nn.CrossEntropyLoss()
+
+    def _make_layers(self, cfg):
+        layers = []
+        in_channels = 3
+        swiglu = SwiGLUVGGActivation()
+        for v in cfg:
+            if v == 'M':
+                layers.append(nn.MaxPool2d(kernel_size=2, stride=2))
+            else:
+                layers.extend([
+                    nn.Conv2d(in_channels, v * 2, kernel_size=3, padding=1),
+                    nn.BatchNorm2d(v * 2),
+                    swiglu,
+                ])
+                in_channels = v
+        return nn.Sequential(*layers)
+
+    def forward(self, x, labels, collect=False):
+        out = self.features(x)
+        out = out.view(out.size(0), -1)
+        out = self.classifier(out)
+        loss = self.loss_func(out, labels)
+        return out, loss, []
+
+
 class WideResNetBlock(nn.Module):
     """Wide residual block."""
     def __init__(self, in_ch, out_ch, stride=1, dropout=0.3):

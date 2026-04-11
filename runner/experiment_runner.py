@@ -50,7 +50,7 @@ class ExperimentRunner:
             'BaselineMLP', 'BaselineCNN', 'BaselineRNN',
             'BaselineResNet', 'InnerNetResNet',
             'BaselineAE', 'InnerNetAE',
-            'VGG16BN', 'WideResNet', 'SwiGLUCNN')
+            'VGG16BN', 'InnerNetVGG16', 'SwiGLUVGG16', 'WideResNet', 'SwiGLUCNN')
 
         # Performance optimizations
         if self.use_gpu:
