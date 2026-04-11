@@ -273,24 +273,35 @@ def main():
             return
 
         completed_stages = get_completed_stage(save_dir)
+        training_mode = config.get('training_mode', '3phase')
 
-        if 'PRETRAIN_DONE' not in completed_stages:
-            logger.info("=== Starting Pretrain ===")
-            runner.pretrain()
+        if training_mode == 'end_to_end':
+            # End-to-end: skip pretrain + phase2, only joint train (phase1)
+            logger.info("=== End-to-end mode: skip pretrain & phase2 ===")
+            if 'PHASE1_DONE' not in completed_stages:
+                logger.info("=== Starting Joint Training (end-to-end) ===")
+                runner.train_phase1()
+            else:
+                logger.info("Training already done, skipping.")
         else:
-            logger.info("Pretrain already done, skipping.")
+            # Default 3-phase
+            if 'PRETRAIN_DONE' not in completed_stages:
+                logger.info("=== Starting Pretrain ===")
+                runner.pretrain()
+            else:
+                logger.info("Pretrain already done, skipping.")
 
-        if 'PHASE1_DONE' not in completed_stages:
-            logger.info("=== Starting Phase 1 ===")
-            runner.train_phase1()
-        else:
-            logger.info("Phase 1 already done, skipping.")
+            if 'PHASE1_DONE' not in completed_stages:
+                logger.info("=== Starting Phase 1 ===")
+                runner.train_phase1()
+            else:
+                logger.info("Phase 1 already done, skipping.")
 
-        if 'PHASE2_DONE' not in completed_stages:
-            logger.info("=== Starting Phase 2 ===")
-            runner.train_phase2()
-        else:
-            logger.info("Phase 2 already done, skipping.")
+            if 'PHASE2_DONE' not in completed_stages:
+                logger.info("=== Starting Phase 2 ===")
+                runner.train_phase2()
+            else:
+                logger.info("Phase 2 already done, skipping.")
 
         if 'TEST_DONE' not in completed_stages:
             logger.info("=== Starting Test ===")
