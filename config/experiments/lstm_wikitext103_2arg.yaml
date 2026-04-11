@@ -1,5 +1,5 @@
-# LSTM + PTB with InnerNetLSTMModel
-exp_name: lstm_ptb_2arg
+# LSTM + WIKITEXT103 with InnerNetLSTMModel
+exp_name: lstm_wikitext103_2arg
 task_type: language_model
 seed: 1234
 use_gpu: true
@@ -10,12 +10,12 @@ model:
   inner_hidden: 32
 
 lm:
-  dataset: ptb
+  dataset: wikitext103
   context_size: 32
   embed_dim: 64
   hidden_dim: 128
   batch_size: 128
-  epochs: 10
+  epochs: 3
   lr: 0.001
   grad_clip: 1.0
   num_seeds: 5

@@ -1,4 +1,4 @@
-# LSTM + PTB standard baseline
+# LSTM + PTB with StandardLSTMModel
 exp_name: lstm_ptb_baseline
 task_type: language_model
 seed: 1234
@@ -7,6 +7,7 @@ exp_dir: exp
 
 model:
   name: StandardLSTMModel
+
 
 lm:
   dataset: ptb

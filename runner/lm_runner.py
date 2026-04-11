@@ -37,6 +37,12 @@ class WikiTextDataset(Dataset):
             with open(ptb_path) as f:
                 text = f.read()
             tokens = text.split()
+        elif dataset_name == 'wikitext103':
+            from datasets import load_dataset
+            logger.info(f"Loading WikiText-103 ({split})...")
+            dataset = load_dataset('wikitext', 'wikitext-103-v1', split=split)
+            text = " ".join(dataset['text'])
+            tokens = text.split()
         else:
             from datasets import load_dataset
             logger.info(f"Loading WikiText-2 ({split})...")
