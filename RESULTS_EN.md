@@ -78,15 +78,15 @@ ResNet-18 InnerNet slightly behind ReLU on CIFAR-100 with augmentation. †One s
 
 SiLU-InnerNet does NOT outperform ReLU-InnerNet — smooth inductive bias doesn't help.
 
-### LSTM Ablation (WikiText-2) — 2×2 Design
+### LSTM Ablation (WikiText-2)
 
-| | Unbounded | Bounded (tanh) |
-|--|-----------|----------------|
-| **Classic** (adjacent pair) | **101.72±0.99** | 104.46±0.38 |
-| **Semantic** (x vs h pair) | 105.30±0.31 | 107.15±0.83 |
-| **Standard** (tanh only) | — | 108.39±0.75 |
+| Variant | PPL (last epoch) |
+|---------|-----------------|
+| **Classic** (adjacent pair) | **101.72±0.99** |
+| **Semantic** (x vs h pair) | 105.30±0.31 |
+| **Standard** (baseline) | 108.39±0.75 |
 
-**Key finding**: Classic unbounded (101.72) is the best. Adjacent pairing without semantic structure outperforms deliberate x-vs-h pairing. Bounding with tanh hurts performance.
+**Key finding**: Classic (101.72) > Semantic (105.30) > Standard (108.39). Simple adjacent pairing outperforms deliberate x-vs-h pairing. Bounded (tanh) variants were also tested and performed worse — archived as they add unnecessary complexity.
 
 ### LSTM (WikiText-2, best result)
 

@@ -107,14 +107,14 @@
 | PTB d=128 | **207.81** | 212.28 | -2.1% |
 | GPT d=256 | ⏳ | 72.54 | — |
 
-### LSTM 消融矩阵 (WikiText-2) — 全部完成 ✅
-| | Unbounded | Bounded |
-|--|-----------|---------|
-| Classic | **99.33±0.79** ✅ | 101.76±0.33 ✅ |
-| Semantic | 103.41±0.83 ✅ | 105.59±1.12 ✅ |
-| Standard | — | 104.38±0.63 ✅ |
+### LSTM 消融 (WikiText-2) ✅
+| 变体 | Best PPL | Last PPL |
+|------|---------|----------|
+| Classic（相邻配对） | **99.33** | 101.72±0.99 |
+| Semantic（x vs h） | 103.41 | 105.30±0.31 |
+| Standard (baseline) | 104.38 | 108.39±0.75 |
 
-*注：以上为 best-epoch PPL。Classic unbounded 最好，简单相邻配对 > 语义配对。*
+*Bounded (tanh) 变体已测试并归档——加 tanh 约束一致更差。*
 
 ### 其他已确认结果
 - AE: MNIST -39%, FashionMNIST -12%, CIFAR-10 -26%
@@ -139,4 +139,5 @@
 | Transformer attention 替换 | +6.6% PPL，失败 | archive/configs/ |
 | 旧版小 CNN CIFAR-100 | 被 big 版本取代 | archive/configs/, archive/exp/ |
 | PPO MountainCar (-200) | 全部失败 | 仍在 exp/（PPO 本身不归档） |
+| LSTM Bounded (tanh) 变体 | 加 tanh 一致更差 | archive/configs/ |
 | Cora / S4/Mamba | 改动太大 | 未实现 |

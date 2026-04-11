@@ -78,15 +78,15 @@
 
 SiLU-InnerNet 不优于 ReLU-InnerNet——平滑 inductive bias 没有帮助。
 
-### LSTM 消融矩阵（WikiText-2）— 2×2 设计
+### LSTM 消融（WikiText-2）
 
-| | Unbounded | Bounded (tanh) |
-|--|-----------|----------------|
-| **Classic**（相邻配对） | **101.72±0.99** | 104.46±0.38 |
-| **Semantic**（x vs h 配对） | 105.30±0.31 | 107.15±0.83 |
-| **Standard**（原始 tanh） | — | 108.39±0.75 |
+| 变体 | PPL（last epoch） |
+|------|-----------------|
+| **Classic**（相邻配对） | **101.72±0.99** |
+| **Semantic**（x vs h 配对） | 105.30±0.31 |
+| **Standard**（baseline） | 108.39±0.75 |
 
-**关键发现**：Classic unbounded (101.72) 最好。排序：Classic unbnd > Classic bnd > Semantic unbnd > Semantic bnd > Standard。简单的相邻维度配对反而优于精心设计的语义配对。
+**关键发现**：Classic (101.72) > Semantic (105.30) > Standard (108.39)。简单的相邻配对优于精心设计的语义配对。Bounded (tanh) 变体也测试过但效果更差——已归档。
 
 ## 5. 回归任务（MSE↓，3–5 seeds）
 
