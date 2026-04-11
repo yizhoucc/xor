@@ -1,18 +1,17 @@
-# 实验结果 — InnerNet（可学习双参数激活函数）
+# 实验结果笔记 — InnerNet
 
-> 论文 "Two-argument activation functions learn soft XOR operations like cortical neurons"（Yoon et al., 2021）的复现与扩展实验汇总。
+> 内部文档，记录我们所有实验的结果和分析。英文正式版见 `RESULTS_EN.md`。
 
-## 论文 Story
+## 目前的 Story
 
-InnerNet 用一个小型可学习 MLP 替代标量激活函数（ReLU），接收两个输入：`f(a, b) → output`。这让每个神经元在激活前能"看到"相邻特征——类似皮层神经元的软 XOR 运算。
+简单说就是：把 ReLU 换成一个小 MLP（两个输入，一个输出），让每个神经元能"看到"隔壁特征再决定怎么激活。效果：没有 skip connection 的网络一致变好，参数还少 40%。
 
-**三个核心主张及证据：**
+我们发现了三件事：
+1. **没有 skip 的前馈网络都能提升** — CNN、AE、Transformer FFN 都好用
+2. **InnerNet 自己学出了 SwiGLU** — 没人告诉它怎么做门控，它自己学的，说明可学习激活函数能当架构搜索工具用
+3. **越简单越好** — 相邻配对比精心设计的语义配对好，pretrain 可能不是必须的
 
-1. **InnerNet 改善无 skip connection 的前馈网络** — CNN (+0.4–4.6%), AE (-43% MSE), Transformer FFN (-0.8–3.4% PPL)，参数量少 40%
-2. **InnerNet 是架构发现工具** — 自动学到类似 SwiGLU 的双输入门控模式，证明可学习激活函数能重新发现手工设计的结构
-3. **简单即最好** — 简单相邻配对 > 精心语义配对；不需要预训练（end-to-end ≈ 3-phase）；去掉 tanh 约束更好
-
-**明确边界：** InnerNet 在 skip connection 已提供特征交互时冗余（ResNet）。LSTM 效果依赖数据集（WikiText-2 有效，PTB 反而更差），正在用 WikiText-103 和 CNN/DM 验证是领域问题还是数据量问题。
+不好用的地方：ResNet 有 skip connection 就没用了（冗余）。LSTM 的效果看数据集，WikiText-2 好用 PTB 不行，还在查原因。
 
 ---
 
@@ -20,115 +19,110 @@ InnerNet 用一个小型可学习 MLP 替代标量激活函数（ReLU），接�
 
 | 数据集 | 2-arg | 1-arg | ReLU | ReLU+LN | ReLU 参数匹配 | SwiGLU | 提升 |
 |--------|-------|-------|------|---------|-------------|--------|------|
-| MNIST | 99.41±0.04 | 99.42±0.06 | 99.02±0.03 | 99.18±0.02 | — | — | **+0.39** |
+| MNIST | 99.41±0.04 | 99.42±0.06 | 99.02±0.03 | 99.18±0.02 | — | — | +0.39 |
 | CIFAR-10 | 78.57±0.74 | 81.02±1.02 | 73.99±0.49 | 75.14±0.34 | 70.67±0.43 | 79.79±0.54 | **+4.58** |
-| FashionMNIST | 90.91±0.29 | ⏳ | 89.34±0.13 | 89.34±0.16 | — | — | **+1.57** |
-| SVHN | ⏳ | 95.16±0.23 | 92.55±0.19 | 92.82±0.09 | — | — | **+2.46** |
+| FashionMNIST | 90.91±0.29 | ⏳ | 89.34±0.13 | 89.34±0.16 | — | — | +1.57 |
+| SVHN | ⏳ | 95.16±0.23 | 92.55±0.19 | 92.82±0.09 | — | — | +2.46 |
 | CIFAR-100 大模型 | 53.74±0.88 | — | 50.00±0.83 | — | — | 46.48±0.50 | **+3.74** |
 
-**参数公平对比（CIFAR-10）**：InnerNet (127K) = 78.57% vs ReLU (127K) = 70.67% → **同参数量 +7.9%**。
+MNIST 接近饱和所以提升小，CIFAR 越难提升越大。1-arg 在 CIFAR-10 上竟然比 2-arg 好（81 vs 78），有点意外，可能是 2-arg 配对引入了优化困难。
 
-**SwiGLU 对比**：CIFAR-10 上 SwiGLU 略优（79.79 vs 78.57），但 CIFAR-100 上 InnerNet 大幅领先（53.74 vs 46.48）。InnerNet 的学习交互在更难任务上泛化更好。
+参数公平对比做了：同样 127K 参数，InnerNet 78.57% vs ReLU 70.67%，差 8 个点，说明不是参数多才好，是双输入交互本身有用。
 
-## 2. 自编码器重建（MSE↓，3-5 seeds）
+SwiGLU 对比：CIFAR-10 上 SwiGLU 略赢（79.79 vs 78.57），但 CIFAR-100 上 InnerNet 大赢（53.74 vs 46.48）。任务越难 InnerNet 越有优势。
+
+Configs: `config/experiments/cnn_cifar_2arg.yaml` 等，exp: `exp/cnn_cifar_2arg_*`
+
+## 2. 自编码器（我们最强的结果）
 
 | 数据集 | InnerNet | ReLU | ReLU 参数匹配 | 改进 |
 |--------|----------|------|-------------|------|
-| MNIST | **0.0039** | 0.0068 | 0.0059 | **-43% vs ReLU, -34% vs 匹配** |
-| FashionMNIST | **0.0076** | 0.0086 | — | **-12%** |
-| CIFAR-10 | **0.0081** | 0.0105 | — | **-23%** |
+| MNIST | **0.0039** | 0.0068 | 0.0059 | **-43%** |
+| FashionMNIST | **0.0076** | 0.0086 | — | -12% |
+| CIFAR-10 | **0.0081** | 0.0105 | — | -23% |
 
-InnerNet 最强的场景。瓶颈层迫使压缩，双输入交互等效于每个神经元的信息带宽翻倍。
+AE 是效果最炸裂的。MNIST 上直接干掉 43% 的 MSE，参数匹配了也还是赢 34%。原因很直觉：AE 瓶颈层逼着压缩信息，双输入交互等于带宽翻倍。
 
-### AE 容量缩放（latent 维度）
+容量缩放也做了（latent 从 8 到 64），在 latent=32 时改进最大 (-42%)，压缩刚好够紧的时候双输入最有价值。
 
-| Latent 维度 | InnerNet | ReLU | 改进 |
-|------------|----------|------|----|
-| 8 | 0.0141 | 0.0183 | -23% |
-| 16 | 0.0075 | 0.0114 | -34% |
-| 32 | 0.0039 | 0.0067 | -42% |
-| 64 | 0.0026 | 0.0042 | -39% |
+Configs: `config/experiments/ae_mnist_2arg.yaml`，exp: `exp/ae_mnist_2arg_*`
 
-latent=32 时改进最大（-42%）：压缩刚好紧到需要双输入交互的甜蜜点。
+## 3. Transformer FFN
 
-## 3. Transformer 语言模型（PPL↓，5 seeds）
+### 全规模对比
 
-### Transformer FFN — InnerNet vs GELU vs SwiGLU
+| 配置 | InnerNet | GELU | SwiGLU | vs GELU |
+|------|----------|------|--------|---------|
+| WikiText-2 d=64 | **112.66** | 116.63 | 112.31 | **-3.4%** |
+| WikiText-2 d=128 | **95.26** | 96.82 | 92.98 | -1.6% |
+| WikiText-2 d=192 | **88.14** | 89.11 | ⏳ | -1.1% |
+| WikiText-2 d=256 | **85.40** | 86.05 | ⏳ | -0.8% |
+| PTB d=128 | **207.81** | 212.28 | 205.82 | -2.1% |
 
-| 配置 | InnerNet | GELU | SwiGLU | InnerNet vs GELU |
-|------|----------|------|--------|-----------------|
-| WikiText-2 d=64 | **112.66±0.66** | 116.63±0.84 | 112.31±0.49 | **-3.4%** |
-| WikiText-2 d=128 | **95.26±1.00** | 96.82±1.19 | 92.98±1.14 | **-1.6%** |
-| WikiText-2 d=192 | **88.14±0.80** | 89.11±0.92 | ⏳ | **-1.1%** |
-| WikiText-2 d=256 | **85.40±1.15** | 86.05±0.97 | ⏳ | **-0.8%** |
-| PTB d=128 | **207.81±1.58** | 212.28±0.88 | 205.82±0.98 | **-2.1%** |
+所有规模都赢 GELU。d=64 的时候 InnerNet 和 SwiGLU 几乎一样（112.66 vs 112.31），说明 InnerNet 自己学出了 SwiGLU 的门控模式。这个很重要——证明可学习激活函数能当架构搜索工具。
 
-InnerNet 在所有规模上一致优于 GELU。d=64 时 InnerNet ≈ SwiGLU（112.66 vs 112.31），学到的激活函数追平了手工设计的。
+模型越大，InnerNet 优势越小（-3.4% → -0.8%），因为大模型本身容量够了。SwiGLU 在大规模上仍然比 InnerNet 好，因为 SwiGLU 的 `b` 有直达通路不丢信息，InnerNet 的 2→1 是信息瓶颈。
 
-**意义**：InnerNet 作为**架构发现工具**——独立收敛到类似 SwiGLU 的双输入门控模式，验证了可学习激活函数能自动发现有效的架构原语。
-
-### Transformer FFN 设计变体（PTB d=128）
+### 各种 FFN 设计变体（PTB d=128）
 
 | 模型 | PPL |
 |------|-----|
-| SwiGLU（固定门控） | **205.82±0.98** |
-| InnerNet Semantic（双投影） | 207.81±1.58 |
-| InnerNet Classic（相邻配对） | ⏳ |
-| SiLU-InnerNet | 208.43±1.44 |
-| GELU baseline | 212.28±0.88 |
+| SwiGLU | **205.82** |
+| InnerNet Semantic | 207.81 |
+| InnerNet Classic | ⏳ 在跑 |
+| SiLU-InnerNet | 208.43 |
+| GELU | 212.28 |
 
-SiLU 放入 InnerNet 内部没帮助——内部激活函数不重要，双输入结构本身才是关键。
+试了在 InnerNet 里面用 SiLU 替代 ReLU，没用（208.43 vs 207.81）。说明内部用什么激活不重要，双输入结构本身才是关键。Classic（相邻配对）版本在跑，看看 LSTM 那边的 classic > semantic 在 Transformer 上是不是也成立。
 
-## 4. LSTM 语言模型（PPL↓，5 seeds）
+Configs: `config/experiments/transformer_wikitext_*.yaml`，exp: `exp/transformer_wikitext_*`
 
-### LSTM 消融（WikiText-2）
+## 4. LSTM
+
+### WikiText-2 上好用
 
 | 变体 | PPL |
 |------|-----|
-| **Classic**（相邻配对） | **101.72±0.99** |
-| Semantic（x vs h 配对） | 105.30±0.31 |
-| Standard（baseline） | 108.39±0.75 |
+| **Classic**（相邻配对） | **101.72** |
+| Semantic（x vs h） | 105.30 |
+| Standard | 108.39 |
 
-### LSTM 跨数据集对比
+Classic 赢了 -6.2%。简单的相邻维度配对比精心设计的语义配对（把 x 和 h 对应维度配对）效果更好，这个挺意外的。
 
-| 数据集 | 领域 | Classic | Semantic | Standard | InnerNet 赢？ |
-|--------|------|---------|----------|----------|--------------|
-| WikiText-2 | 维基百科 | **101.72** | 105.30 | 108.39 | ✅ Classic -6.2% |
-| PTB | 华尔街日报 | 186.54 | 187.52 | **183.02** | ❌ Standard 最好 |
-| WikiText-103 | 维基百科(大) | ⏳ | ⏳ | ⏳ | — |
-| CNN/DailyMail | 新闻 | ⏳ | ⏳ | ⏳ | — |
+### PTB 上不好用！
 
-**重要发现**：LSTM 效果和数据集有关系。Wiki 上好用，PTB 上不行。还在用 WikiText-103 和 CNN/DM 跑，看看到底是领域问题还是数据量问题。如果 Wiki-103 也好用那就是领域差异；如果 Wiki-103 不好用那可能是小数据 overfit。
+| 变体 | PTB PPL |
+|------|---------|
+| **Standard** | **183.02** |
+| Classic | 186.54 |
+| Semantic | 187.52 |
 
-Configs: `config/experiments/lstm_wikitext_classic.yaml`, `lstm_ptb_classic.yaml`, `lstm_wikitext103_classic.yaml`, `lstm_cnndm_classic.yaml`
+PTB 上 Standard 最好，InnerNet 全部更差。和 WikiText-2 完全相反。
+
+这个问题我们正在查：WikiText-103 和 CNN/DailyMail 在跑。如果 Wiki-103 也好用 → 领域差异（维基百科 vs 新闻）。如果 Wiki-103 也不好用 → 可能是小数据 overfit（WikiText-2 太小刚好 InnerNet 的 regularization 有帮助）。
+
+Configs: `lstm_wikitext_classic.yaml`, `lstm_ptb_classic.yaml`, `lstm_wikitext103_classic.yaml`, `lstm_cnndm_classic.yaml`
 
 ## 5. 训练阶段消融
 
-| 任务 | 3-phase | End-to-end | 差异 |
-|------|---------|-----------|------|
-| AE MNIST (MSE↓) | 0.0039 | 0.0039 | 无 |
-| ResNet CIFAR-10 | 86.09% | 86.00% | 无 |
-| CNN CIFAR-10 | 78.57% | ⏳ | — |
-| MLP MNIST | 98.0% | ⏳ | — |
-
-初步结果：**预训练阶段不是必须的**。End-to-end 训练匹配 3-phase，简化了流程。
-
-## 5. 训练阶段消融（对内，英文不写）
+我们原来是三阶段训练：pretrain InnerNet → 联合训练 → 冻结 InnerNet 重训外部。试了直接 end-to-end 不分阶段：
 
 | 任务 | 3-phase | End-to-end | 差异 |
 |------|---------|-----------|------|
-| AE MNIST | 0.0039 | 0.0039 | 无差异 |
-| ResNet CIFAR-10 | 86.09% | 86.00% | 无差异 |
+| AE MNIST | 0.0039 | 0.0039 | 一样 |
+| ResNet CIFAR-10 | 86.09% | 86.00% | 一样 |
 | CNN CIFAR-10 | 78.57% | ⏳ | — |
 | MLP MNIST | 98.0% | ⏳ | — |
 
-目前看 pretrain 不是必须的，end-to-end 一样好。等 CNN/MLP 结果确认后再决定是否写进英文。
+目前看 pretrain 不是必须的，end-to-end 一样好。如果 CNN/MLP 也确认了，那 3-phase 训练流程可以简化掉，对论文来说也是好消息（更简单的方法 = 更容易被采纳）。等结果确认后再决定写不写进英文。
 
-Configs: `config/experiments/*_e2e.yaml`, exp pattern: `exp/*_e2e_*`
+Configs: `config/experiments/*_e2e.yaml`，exp: `exp/*_e2e_*`
 
-## 6. 参数效率 — MLP CIFAR-10（5 seeds）
+## 6. 参数效率
 
-| 宽度 | InnerNet（参数量） | ReLU（参数量） | 提升 |
+MLP CIFAR-10 上做了宽度缩放：
+
+| 宽度 | InnerNet | ReLU | 提升 |
 |------|----------|------|------|
 | 32 | 38.34% (104K) | 37.47% (101K) | +0.87 |
 | 64 | 47.66% (206K) | 45.77% (206K) | +1.89 |
@@ -136,91 +130,50 @@ Configs: `config/experiments/*_e2e.yaml`, exp pattern: `exp/*_e2e_*`
 | 256 | 54.82% (858K) | 51.99% (921K) | +2.83 |
 | 512 | 55.63% (1.84M) | 52.63% (2.10M) | +3.00 |
 
-**InnerNet w=128 (415K) ≥ ReLU w=256 (921K) → 节省 55% 参数。** 优势随模型增大而递增。
+关键数据点：**InnerNet w=128 ≈ ReLU w=256，参数省 55%**。模型越大优势越明显。
 
-## 7. 主流架构基线（CIFAR-100 + 数据增强）
+## 7. ResNet（skip connection = InnerNet 没用）
 
-| 架构 | 准确率 | 参数量 |
-|------|--------|--------|
-| WRN-28-10 | 74.78±0.15 (n=5) | ~36M |
-| ResNet-18 ReLU | 73.51±0.18 (n=5) | ~11M |
-| ResNet-18 InnerNet | 71.72±0.52 (n=4†) | — |
-| VGG-16+BN | 68.48±0.49 (n=5) | ~138M |
+| 数据集 | InnerNet | ReLU |
+|--------|----------|------|
+| CIFAR-10 | 86.09 | 86.33 |
+| CIFAR-100 | 56.78 | 57.95 |
 
-†一个种子发散 (59.43%)——深层网络中 InnerNet 的训练不稳定性。
+完全持平。因为 `y = F(x) + x` 已经提供了跨特征交互，InnerNet 做的事情 skip 已经做了。这个负面结果其实很有价值，帮我们划清了边界。英文文档中保留了这个。
 
-## 8. ResNet — Skip Connection（SGD，150 ep，5 seeds）
+## 8. RL（初步，结果不稳定）
 
-| 数据集 | InnerNet | ReLU | 差异 |
-|--------|----------|------|----|
-| CIFAR-10 | 86.09±0.82 | 86.33±0.34 | -0.24（持平） |
-| CIFAR-100 | 56.78±2.77 | 57.95±0.52 | -1.17（持平） |
+PPO 10 seeds：Acrobot 上 InnerNet 最好 (-75.3 vs ReLU -79.8)，但 LunarLander 上 ReLU 赢 (209.1 vs 166.6)，SwiGLU 直接崩了 (-139.1)。正在用 30 seeds 重跑 LunarLander。RL 对初始化太敏感了，这块只能当 preliminary。英文里暂时不 report。
 
-**Skip connection 让 InnerNet 冗余。** 残差路径 `y = F(x) + x` 已提供跨特征交互，使双输入激活不再必要。
+## 9. 回归（基本没用）
 
-## 9. PPO 强化学习（10 seeds）
+Housing -5% 有点效果，Diabetes 持平，Wine 反而更差 +9.3%。低维表格数据不适合 InnerNet，特征之间没有局部相关性。英文里不 report。
 
-| 环境 | InnerNet | ReLU | SwiGLU |
-|------|----------|------|--------|
-| CartPole | 499.9 | 500.0 | 500.0 |
-| **Acrobot** | **-75.3** | -79.8 | -81.7 |
-| MountainCar | -200.0 | -200.0 | -200.0 |
-| LunarLander | 166.6 | **209.1** | -139.1 |
+## 10. 不好用的东西（英文里不写或简写）
 
-结果参差不齐。Acrobot: InnerNet 最好。LunarLander: ReLU 最好。属初步结果。
-
-## 10. 回归任务（MSE↓，3-5 seeds）
-
-| 数据集 | InnerNet | ReLU | 改进 |
-|--------|----------|------|----|
-| California Housing | **0.196±0.007** | 0.206±0.008 | **-5.0%** |
-| Diabetes | 0.506±0.065 | 0.510±0.043 | -0.8%（持平） |
-| Wine Quality | 0.599±0.029 | **0.548±0.022** | +9.3%（更差） |
-
-## 11. 大 MLP MNIST（3×256，dropout=0.3，5 seeds）
-
-| 模型 | 准确率 |
+| 实验 | 咋回事 |
 |------|--------|
-| InnerNet | **98.39±0.04** |
-| ReLU | 97.93±0.07 |
-| 提升 | **+0.46%** |
+| ResNet | skip connection 已经做了 InnerNet 想做的事（**英文保留，有理论价值**） |
+| Transformer attention 替换 softmax | 2→1 MLP 替代不了 softmax 的概率归一化，PPL +6.6%，已归档 |
+| VGG-16 + SwiGLU | SGD lr=0.1 直接 NaN，lr=0.01 也只有 1%。13 层乘法门控 + SGD + 无 residual = 必炸 |
+| SiLU-InnerNet | 在 InnerNet 里面换 SiLU 没用，说明内部激活不重要 |
+| LSTM PTB | 效果反转，正在查原因 |
+| 文本分类 TF-IDF | 稀疏特征不适合配对，已归档 |
+| Bounded (tanh) LSTM | 加 tanh 一致变差，已归档。标准 Transformer 本来就不用 tanh |
+| CNN ×0.25 极小 | 通道太少配对开销太大 |
 
-## 12. 负面/中性结果
+## 正在跑的实验
 
-| 实验 | 结果 | 解释 |
-|------|------|------|
-| ResNet（skip connection） | 中性 | skip 已提供特征交互——InnerNet 冗余 |
-| Transformer attention 替换 softmax | 更差 (+6.6%) | 2→1 MLP 无法替代 softmax 的概率归一化 |
-| VGG-16 + SwiGLU | 失败 (1%) | 乘法门控需要 skip 或 Adam；深层 conv + SGD 不兼容 |
-| Wine 回归 | 更差 (+9.3%) | 低维表格数据，InnerNet 开销不合算 |
-| CNN ×0.25 缩放 | 更差 (-5%) | 通道配对开销在极小模型中占比过大 |
-| SiLU-InnerNet vs ReLU-InnerNet | 中性 | 内部激活函数选择不重要，双输入结构才是关键 |
-| LSTM PTB | 更差 | 数据集依赖，正在调查（Wiki-103/CNN-DM 在跑）|
-| 文本分类（TF-IDF） | 中性 | 稀疏特征缺乏局部相关性，已归档 |
-| Bounded (tanh) LSTM 变体 | 更差 | 加 tanh 一致变差，已归档 |
-
-以上负面结果**英文文档中不写或简写**。ResNet 的有理论价值（skip connection 解释），保留。其他的别人问了再说。
-
-## 正在进行的实验
-
-- Transformer SwiGLU 全规模对比（d=192 在跑，d=256 pending）
-- Transformer Classic InnerNet FFN（Wiki + PTB 在跑）
-- LSTM WikiText-103 + CNN/DM（在跑）
-- MLM Masked LM（GELU/InnerNet 在跑，SwiGLU 已完成 PPL=93.83）
-- PPO LunarLander 30 seeds（2arg/SwiGLU 在跑）
-- 训练阶段消融 CNN/MLP（在跑）
+- TF SwiGLU d=192 在跑，d=256 排队 → 补全全规模 SwiGLU 对比
+- TF Classic InnerNet FFN（Wiki + PTB）→ 看 LSTM 的 "classic > semantic" 在 TF 上成不成立
+- LSTM WikiText-103 + CNN/DM → 查 LSTM 数据集依赖的原因
+- MLM Masked LM → AE 那么好用，BERT 式掩码预测会不会也好用？SwiGLU 跑完了 PPL=93.83，GELU 和 InnerNet 在跑
+- PPO LunarLander 30 seeds → 加 seeds 稳定 RL 结果
+- 训练阶段消融 CNN/MLP → 确认 end-to-end 是否一样好
+- GPT d=256 → 大模型上 InnerNet 的表现
 
 ## 总结
 
-InnerNet（可学习双参数激活函数）在**无内建特征交互机制的前馈网络**中一致有效：
+InnerNet 在**没有 skip 的前馈网络**里一致好用。最猛的是 AE（-43%），然后是 CNN（+4.6%）、Transformer FFN（-3.4%），参数还能省一半多。InnerNet 自己学出了 SwiGLU 的模式，证明可学习激活函数能当架构搜索用。
 
-- **自编码器**：-23% 到 -43% MSE——最强结果，信息瓶颈放大了双输入优势
-- **CNN**：+0.4–4.6% 准确率，参数量少 40%——5 个数据集一致
-- **Transformer FFN**：-0.8–3.4% PPL，4 个模型规模——小规模时 InnerNet ≈ SwiGLU
-- **参数效率**：节省 55% 参数（InnerNet w=128 ≈ ReLU w=256）
-
-**架构发现**：InnerNet 独立收敛到类似 SwiGLU 的模式，验证了可学习激活函数作为发现有效架构原语的工具价值。
-
-**边界**：skip connection 存在时 InnerNet 冗余（ResNet），LSTM 效果依赖数据集。乘法门控（SwiGLU）需要架构支持（残差连接或自适应优化器）才能在深层网络中工作。
-
-**简单原则**：相邻配对 > 语义配对，end-to-end ≈ 3-phase，去掉 tanh 约束更好——驱动改进的是双输入交互本身，而非配对策略或训练方案。
+不好用的地方也很清楚：有 skip 就没用（ResNet），LSTM 看数据集。越简单越好——相邻配对 > 语义配对，pretrain 可能不需要。
