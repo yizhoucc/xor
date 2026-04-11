@@ -58,7 +58,7 @@
 | U11 | VGG-16 SwiGLU | ❌ lr=0.01+grad_clip 仍 1% 准确率。SwiGLU 与 VGG 深层 conv+SGD 不兼容，记为负面结果 |
 | U12 | GPT Transformer 2arg 卡死 | ⏳ 已取消重启 |
 | U13 | Transformer 全规模 SwiGLU 对比 | ⏳ d=64 ✅ SwiGLU 112.31 ≈ InnerNet 112.66, PTB ✅ SwiGLU 205.82。d=192 在跑, d=256 pending |
-| U14 | LSTM 2×2 消融多数据集 | ⏳ PTB 完成，WikiText-103 在跑 | **PTB: Standard(183) > Classic(187) > Semantic(188)**！和 WikiText-2 完全相反。InnerNet LSTM dataset-dependent |
+| U14 | LSTM 2×2 消融多数据集 | ⏳ PTB ✅, WikiText-103 在跑, CNN/DM 新提交 | **PTB: Standard > InnerNet**！4 数据集 (Wiki2/PTB/Wiki103/CNN-DM) 跨 3 领域 |
 | U15 | RL 加 seeds + 只报 PPO | ⏳ 已提交 LunarLander 30 seeds ×3 (2arg/relu/swiglu)。DQN 已归档 |
 | U16 | Masked LM（类 BERT） | ⏳ 已提交 3 jobs (GELU/InnerNet/SwiGLU, WikiText-2, 各 5 seeds) |
 | U17 | Transformer Classic InnerNet FFN | ⏳ 已提交 WikiText-2 + PTB (d=128, 各 5 seeds 内部)。Classic=单投影→相邻配对，对比 Semantic=两投影 |
