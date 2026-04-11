@@ -1,15 +1,17 @@
 # 项目状态 — 2026-04-10
 
-## 集群运行中 (~20 jobs)
+## 集群运行中 (~27 jobs)
 
 | 类别 | 实验 | 状态 |
 |------|------|------|
 | Critical seeds | CNN SVHN 2arg ×2 running + ×2 pending | running |
 | Critical seeds | CNN FMNIST 1arg ×4 | pending |
-| Urgent | VGG-16 InnerNet CIFAR-100 (×5) | pending |
-| ⚠️ Urgent | VGG-16 SwiGLU CIFAR-100 (×5) | **NaN — 全部发散！** |
-| ⚠️ GPT | Transformer 2arg d=256 | **疑似卡死 (seed 1 ep 13/20, 2d+ 无新日志)** |
-| Running | SiLU-InnerNet WikiText-2 | seed 4/5, ep 5/10 |
+| U2 | VGG-16 InnerNet CIFAR-100 (×5) | pending |
+| U11 | VGG-16 SwiGLU CIFAR-100 v2 (×5, lr=0.01) | pending |
+| U12 | GPT Transformer 2arg d=256 (重启) | pending |
+| U5 | SiLU-InnerNet WikiText-2 | running (seed 4/5) |
+| **U13** | **TF SwiGLU d=64/192/256 + PTB (×4 jobs)** | **新提交** |
+| **U15** | **PPO LunarLander 30 seeds ×3** | **新提交** |
 
 ### 已完成（本轮）
 - ✅ ResNet-18+aug CIFAR-100: ReLU 73.51±0.18, InnerNet 71.72±0.52 (n=4, 排除 59.43% outlier)
@@ -51,9 +53,9 @@
 | U10 | LSTM PTB vs WikiText 结论不一致 | TODO | WikiText: classic>semantic。PTB: semantic>classic。需要解释或更多数据集验证 |
 | U11 | VGG-16 SwiGLU 训练发散 | ⏳ 已修复 lr=0.01+grad_clip 重提交 |
 | U12 | GPT Transformer 2arg 卡死 | ⏳ 已取消重启 |
-| U13 | Transformer 全规模 SwiGLU 对比 | TODO | d=64/192/256 + PTB d=128 缺 SwiGLU。20 jobs (4 规模×5 seeds) |
+| U13 | Transformer 全规模 SwiGLU 对比 | ⏳ 已提交 4 jobs (d=64/192/256 WikiText + d=128 PTB，各 5 seeds 内部) |
 | U14 | LSTM 2×2 消融多数据集 | TODO | 目前只有 WikiText-2。加 PTB + WikiText-103。5 变体×2 数据集×5 seeds = 50 jobs |
-| U15 | RL 加 seeds + 只报 PPO | TODO | LunarLander 方差大，加到 20-30 seeds。DQN 已归档，论文只报 PPO |
+| U15 | RL 加 seeds + 只报 PPO | ⏳ 已提交 LunarLander 30 seeds ×3 (2arg/relu/swiglu)。DQN 已归档 |
 | U16 | Masked LM（类 BERT） | TODO | AE 是最强结果(-43%)，BERT=掩码 AE。用现有 Transformer 改训练目标为 mask prediction，对比 GELU/InnerNet/SwiGLU FFN |
 | U17 | Transformer Classic InnerNet FFN | TODO | LSTM 证明 Classic > Semantic。当前 TF 用 Semantic 配对（两个投影 W_a,W_b），改为 Classic（单投影→相邻配对）可能进一步提升。在 d=128 WikiText-2 + PTB 上对比 |
 
