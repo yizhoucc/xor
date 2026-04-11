@@ -153,8 +153,9 @@ class ExperimentRunner:
         # Create model
         model = eval(self.model_conf.name)(self.config)
 
-        # Load pretrained InnerNet if applicable
-        if self.has_inner_net:
+        # Load pretrained InnerNet if applicable (skip in end-to-end mode)
+        training_mode = getattr(self.config, 'training_mode', '3phase')
+        if self.has_inner_net and training_mode != 'end_to_end':
             num_cell_types = getattr(self.model_conf, 'num_cell_types', 1)
             if hasattr(model, 'inner_net') and isinstance(model.inner_net, nn.ModuleList):
                 for i in range(num_cell_types):
