@@ -179,6 +179,12 @@ InnerNet 254.1 ± 69.3 vs ReLU 150.6 ± 58.5 (+69%)
 - **批量验证**: `bash scripts/validate_all.sh` — 全 PASS 后再 sbatch
 - **流程**: 写 config → validate → fix → sbatch
 
+### 归档实验
+- **`archive/`** 目录存放废弃/被取代的实验，包含 configs、models、runners、exp 输出
+- 已归档：DQN RL（改用 PPO）、Transformer attention 替换（失败）、低精度图像/文本实验、旧版小 CNN CIFAR-100
+- 详见 `archive/README.md`
+- 原则：不删除，只移动。知道做过、不好用、不再跑。需要时可以回去读细节
+
 ### 项目文档规则
 - **`PROJECT_STATUS.md`**: 项目状态 + TODO + 审稿意见，统一追踪文档。每次有进展时更新。
 - **`RESULTS_EN.md`** 和 **`RESULTS_CN.md`**: 实验结果正式文档，中英双语。有新结果时必须**同时更新两个文件**，保持一致。

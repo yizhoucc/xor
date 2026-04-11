@@ -108,16 +108,9 @@ def _validate_config(config, logger):
         out = model(x)
         out.sum().backward()
 
-    elif task_type == 'rl':
-        from runner.rl_runner import RLRunner
-        runner = RLRunner(config)
-        state_dim = config.model.get('obs_dim', 4)
-        action_dim = config.model.get('action_dim', 2)
-        model = runner._make_model(state_dim, action_dim).to(device)
-        x = torch.randn(2, state_dim).to(device)
-        out = model(x)
-        out.sum().backward()
-
+    elif task_type == 'rl' and config.get('rl_algo', 'ppo') == 'dqn':
+        # DQN archived — see archive/runners/rl_runner.py
+        raise ValueError("DQN has been archived. Use PPO (task_type='rl_ppo') instead.")
     elif task_type == 'ppo':
         from runner.ppo_runner import PPORunner
         runner = PPORunner(config)
@@ -235,14 +228,7 @@ def main():
     task_type = config.get('task_type', 'classification')
     logger.info(f"Task type: {task_type}")
 
-    if task_type == 'rl':
-        from runner.rl_runner import RLRunner
-        runner = RLRunner(config)
-        if args.test:
-            runner.test()
-        else:
-            runner.train()
-    elif task_type == 'ppo':
+    if task_type == 'ppo':
         from runner.ppo_runner import PPORunner
         runner = PPORunner(config)
         if args.test:

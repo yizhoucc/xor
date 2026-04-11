@@ -49,8 +49,12 @@
 | U8 | ResNet InnerNet 训练不稳定 | ⏳ 5 seeds 完成，seed 44=59.43% outlier。n=4 均值 71.72±0.52 vs ReLU 73.51±0.18。需要 lr warmup 或更低 lr |
 | U9 | Small CNN CIFAR-100 参数不公平 | TODO | SwiGLU 46.48% 远超 InnerNet 34.65%/ReLU 29.70%。SwiGLU 训练 400ep 不分阶段 vs InnerNet 3-phase。需要公平对比（同 epoch 或 end-to-end InnerNet） |
 | U10 | LSTM PTB vs WikiText 结论不一致 | TODO | WikiText: classic>semantic。PTB: semantic>classic。需要解释或更多数据集验证 |
-| U11 | VGG-16 SwiGLU 训练发散 | 🔴 | 所有 5 seeds NaN loss。SGD lr=0.1 可能太高，或 BN+SwiGLU 不兼容。需降低 lr 或用 Adam |
-| U12 | GPT Transformer 2arg 卡死 | 🔴 | seed 1 ep 13/20 后超过 2 天无新日志。需检查进程/重启 |
+| U11 | VGG-16 SwiGLU 训练发散 | ⏳ 已修复 lr=0.01+grad_clip 重提交 |
+| U12 | GPT Transformer 2arg 卡死 | ⏳ 已取消重启 |
+| U13 | Transformer 全规模 SwiGLU 对比 | TODO | d=64/192/256 + PTB d=128 缺 SwiGLU。20 jobs (4 规模×5 seeds) |
+| U14 | LSTM 2×2 消融多数据集 | TODO | 目前只有 WikiText-2。加 PTB + WikiText-103。5 变体×2 数据集×5 seeds = 50 jobs |
+| U15 | RL 加 seeds + 只报 PPO | TODO | LunarLander 方差大，加到 20-30 seeds。DQN 已归档，论文只报 PPO |
+| U16 | Masked LM（类 BERT） | TODO | AE 是最强结果(-43%)，BERT=掩码 AE。用现有 Transformer 改训练目标为 mask prediction，对比 GELU/InnerNet/SwiGLU FFN |
 
 ### 🟡 Major
 
@@ -115,13 +119,17 @@
 
 ---
 
-## 不再追踪
+## 不再追踪（已归档至 `archive/`）
 
-| 实验 | 原因 |
-|------|------|
-| MLP CIFAR-100 (16%) | baseline 太低 |
-| Speech Commands MLP (16%) | MLP 不适合音频 |
-| ECG200 (82%, std=5.8) | 数据集太小 |
-| PPO MountainCar (-200) | 全部失败 |
-| Cora / S4/Mamba | 改动太大 |
-| STL-10 (57% vs 59%) | InnerNet 输，方差大 |
+| 实验 | 原因 | 归档位置 |
+|------|------|---------|
+| MLP CIFAR-100 (16%) | baseline 太低 | archive/configs/, archive/exp/ |
+| Speech Commands MLP (16%) | MLP 不适合音频 | archive/configs/, archive/exp/ |
+| ECG200 (82%, std=5.8) | 数据集太小 | archive/configs/, archive/exp/ |
+| STL-10 (57% vs 59%) | InnerNet 输 | archive/configs/, archive/exp/ |
+| 文本分类 SST-2/AG News/Wine/Adult | 稀疏特征不适合 | archive/configs/, archive/exp/ |
+| DQN RL (全部) | 改用 PPO | archive/models/dqn.py, archive/runners/rl_runner.py |
+| Transformer attention 替换 | +6.6% PPL，失败 | archive/configs/ |
+| 旧版小 CNN CIFAR-100 | 被 big 版本取代 | archive/configs/, archive/exp/ |
+| PPO MountainCar (-200) | 全部失败 | 仍在 exp/（PPO 本身不归档） |
+| Cora / S4/Mamba | 改动太大 | 未实现 |
