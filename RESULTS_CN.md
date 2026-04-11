@@ -151,7 +151,7 @@ Housing -5% 有点效果。Diabetes 持平。Wine 反而更差 +9.3%。低维表
 |------|------|
 | ResNet | skip 做了同样的事（**英文保留**） |
 | TF attention 替换 softmax | 不行，+6.6%，已归档 |
-| VGG-16 + SwiGLU | SGD + 13 层乘法门控 + 没 residual = 炸了，1% 准确率 |
+| VGG-16 + SwiGLU | SGD + 13 层乘法门控 + 没 residual，训练不了，1% 准确率 |
 | SiLU-InnerNet | 换了 SiLU 没用 |
 | LSTM PTB | 不好用，在研究 |
 | 文本分类 TF-IDF | 稀疏特征不适合，已归档 |
