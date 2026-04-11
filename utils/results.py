@@ -54,19 +54,24 @@ def _parse_exp_name(dirname):
 
     # Detect architecture
     arch = parts[0] if parts else "unknown"
-    if arch in ("mlp", "cnn", "resnet", "ae", "vit", "mixer", "dqn", "ppo", "lstm", "transformer"):
-        pass
-    else:
+    # Normalize multi-word arch names
+    if arch == "vgg16":
+        arch = "vgg"
+    if arch not in ("mlp", "cnn", "resnet", "ae", "vit", "mixer", "ppo", "lstm",
+                     "transformer", "vgg", "wrn", "rnn"):
         arch = "unknown"
 
-    # Detect variant (last meaningful part)
+    # Detect variant: find the earliest variant keyword in parts
+    variant_keywords = {"2arg", "1arg", "relu", "gelu", "swiglu", "silu", "baseline",
+                        "matched", "tanh", "classic", "bounded", "big"}
     variant = "unknown"
-    for v in ["2arg", "1arg", "relu", "gelu", "swiglu", "baseline", "matched", "tanh"]:
-        if v in parts:
-            # Include everything after dataset up to variant
-            idx = parts.index(v)
-            variant = "_".join(parts[idx:])
+    for i, p in enumerate(parts):
+        if p in variant_keywords:
+            variant = "_".join(parts[i:])
             break
+    # If no variant keyword found but it's a known arch, assume relu baseline
+    if variant == "unknown" and arch in ("vgg", "wrn", "resnet", "cnn", "mlp"):
+        variant = "relu"
 
     # Detect dataset
     dataset = "unknown"
@@ -131,6 +136,7 @@ def load_all_results(exp_dir="exp", include_training_stats=False):
             "mse": None,
             "ppl": None,
             "ppl_std": None,
+            "ppl_best": None,
             "reward": None,
             "n_seeds": 1,
             "exp_dir": entry,
@@ -153,6 +159,10 @@ def load_all_results(exp_dir="exp", include_training_stats=False):
                 row["ppl"] = float(np.mean(vals))
                 row["ppl_std"] = float(np.std(vals))
                 row["n_seeds"] = len(vals)
+            # Best-epoch PPL (early stopping)
+            best = r.get("best_mean_ppl")
+            if best is not None:
+                row["ppl_best"] = float(best)
 
         # RL results (internal multi-seed)
         r = _safe_load_pickle(os.path.join(entry_path, "rl_results.p"))
@@ -248,5 +258,5 @@ def rl_results(df=None, exp_dir="exp"):
     """Get RL results summary."""
     if df is None:
         df = load_all_results(exp_dir)
-    rl = df[(df.arch == "dqn") | (df.arch == "ppo")]
+    rl = df[df.arch == "ppo"]
     return summary_table(rl, "reward", ["dataset", "variant"])
