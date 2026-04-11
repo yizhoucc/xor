@@ -55,6 +55,7 @@
 | U14 | LSTM 2×2 消融多数据集 | TODO | 目前只有 WikiText-2。加 PTB + WikiText-103。5 变体×2 数据集×5 seeds = 50 jobs |
 | U15 | RL 加 seeds + 只报 PPO | TODO | LunarLander 方差大，加到 20-30 seeds。DQN 已归档，论文只报 PPO |
 | U16 | Masked LM（类 BERT） | TODO | AE 是最强结果(-43%)，BERT=掩码 AE。用现有 Transformer 改训练目标为 mask prediction，对比 GELU/InnerNet/SwiGLU FFN |
+| U17 | Transformer Classic InnerNet FFN | TODO | LSTM 证明 Classic > Semantic。当前 TF 用 Semantic 配对（两个投影 W_a,W_b），改为 Classic（单投影→相邻配对）可能进一步提升。在 d=128 WikiText-2 + PTB 上对比 |
 
 ### 🟡 Major
 
