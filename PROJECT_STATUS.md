@@ -51,16 +51,16 @@
 | U4 | LSTM 消融 (2×2) | ✅ 全部完成: Classic unbnd **99.33** > Classic bnd 101.76 > Semantic unbnd 103.41 > Standard 104.38 > Semantic bnd 105.59 |
 | U5 | SiLU-InnerNet Transformer | ✅ PTB 完成: 208.43 vs ReLU-InnerNet 207.81 — SiLU 没帮助。WikiText-2 在跑 (seed 4/5, ep 5/10) |
 | U6 | InnerGate（备选，如 SiLU 不行）| TODO | `b × sigmoid(InnerNet(a,b))`：b 保留直达通路 + gate 双向感知。上限最高但有点"作弊"（结构太接近 SwiGLU） |
-| U7 | 训练阶段消融 | ⏳ 2/4 完成 | AE e2e=0.0039 ≈ 3-phase, ResNet e2e=86.0% ≈ 3-phase → pretrain 对这两个不重要。CNN/MLP 在跑 |
+| U7 | 训练阶段消融 | ⏳ 2/4 完成 | AE/ResNet: e2e ≈ 3-phase。CNN/MLP 之前因缺 pretrained 文件失败，已修复重提交 |
 | U8 | ResNet InnerNet 训练不稳定 | ⏳ 5 seeds 完成，seed 44=59.43% outlier。n=4 均值 71.72±0.52 vs ReLU 73.51±0.18。需要 lr warmup 或更低 lr |
 | U9 | Small CNN CIFAR-100 参数不公平 | TODO | SwiGLU 46.48% 远超 InnerNet 34.65%/ReLU 29.70%。SwiGLU 训练 400ep 不分阶段 vs InnerNet 3-phase。需要公平对比（同 epoch 或 end-to-end InnerNet） |
 | U10 | LSTM PTB vs WikiText 结论不一致 | TODO | WikiText: classic>semantic。PTB: semantic>classic。需要解释或更多数据集验证 |
 | U11 | VGG-16 SwiGLU | ❌ lr=0.01+grad_clip 仍 1% 准确率。SwiGLU 与 VGG 深层 conv+SGD 不兼容，记为负面结果 |
 | U12 | GPT Transformer 2arg 卡死 | ⏳ 已取消重启 |
-| U13 | Transformer 全规模 SwiGLU 对比 | ⏳ d=64 ✅ SwiGLU 112.31 ≈ InnerNet 112.66, PTB ✅ SwiGLU 205.82。d=192 在跑, d=256 pending |
-| U14 | LSTM 2×2 消融多数据集 | ⏳ PTB ✅, WikiText-103 在跑, CNN/DM 新提交 | **PTB: Standard > InnerNet**！4 数据集 (Wiki2/PTB/Wiki103/CNN-DM) 跨 3 领域 |
-| U15 | RL 加 seeds + 只报 PPO | ⏳ 已提交 LunarLander 30 seeds ×3 (2arg/relu/swiglu)。DQN 已归档 |
-| U16 | Masked LM（类 BERT） | ⏳ 已提交 3 jobs (GELU/InnerNet/SwiGLU, WikiText-2, 各 5 seeds) |
+| U13 | Transformer 全规模 SwiGLU 对比 | ⏳ d=64 ✅ 112.31, d=192 ✅ 85.43, PTB ✅ 205.82。d=256 pending |
+| U14 | LSTM 2×2 消融多数据集 | ⏳ PTB ✅ Standard 赢。Wiki-103 在跑(慢)。CNN/DM OOM 已加内存重提交 |
+| U15 | RL 加 seeds + 只报 PPO | ✅ LunarLander 30s: InnerNet 187.6 > ReLU 158.8 > SwiGLU -249.7。InnerNet 赢（10 seeds 时输，30 seeds 翻了） |
+| U16 | Masked LM（类 BERT） | ⏳ SwiGLU 93.83, GELU 101.39 完成。InnerNet 在跑 |
 | U17 | Transformer Classic InnerNet FFN | ⏳ 已提交 WikiText-2 + PTB (d=128, 各 5 seeds 内部)。Classic=单投影→相邻配对，对比 Semantic=两投影 |
 
 ### 🟡 Major
