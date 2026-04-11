@@ -43,6 +43,12 @@ class WikiTextDataset(Dataset):
             dataset = load_dataset('wikitext', 'wikitext-103-v1', split=split)
             text = " ".join(dataset['text'])
             tokens = text.split()
+        elif dataset_name == 'cnn_dailymail':
+            from datasets import load_dataset
+            logger.info(f"Loading CNN/DailyMail ({split})...")
+            dataset = load_dataset('cnn_dailymail', '3.0.0', split=split)
+            text = " ".join(dataset['article'])
+            tokens = text.split()
         else:
             from datasets import load_dataset
             logger.info(f"Loading WikiText-2 ({split})...")
