@@ -12,6 +12,8 @@
 | U5 | SiLU-InnerNet WikiText-2 | running (seed 4/5) |
 | **U13** | **TF SwiGLU d=64/192/256 + PTB (×4 jobs)** | **新提交** |
 | **U15** | **PPO LunarLander 30 seeds ×3** | **running** |
+| **U14** | **LSTM 消融 PTB ×5 + WikiText-103 ×5** | **新提交** |
+| **U16** | **MLM (BERT-style) ×3** | **新提交** |
 | **U17** | **TF Classic InnerNet FFN (Wiki + PTB)** | **新提交** |
 
 ### 已完成（本轮）
@@ -57,20 +59,7 @@
 | U13 | Transformer 全规模 SwiGLU 对比 | ⏳ 已提交 4 jobs (d=64/192/256 WikiText + d=128 PTB，各 5 seeds 内部) |
 | U14 | LSTM 2×2 消融多数据集 | ⏳ 已提交 10 jobs (5 变体 × PTB + WikiText-103) |
 | U15 | RL 加 seeds + 只报 PPO | ⏳ 已提交 LunarLander 30 seeds ×3 (2arg/relu/swiglu)。DQN 已归档 |
-| U16 | Masked LM（类 BERT） | 🔧 执行中 | AE 是最强结果(-43%)，BERT=掩码 AE |
-
-#### U16 执行笔记 — Masked LM
-**设计**:
-- 复用现有 Transformer encoder 架构，改训练目标为 masked token prediction
-- 随机 mask 15% tokens (BERT 标准)，用 [MASK] token 替换，预测原始 token
-- 不需要 causal mask（双向 attention），只需 padding mask
-- 对比: GELU FFN vs InnerNet FFN (semantic) vs SwiGLU FFN
-
-**实现计划**:
-1. 新建 `runner/mlm_runner.py` — 基于 lm_runner，改为 masked prediction
-2. 修改模型 forward: 去掉 causal mask，输出所有 masked 位置的 logits
-3. 新建 3 个 configs (masked_wikitext_gelu/2arg/swiglu)
-4. 在 run.py 中注册 task_type='mlm'
+| U16 | Masked LM（类 BERT） | ⏳ 已提交 3 jobs (GELU/InnerNet/SwiGLU, WikiText-2, 各 5 seeds) |
 | U17 | Transformer Classic InnerNet FFN | ⏳ 已提交 WikiText-2 + PTB (d=128, 各 5 seeds 内部)。Classic=单投影→相邻配对，对比 Semantic=两投影 |
 
 ### 🟡 Major
