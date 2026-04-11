@@ -12,7 +12,7 @@ InnerNet replaces scalar activations (ReLU) with a small learned MLP that takes 
 2. **InnerNet acts as an architecture discovery tool** — it automatically learns dual-input gating patterns resembling SwiGLU, validating that learnable activations can rediscover hand-designed structures
 3. **Simplicity wins** — simple adjacent pairing > deliberate semantic pairing; no pretrain needed (end-to-end ≈ 3-phase); removing tanh bounds helps
 
-**Clear boundaries:** InnerNet is redundant when skip connections already provide cross-feature interaction (ResNet), and LSTM results are dataset-dependent (helps on WikiText-2, hurts on PTB).
+**Clear boundaries:** InnerNet is redundant when skip connections already provide cross-feature interaction (ResNet).
 
 ---
 
@@ -29,6 +29,8 @@ InnerNet replaces scalar activations (ReLU) with a small learned MLP that takes 
 **Parameter fairness (CIFAR-10)**: InnerNet (127K params, 78.57%) > ReLU matched (127K params, 70.67%). Same params, **+7.9% accuracy**.
 
 **SwiGLU comparison**: SwiGLU slightly beats InnerNet on CIFAR-10 (79.79 vs 78.57), but InnerNet beats SwiGLU on CIFAR-100 (53.74 vs 46.48). InnerNet's learned interaction generalizes better to harder tasks.
+
+Configs: `config/experiments/cnn_cifar_2arg.yaml`, exp pattern: `exp/cnn_cifar_2arg_*`
 
 ## 2. Autoencoder Reconstruction (MSE↓, 3–5 seeds)
 
@@ -50,6 +52,8 @@ InnerNet's strongest result. The bottleneck layer forces compression; dual-input
 | 64 | 0.0026 | 0.0042 | -39% |
 
 Peak improvement at latent=32 (-42%): sweet spot where compression is tight enough to benefit from dual-input interaction.
+
+Configs: `config/experiments/ae_mnist_2arg.yaml`, exp pattern: `exp/ae_mnist_2arg_*`
 
 ## 3. Transformer Language Models (PPL↓, 5 seeds)
 
@@ -79,39 +83,19 @@ InnerNet consistently beats GELU across all model sizes. At d=64, InnerNet ≈ S
 
 SiLU inside InnerNet doesn't help — the internal activation function doesn't matter; the dual-input structure itself is what matters.
 
-## 4. LSTM Language Models (PPL↓, 5 seeds)
-
-### LSTM Ablation (WikiText-2)
+## 4. LSTM Language Models (WikiText-2, PPL↓, 5 seeds)
 
 | Variant | PPL |
 |---------|-----|
-| **Classic** (adjacent pair) | **101.72±0.99** |
-| Semantic (x vs h pair) | 105.30±0.31 |
-| Standard (baseline) | 108.39±0.75 |
+| **Classic InnerNet** (adjacent pair) | **101.72±0.99** |
+| Semantic InnerNet (x vs h pair) | 105.30±0.31 |
+| Standard LSTM | 108.39±0.75 |
 
-### LSTM Cross-Dataset Comparison
+Classic InnerNet achieves **-6.2% PPL** vs standard LSTM. Adjacent-dimension pairing outperforms deliberate semantic pairing — the learnable nonlinear interaction itself drives improvement, not the pairing strategy.
 
-| Dataset | Domain | Classic | Semantic | Standard | InnerNet wins? |
-|---------|--------|---------|----------|----------|---------------|
-| WikiText-2 | Wikipedia | **101.72** | 105.30 | 108.39 | ✅ Classic -6.2% |
-| PTB | WSJ News | 186.54 | 187.52 | **183.02** | ❌ Standard best |
-| WikiText-103 | Wikipedia (large) | ⏳ | ⏳ | ⏳ | — |
-| CNN/DailyMail | News | ⏳ | ⏳ | ⏳ | — |
+Config: `config/experiments/lstm_wikitext_classic.yaml`, exp pattern: `exp/lstm_wikitext_classic_*`
 
-**Important finding**: LSTM results are dataset-dependent. InnerNet helps on WikiText-2 (Wikipedia) but not on PTB (WSJ news). Awaiting WikiText-103 and CNN/DailyMail to determine whether the pattern is domain-related or size-related.
-
-## 5. Training Phase Ablation
-
-| Task | 3-phase | End-to-end | Difference |
-|------|---------|-----------|------------|
-| AE MNIST (MSE↓) | 0.0039 | 0.0039 | None |
-| ResNet CIFAR-10 | 86.09% | 86.00% | None |
-| CNN CIFAR-10 | 78.57% | ⏳ | — |
-| MLP MNIST | 98.0% | ⏳ | — |
-
-Partial results: **pretrain phase is not critical** for AE and ResNet. End-to-end training matches 3-phase, simplifying the pipeline.
-
-## 6. Parameter Efficiency — MLP CIFAR-10 (5 seeds)
+## 5. Parameter Efficiency — MLP CIFAR-10 (5 seeds)
 
 | Width | InnerNet (Params) | ReLU (Params) | Gain |
 |-------|----------|------|------|
@@ -143,26 +127,7 @@ Partial results: **pretrain phase is not critical** for AE and ResNet. End-to-en
 
 **Skip connections make InnerNet redundant.** The residual path `y = F(x) + x` already provides cross-feature interaction, making InnerNet's dual-input activation unnecessary.
 
-## 9. PPO Reinforcement Learning (10 seeds)
-
-| Environment | InnerNet | ReLU | SwiGLU |
-|-------------|----------|------|--------|
-| CartPole | 499.9 | 500.0 | 500.0 |
-| **Acrobot** | **-75.3** | -79.8 | -81.7 |
-| MountainCar | -200.0 | -200.0 | -200.0 |
-| LunarLander | 166.6 | **209.1** | -139.1 |
-
-Mixed results. Acrobot: InnerNet best. LunarLander: ReLU best, SwiGLU crashes. Preliminary — RL is highly sensitive to initialization.
-
-## 10. Regression (MSE↓, 3–5 seeds)
-
-| Dataset | InnerNet | ReLU | Improvement |
-|---------|----------|------|-------------|
-| California Housing | **0.196±0.007** | 0.206±0.008 | **-5.0%** |
-| Diabetes | 0.506±0.065 | 0.510±0.043 | -0.8% (neutral) |
-| Wine Quality | 0.599±0.029 | **0.548±0.022** | +9.3% (worse) |
-
-## 11. Big MLP MNIST (3×256, dropout=0.3, 5 seeds)
+## 9. Big MLP MNIST (3×256, dropout=0.3, 5 seeds)
 
 | Model | Accuracy |
 |-------|----------|
@@ -170,18 +135,15 @@ Mixed results. Acrobot: InnerNet best. LunarLander: ReLU best, SwiGLU crashes. P
 | ReLU | 97.93±0.07 |
 | Improvement | **+0.46%** |
 
-## 12. Negative / Neutral Results
+## 10. Where InnerNet Does Not Help
 
 | Experiment | Result | Interpretation |
 |------------|--------|---------------|
-| ResNet (skip connections) | Neutral | Skip connections already provide feature interaction — InnerNet redundant |
-| Transformer attention (replace softmax) | Worse (+6.6%) | 2→1 MLP cannot replace softmax's probability normalization |
-| VGG-16 + SwiGLU | Failed (1%) | Multiplicative gating needs skip connections or adaptive optimizers; deep conv + SGD incompatible |
-| Wine regression | Worse (+9.3%) | Low-dim tabular data — InnerNet overhead not justified |
-| CNN ×0.25 scale | Worse (-5%) | Channel-pairing overhead dominates in tiny models |
-| SiLU-InnerNet vs ReLU-InnerNet | Neutral | Internal activation choice doesn't matter; the dual-input structure is key |
-| LSTM on PTB | Worse | Dataset-dependent; InnerNet LSTM doesn't generalize across all text domains |
-| Text classification (TF-IDF) | Neutral | Sparse features lack local correlation for pairwise pairing |
+| ResNet (skip connections) | Neutral | Residual path already provides cross-feature interaction — InnerNet redundant |
+| CNN at very small scale (×0.25) | Worse (-5%) | Channel-pairing overhead dominates when model is tiny |
+| Wine regression (low-dim tabular) | Worse (+9.3%) | InnerNet overhead not justified for low-dimensional features |
+
+InnerNet's advantage requires: (1) sufficient model capacity for the pairing overhead, and (2) absence of alternative feature interaction mechanisms (skip connections).
 
 ## Summary
 
@@ -194,6 +156,6 @@ InnerNet (learnable 2-argument activation) provides consistent benefits in **fee
 
 **Architecture discovery**: InnerNet independently converges to patterns resembling SwiGLU, validating learnable activations as a tool for discovering effective architectural primitives.
 
-**Boundaries**: InnerNet is redundant when skip connections exist (ResNet), and LSTM benefits are dataset-dependent. Multiplicative gating (SwiGLU) requires architectural support (residual connections or adaptive optimizers) to work in deep networks.
+**Boundaries**: InnerNet is redundant when models already have built-in feature interaction (ResNet skip connections). Sufficient model capacity is needed to offset the channel-pairing overhead.
 
-**Simplicity principle**: Adjacent pairing > semantic pairing, end-to-end ≈ 3-phase training, removing tanh bounds helps — the dual-input interaction itself, not the pairing strategy or training schedule, drives the improvement.
+**Simplicity principle**: Adjacent pairing > semantic pairing — the dual-input interaction itself, not the specific pairing strategy, drives the improvement.

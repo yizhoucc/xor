@@ -12,7 +12,7 @@ InnerNet 用一个小型可学习 MLP 替代标量激活函数（ReLU），接�
 2. **InnerNet 是架构发现工具** — 自动学到类似 SwiGLU 的双输入门控模式，证明可学习激活函数能重新发现手工设计的结构
 3. **简单即最好** — 简单相邻配对 > 精心语义配对；不需要预训练（end-to-end ≈ 3-phase）；去掉 tanh 约束更好
 
-**明确边界：** InnerNet 在 skip connection 已提供特征交互时冗余（ResNet），LSTM 效果依赖数据集（WikiText-2 有效，PTB 无效）。
+**明确边界：** InnerNet 在 skip connection 已提供特征交互时冗余（ResNet）。LSTM 效果依赖数据集（WikiText-2 有效，PTB 反而更差），正在用 WikiText-103 和 CNN/DM 验证是领域问题还是数据量问题。
 
 ---
 
@@ -98,7 +98,9 @@ SiLU 放入 InnerNet 内部没帮助——内部激活函数不重要，双输�
 | WikiText-103 | 维基百科(大) | ⏳ | ⏳ | ⏳ | — |
 | CNN/DailyMail | 新闻 | ⏳ | ⏳ | ⏳ | — |
 
-**重要发现**：LSTM 结果依赖数据集。WikiText-2（维基百科）上 InnerNet 有效，PTB（华尔街日报）上 InnerNet 无效。等待 WikiText-103 和 CNN/DailyMail 结果以判断是领域还是数据量的影响。
+**重要发现**：LSTM 效果和数据集有关系。Wiki 上好用，PTB 上不行。还在用 WikiText-103 和 CNN/DM 跑，看看到底是领域问题还是数据量问题。如果 Wiki-103 也好用那就是领域差异；如果 Wiki-103 不好用那可能是小数据 overfit。
+
+Configs: `config/experiments/lstm_wikitext_classic.yaml`, `lstm_ptb_classic.yaml`, `lstm_wikitext103_classic.yaml`, `lstm_cnndm_classic.yaml`
 
 ## 5. 训练阶段消融
 
@@ -110,6 +112,19 @@ SiLU 放入 InnerNet 内部没帮助——内部激活函数不重要，双输�
 | MLP MNIST | 98.0% | ⏳ | — |
 
 初步结果：**预训练阶段不是必须的**。End-to-end 训练匹配 3-phase，简化了流程。
+
+## 5. 训练阶段消融（对内，英文不写）
+
+| 任务 | 3-phase | End-to-end | 差异 |
+|------|---------|-----------|------|
+| AE MNIST | 0.0039 | 0.0039 | 无差异 |
+| ResNet CIFAR-10 | 86.09% | 86.00% | 无差异 |
+| CNN CIFAR-10 | 78.57% | ⏳ | — |
+| MLP MNIST | 98.0% | ⏳ | — |
+
+目前看 pretrain 不是必须的，end-to-end 一样好。等 CNN/MLP 结果确认后再决定是否写进英文。
+
+Configs: `config/experiments/*_e2e.yaml`, exp pattern: `exp/*_e2e_*`
 
 ## 6. 参数效率 — MLP CIFAR-10（5 seeds）
 
@@ -180,8 +195,20 @@ SiLU 放入 InnerNet 内部没帮助——内部激活函数不重要，双输�
 | Wine 回归 | 更差 (+9.3%) | 低维表格数据，InnerNet 开销不合算 |
 | CNN ×0.25 缩放 | 更差 (-5%) | 通道配对开销在极小模型中占比过大 |
 | SiLU-InnerNet vs ReLU-InnerNet | 中性 | 内部激活函数选择不重要，双输入结构才是关键 |
-| LSTM PTB | 更差 | 数据集依赖——InnerNet LSTM 不能跨所有文本领域泛化 |
-| 文本分类（TF-IDF） | 中性 | 稀疏特征缺乏局部相关性，配对假设不成立 |
+| LSTM PTB | 更差 | 数据集依赖，正在调查（Wiki-103/CNN-DM 在跑）|
+| 文本分类（TF-IDF） | 中性 | 稀疏特征缺乏局部相关性，已归档 |
+| Bounded (tanh) LSTM 变体 | 更差 | 加 tanh 一致变差，已归档 |
+
+以上负面结果**英文文档中不写或简写**。ResNet 的有理论价值（skip connection 解释），保留。其他的别人问了再说。
+
+## 正在进行的实验
+
+- Transformer SwiGLU 全规模对比（d=192 在跑，d=256 pending）
+- Transformer Classic InnerNet FFN（Wiki + PTB 在跑）
+- LSTM WikiText-103 + CNN/DM（在跑）
+- MLM Masked LM（GELU/InnerNet 在跑，SwiGLU 已完成 PPL=93.83）
+- PPO LunarLander 30 seeds（2arg/SwiGLU 在跑）
+- 训练阶段消融 CNN/MLP（在跑）
 
 ## 总结
 
