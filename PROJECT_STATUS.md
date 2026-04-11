@@ -1,18 +1,24 @@
-# 项目状态 — 2026-04-09
+# 项目状态 — 2026-04-10
 
-## 集群运行中 (~64 jobs)
+## 集群运行中 (~20 jobs)
 
 | 类别 | 实验 | 状态 |
 |------|------|------|
-| Critical seeds | CNN SVHN 2arg ×3, FMNIST 1arg ×4, CIFAR 2arg ×1 | running |
-| Urgent | ResNet-18+aug CIFAR-100 (2arg/relu ×5) | running |
-| Urgent | VGG-16+BN CIFAR-100 (×5) | running |
-| Urgent | WideResNet-28-10 CIFAR-100 (×5) | running |
-| Urgent | SwiGLU CNN CIFAR-10/100 (×5 each) | running |
-| Urgent | Representation 分析 (U1) | running |
-| LSTM 消融 | Bounded ×2, Classic ×2, BoundedClassic ×2 (Wiki+PTB) | running |
-| Seeds 补齐 | Diabetes ×4, Wine_reg ×4 | running |
-| GPT | Transformer 2arg + swiglu (d=256) | running (2d+) |
+| Critical seeds | CNN SVHN 2arg ×2 running + ×2 pending | running |
+| Critical seeds | CNN FMNIST 1arg ×4 | pending |
+| Urgent | VGG-16 InnerNet CIFAR-100 (×5) | pending |
+| ⚠️ Urgent | VGG-16 SwiGLU CIFAR-100 (×5) | **NaN — 全部发散！** |
+| ⚠️ GPT | Transformer 2arg d=256 | **疑似卡死 (seed 1 ep 13/20, 2d+ 无新日志)** |
+| Running | SiLU-InnerNet WikiText-2 | seed 4/5, ep 5/10 |
+
+### 已完成（本轮）
+- ✅ ResNet-18+aug CIFAR-100: ReLU 73.51±0.18, InnerNet 71.72±0.52 (n=4, 排除 59.43% outlier)
+- ✅ WRN-28-10 CIFAR-100: 74.80±0.15 (n=5)
+- ✅ VGG-16+BN CIFAR-100 ReLU: ~68.69% (n=4, 1 seed pending)
+- ✅ LSTM 消融 2×2: 全部完成
+- ✅ SiLU-InnerNet PTB: 208.43 (没帮助)
+- ✅ SwiGLU CNN CIFAR-10: 79.79±0.56 (n=5)
+- ✅ SwiGLU CNN CIFAR-100: 46.48±0.50 (n=5)
 
 ---
 
@@ -34,15 +40,17 @@
 | # | 项目 | 状态 |
 |---|------|------|
 | U1 | CNN 60% params representation 分析 | ⏳ 脚本在跑 |
-| U2 | 主流 CNN (aug fix 后重跑) | ✅ ResNet 73.51%, VGG 68.48%, WRN 74.80% — 合理 baseline |
+| U2 | 主流 CNN (aug fix 后重跑) | ✅ ResNet 73.51%, VGG 68.69%, WRN 74.80% — 合理 baseline。ResNet InnerNet 71.72% (n=4, 1 outlier) |
 | U3 | SwiGLU CNN 图像 | ✅ CIFAR-10: SwiGLU 79.79% > InnerNet 78.57%. CIFAR-100: InnerNet 53.74% > SwiGLU 46.48% |
-| U4 | LSTM 消融 (2×2) | ✅ WikiText-2 完成: Classic unbnd **101.72** > Semantic unbnd 105.30 > Standard 108.39 |
-| U5 | SiLU-InnerNet Transformer | ✅ PTB 完成: 208.43 vs ReLU-InnerNet 207.81 — SiLU 没帮助 | WikiText-2 在跑 |
+| U4 | LSTM 消融 (2×2) | ✅ 全部完成: Classic unbnd **99.33** > Classic bnd 101.76 > Semantic unbnd 103.41 > Standard 104.38 > Semantic bnd 105.59 |
+| U5 | SiLU-InnerNet Transformer | ✅ PTB 完成: 208.43 vs ReLU-InnerNet 207.81 — SiLU 没帮助。WikiText-2 在跑 (seed 4/5, ep 5/10) |
 | U6 | InnerGate（备选，如 SiLU 不行）| TODO | `b × sigmoid(InnerNet(a,b))`：b 保留直达通路 + gate 双向感知。上限最高但有点"作弊"（结构太接近 SwiGLU） |
 | U7 | 训练阶段消融 | TODO | 对比 3-phase / no-pretrain / end-to-end / no-retrain |
-| U8 | ResNet InnerNet 训练不稳定 | TODO | lr=0.01 仍然震荡，59% outlier。需要 lr warmup 或更低 lr (0.001)。best model 按 loss 保存但 loss 不反映真实 acc |
+| U8 | ResNet InnerNet 训练不稳定 | ⏳ 5 seeds 完成，seed 44=59.43% outlier。n=4 均值 71.72±0.52 vs ReLU 73.51±0.18。需要 lr warmup 或更低 lr |
 | U9 | Small CNN CIFAR-100 参数不公平 | TODO | SwiGLU 46.48% 远超 InnerNet 34.65%/ReLU 29.70%。SwiGLU 训练 400ep 不分阶段 vs InnerNet 3-phase。需要公平对比（同 epoch 或 end-to-end InnerNet） |
 | U10 | LSTM PTB vs WikiText 结论不一致 | TODO | WikiText: classic>semantic。PTB: semantic>classic。需要解释或更多数据集验证 |
+| U11 | VGG-16 SwiGLU 训练发散 | 🔴 | 所有 5 seeds NaN loss。SGD lr=0.1 可能太高，或 BN+SwiGLU 不兼容。需降低 lr 或用 Adam |
+| U12 | GPT Transformer 2arg 卡死 | 🔴 | seed 1 ep 13/20 后超过 2 天无新日志。需检查进程/重启 |
 
 ### 🟡 Major
 
@@ -88,12 +96,14 @@
 | PTB d=128 | **207.81** | 212.28 | -2.1% |
 | GPT d=256 | ⏳ | 72.54 | — |
 
-### LSTM 消融矩阵 (WikiText-2)
+### LSTM 消融矩阵 (WikiText-2) — 全部完成 ✅
 | | Unbounded | Bounded |
 |--|-----------|---------|
-| Semantic | **105.30** ✅ | ⏳ |
-| Classic | ⏳ | ⏳ |
-| Standard | — | 108.39 ✅ |
+| Classic | **99.33±0.79** ✅ | 101.76±0.33 ✅ |
+| Semantic | 103.41±0.83 ✅ | 105.59±1.12 ✅ |
+| Standard | — | 104.38±0.63 ✅ |
+
+*注：以上为 best-epoch PPL。Classic unbounded 最好，简单相邻配对 > 语义配对。*
 
 ### 其他已确认结果
 - AE: MNIST -39%, FashionMNIST -12%, CIFAR-10 -26%

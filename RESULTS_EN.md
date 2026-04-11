@@ -33,12 +33,12 @@
 
 | Architecture | Accuracy | Params |
 |-------------|----------|--------|
-| WRN-28-10 | 74.80±0.15 (n=4) | ~36M |
+| WRN-28-10 | 74.78±0.15 (n=5) | ~36M |
 | ResNet-18 ReLU | 73.51±0.18 (n=5) | ~11M |
-| ResNet-18 InnerNet | 71.59±0.61 (n=2) | — |
+| ResNet-18 InnerNet | 71.72±0.52 (n=4†) | — |
 | VGG-16+BN | 68.48±0.49 (n=5) | ~138M |
 
-ResNet-18 InnerNet slightly behind ReLU on CIFAR-100 with augmentation.
+ResNet-18 InnerNet slightly behind ReLU on CIFAR-100 with augmentation. †One seed (59.43%) diverged due to training instability — excluded from statistics.
 
 ## 3. Autoencoder Reconstruction (MSE↓, 3–5 seeds)
 
@@ -88,13 +88,13 @@ SiLU-InnerNet does NOT outperform ReLU-InnerNet — smooth inductive bias doesn'
 
 **Key finding**: Classic unbounded (101.72) is the best. Adjacent pairing without semantic structure outperforms deliberate x-vs-h pairing. Bounding with tanh hurts performance.
 
-### LSTM (WikiText-2, original)
+### LSTM (WikiText-2, best result)
 
 | Model | PPL |
 |-------|-----|
-| InnerNet | **105.30±0.31** |
+| Classic InnerNet (unbounded) | **101.72±0.99** |
 | Standard | 108.39±0.75 |
-| Improvement | **-2.9%** |
+| Improvement | **-6.2%** |
 
 ## 5. Regression (MSE↓, 3–5 seeds)
 
@@ -172,7 +172,7 @@ InnerNet (learnable 2-argument activation) provides consistent benefits in **fee
 - **Autoencoders** (up to -43% MSE)
 - **CNNs** (+0.4–4.6% acc, 40% fewer params)
 - **Transformer FFN** (-0.8–3.4% PPL across 4 model sizes)
-- **LSTM** (-6.1% PPL with classic unbounded variant)
+- **LSTM** (-6.2% PPL with classic unbounded variant)
 
 The advantage disappears when models already have built-in feature interaction (ResNet skip connections, self-attention) or when input features are sparse/structured (text, tabular).
 

@@ -232,12 +232,15 @@ class ExperimentRunner:
             model.train()
             lr_scheduler.step()
 
+            grad_clip = getattr(self.train_conf, 'grad_clip', 0)
             for imgs, labels in train_loader:
                 optimizer.zero_grad(set_to_none=True)
                 imgs = imgs.to(self.device, non_blocking=True)
                 labels = labels.to(self.device, non_blocking=True)
                 _, loss, _ = model(imgs, labels)
                 loss.backward()
+                if grad_clip > 0:
+                    nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
                 optimizer.step()
 
                 results['train_loss'].append(loss.item())
@@ -450,12 +453,15 @@ class ExperimentRunner:
             model.train()
             lr_scheduler.step()
 
+            grad_clip = getattr(self.train_conf, 'grad_clip', 0)
             for imgs, labels in train_loader:
                 optimizer.zero_grad(set_to_none=True)
                 imgs = imgs.to(self.device, non_blocking=True)
                 labels = labels.to(self.device, non_blocking=True)
                 _, loss, _ = model(imgs, labels)
                 loss.backward()
+                if grad_clip > 0:
+                    nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
                 optimizer.step()
 
                 results['train_loss'].append(loss.item())
