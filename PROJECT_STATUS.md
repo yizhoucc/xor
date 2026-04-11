@@ -39,7 +39,10 @@
 | U4 | LSTM 消融 (2×2) | ✅ WikiText-2 完成: Classic unbnd **101.72** > Semantic unbnd 105.30 > Standard 108.39 |
 | U5 | SiLU-InnerNet Transformer | ✅ PTB 完成: 208.43 vs ReLU-InnerNet 207.81 — SiLU 没帮助 | WikiText-2 在跑 |
 | U6 | InnerGate（备选，如 SiLU 不行）| TODO | `b × sigmoid(InnerNet(a,b))`：b 保留直达通路 + gate 双向感知。上限最高但有点"作弊"（结构太接近 SwiGLU） |
-| U7 | 训练阶段消融 | TODO | 对比 3-phase / no-pretrain / end-to-end / no-retrain，验证 3 阶段训练是否必要。在 CNN CIFAR-10 上测试 |
+| U7 | 训练阶段消融 | TODO | 对比 3-phase / no-pretrain / end-to-end / no-retrain |
+| U8 | ResNet InnerNet 训练不稳定 | TODO | lr=0.01 仍然震荡，59% outlier。需要 lr warmup 或更低 lr (0.001)。best model 按 loss 保存但 loss 不反映真实 acc |
+| U9 | Small CNN CIFAR-100 参数不公平 | TODO | SwiGLU 46.48% 远超 InnerNet 34.65%/ReLU 29.70%。SwiGLU 训练 400ep 不分阶段 vs InnerNet 3-phase。需要公平对比（同 epoch 或 end-to-end InnerNet） |
+| U10 | LSTM PTB vs WikiText 结论不一致 | TODO | WikiText: classic>semantic。PTB: semantic>classic。需要解释或更多数据集验证 |
 
 ### 🟡 Major
 
