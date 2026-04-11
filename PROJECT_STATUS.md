@@ -11,7 +11,8 @@
 | U12 | GPT Transformer 2arg d=256 (重启) | pending |
 | U5 | SiLU-InnerNet WikiText-2 | running (seed 4/5) |
 | **U13** | **TF SwiGLU d=64/192/256 + PTB (×4 jobs)** | **新提交** |
-| **U15** | **PPO LunarLander 30 seeds ×3** | **新提交** |
+| **U15** | **PPO LunarLander 30 seeds ×3** | **running** |
+| **U17** | **TF Classic InnerNet FFN (Wiki + PTB)** | **新提交** |
 
 ### 已完成（本轮）
 - ✅ ResNet-18+aug CIFAR-100: ReLU 73.51±0.18, InnerNet 71.72±0.52 (n=4, 排除 59.43% outlier)
@@ -57,7 +58,7 @@
 | U14 | LSTM 2×2 消融多数据集 | TODO | 目前只有 WikiText-2。加 PTB + WikiText-103。5 变体×2 数据集×5 seeds = 50 jobs |
 | U15 | RL 加 seeds + 只报 PPO | ⏳ 已提交 LunarLander 30 seeds ×3 (2arg/relu/swiglu)。DQN 已归档 |
 | U16 | Masked LM（类 BERT） | TODO | AE 是最强结果(-43%)，BERT=掩码 AE。用现有 Transformer 改训练目标为 mask prediction，对比 GELU/InnerNet/SwiGLU FFN |
-| U17 | Transformer Classic InnerNet FFN | TODO | LSTM 证明 Classic > Semantic。当前 TF 用 Semantic 配对（两个投影 W_a,W_b），改为 Classic（单投影→相邻配对）可能进一步提升。在 d=128 WikiText-2 + PTB 上对比 |
+| U17 | Transformer Classic InnerNet FFN | ⏳ 已提交 WikiText-2 + PTB (d=128, 各 5 seeds 内部)。Classic=单投影→相邻配对，对比 Semantic=两投影 |
 
 ### 🟡 Major
 
