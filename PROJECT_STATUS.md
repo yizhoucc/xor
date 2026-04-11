@@ -14,6 +14,7 @@
 | **U15** | **PPO LunarLander 30 seeds ×3** | **running** |
 | **U14** | **LSTM 消融 PTB ×5 + WikiText-103 ×5** | **新提交** |
 | **U16** | **MLM (BERT-style) ×3** | **新提交** |
+| **U7** | **训练阶段消融 e2e ×20** | **新提交** |
 | **U17** | **TF Classic InnerNet FFN (Wiki + PTB)** | **新提交** |
 
 ### 已完成（本轮）
@@ -50,7 +51,7 @@
 | U4 | LSTM 消融 (2×2) | ✅ 全部完成: Classic unbnd **99.33** > Classic bnd 101.76 > Semantic unbnd 103.41 > Standard 104.38 > Semantic bnd 105.59 |
 | U5 | SiLU-InnerNet Transformer | ✅ PTB 完成: 208.43 vs ReLU-InnerNet 207.81 — SiLU 没帮助。WikiText-2 在跑 (seed 4/5, ep 5/10) |
 | U6 | InnerGate（备选，如 SiLU 不行）| TODO | `b × sigmoid(InnerNet(a,b))`：b 保留直达通路 + gate 双向感知。上限最高但有点"作弊"（结构太接近 SwiGLU） |
-| U7 | 训练阶段消融 | TODO | 对比 3-phase / no-pretrain / end-to-end / no-retrain |
+| U7 | 训练阶段消融 | ⏳ 已提交 20 jobs | 4 任务 × 5 seeds end-to-end vs 已有 3-phase。任务: CNN CIFAR-10, AE MNIST, ResNet CIFAR-10, MLP MNIST |
 | U8 | ResNet InnerNet 训练不稳定 | ⏳ 5 seeds 完成，seed 44=59.43% outlier。n=4 均值 71.72±0.52 vs ReLU 73.51±0.18。需要 lr warmup 或更低 lr |
 | U9 | Small CNN CIFAR-100 参数不公平 | TODO | SwiGLU 46.48% 远超 InnerNet 34.65%/ReLU 29.70%。SwiGLU 训练 400ep 不分阶段 vs InnerNet 3-phase。需要公平对比（同 epoch 或 end-to-end InnerNet） |
 | U10 | LSTM PTB vs WikiText 结论不一致 | TODO | WikiText: classic>semantic。PTB: semantic>classic。需要解释或更多数据集验证 |
