@@ -108,6 +108,14 @@ def _validate_config(config, logger):
         out = model(x)
         out.sum().backward()
 
+    elif task_type == 'mlm':
+        from runner.mlm_runner import MLMRunner
+        runner = MLMRunner(config)
+        model = runner._make_model(vocab_size=1000).to(device)
+        x = torch.randint(0, 1000, (2, 64)).to(device)
+        out = model(x)
+        out.sum().backward()
+
     elif task_type == 'rl' and config.get('rl_algo', 'ppo') == 'dqn':
         # DQN archived — see archive/runners/rl_runner.py
         raise ValueError("DQN has been archived. Use PPO (task_type='rl_ppo') instead.")
@@ -245,6 +253,13 @@ def main():
     elif task_type == 'language_model':
         from runner.lm_runner import LMRunner
         runner = LMRunner(config)
+        if args.test:
+            runner.test()
+        else:
+            runner.train()
+    elif task_type == 'mlm':
+        from runner.mlm_runner import MLMRunner
+        runner = MLMRunner(config)
         if args.test:
             runner.test()
         else:
