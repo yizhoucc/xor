@@ -108,12 +108,13 @@ class LMRunner:
 
         # Model config
         self.model_name = config.model.name
-        self.is_innernet = self.model_name in ('InnerNetLSTMModel', 'BoundedInnerNetLSTMModel', 'ClassicInnerNetLSTMModel', 'BoundedClassicInnerNetLSTMModel', 'InnerNetTransformer', 'SiLUInnerNetTransformer', 'InnerNetAttnTransformer')
-        self.is_transformer = self.model_name in ('InnerNetTransformer', 'SiLUInnerNetTransformer', 'StandardTransformer', 'SwiGLUTransformer', 'InnerNetAttnTransformer')
+        self.is_innernet = self.model_name in ('InnerNetLSTMModel', 'BoundedInnerNetLSTMModel', 'ClassicInnerNetLSTMModel', 'BoundedClassicInnerNetLSTMModel', 'InnerNetTransformer', 'SiLUInnerNetTransformer', 'ClassicInnerNetTransformer', 'InnerNetAttnTransformer')
+        self.is_transformer = self.model_name in ('InnerNetTransformer', 'SiLUInnerNetTransformer', 'ClassicInnerNetTransformer', 'StandardTransformer', 'SwiGLUTransformer', 'InnerNetAttnTransformer')
 
     def _make_model(self, vocab_size):
         if self.is_transformer:
             from model.transformer import (InnerNetTransformer, SiLUInnerNetTransformer,
+                                           ClassicInnerNetTransformer,
                                            StandardTransformer, SwiGLUTransformer,
                                            InnerNetAttnTransformer)
             d_model = self.config.model.get('d_model', 128)
@@ -130,6 +131,10 @@ class LMRunner:
                 inner_hidden = self.config.model.get('inner_hidden', 32)
                 return SiLUInnerNetTransformer(vocab_size, d_model, n_heads, d_ff,
                                                n_layers, max_len, inner_hidden, dropout)
+            elif self.model_name == 'ClassicInnerNetTransformer':
+                inner_hidden = self.config.model.get('inner_hidden', 32)
+                return ClassicInnerNetTransformer(vocab_size, d_model, n_heads, d_ff,
+                                                  n_layers, max_len, inner_hidden, dropout)
             elif self.model_name == 'InnerNetAttnTransformer':
                 inner_hidden = self.config.model.get('inner_hidden', 32)
                 return InnerNetAttnTransformer(vocab_size, d_model, n_heads, d_ff,
@@ -227,7 +232,7 @@ class LMRunner:
 
         # Load pretrained InnerNet
         if self.is_innernet and gaussian_weights is not None:
-            if self.model_name in ('InnerNetTransformer', 'SiLUInnerNetTransformer'):
+            if self.model_name in ('InnerNetTransformer', 'SiLUInnerNetTransformer', 'ClassicInnerNetTransformer'):
                 for block in model.blocks:
                     block.ffn.inner_net.load_state_dict(gaussian_weights)
             elif self.model_name == 'InnerNetAttnTransformer':

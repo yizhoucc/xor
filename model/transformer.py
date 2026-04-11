@@ -87,6 +87,28 @@ class SiLUInnerNetFFN(nn.Module):
         return self.w2(self.dropout(activated))
 
 
+class ClassicInnerNetFFN(nn.Module):
+    """FFN with Classic InnerNet: single projection → 2× width → pair adjacent.
+
+    Mirrors the LSTM finding that classic (adjacent) pairing > semantic pairing.
+    Uses standard ReLU InnerNet (not SiLU).
+    """
+    def __init__(self, d_model, d_ff, inner_hidden=32, dropout=0.1):
+        super().__init__()
+        self.w1 = nn.Linear(d_model, d_ff * 2)  # single proj, 2× width
+        self.inner_net = InnerNetFFNActivation(hidden_dim=inner_hidden)
+        self.w2 = nn.Linear(d_ff, d_model)
+        self.dropout = nn.Dropout(dropout)
+        self.d_ff = d_ff
+
+    def forward(self, x):
+        h = self.w1(x)  # [B, S, 2*d_ff]
+        pairs = h.view(*h.shape[:-1], self.d_ff, 2)  # [B, S, d_ff, 2]
+        shape = pairs.shape[:-1]
+        activated = self.inner_net(pairs.reshape(-1, 2)).view(*shape)
+        return self.w2(self.dropout(activated))
+
+
 class StandardFFN(nn.Module):
     """Standard FFN block with GELU activation."""
     def __init__(self, d_model, d_ff, dropout=0.1):
@@ -254,6 +276,39 @@ class SiLUInnerNetTransformer(nn.Module):
             TransformerBlock(
                 d_model, n_heads,
                 SiLUInnerNetFFN(d_model, d_ff, inner_hidden, dropout),
+                dropout
+            ) for _ in range(n_layers)
+        ])
+        self.ln_f = nn.LayerNorm(d_model)
+        self.head = nn.Linear(d_model, vocab_size)
+        self.d_model = d_model
+        self.head.weight = self.embedding.weight
+
+    def forward(self, x):
+        B, S = x.shape
+        mask = torch.tril(torch.ones(S, S, device=x.device)).unsqueeze(0).unsqueeze(0)
+        x = self.pos_enc(self.embedding(x) * math.sqrt(self.d_model))
+        for block in self.blocks:
+            x = block(x, mask)
+        x = self.ln_f(x)
+        return self.head(x[:, -1, :])
+
+
+class ClassicInnerNetTransformer(nn.Module):
+    """Decoder-only Transformer with Classic InnerNet FFN (adjacent pairing).
+
+    LSTM ablation showed classic > semantic pairing. This tests
+    the same hypothesis in Transformers.
+    """
+    def __init__(self, vocab_size, d_model=128, n_heads=4, d_ff=512,
+                 n_layers=4, max_len=64, inner_hidden=32, dropout=0.1):
+        super().__init__()
+        self.embedding = nn.Embedding(vocab_size, d_model)
+        self.pos_enc = PositionalEncoding(d_model, max_len, dropout)
+        self.blocks = nn.ModuleList([
+            TransformerBlock(
+                d_model, n_heads,
+                ClassicInnerNetFFN(d_model, d_ff, inner_hidden, dropout),
                 dropout
             ) for _ in range(n_layers)
         ])
