@@ -48,9 +48,9 @@ class ExperimentRunner:
         self.is_rnn = (self.dataset_conf.name == 'ptb')
         self.has_inner_net = self.model_conf.name not in (
             'BaselineMLP', 'BaselineCNN', 'BaselineRNN',
-            'BaselineResNet', 'InnerNetResNet',
+            'BaselineResNet', 'InnerNetResNet', 'InnerNetInternalResNet',
             'BaselineAE', 'InnerNetAE',
-            'VGG16BN', 'InnerNetVGG16', 'SwiGLUVGG16', 'WideResNet', 'SwiGLUCNN')
+            'VGG16BN', 'InnerNetVGG16', 'SwiGLUVGG16', 'WideResNet', 'InnerNetInternalWRN', 'SwiGLUCNN')
 
         # Performance optimizations
         if self.use_gpu:

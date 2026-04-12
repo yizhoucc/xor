@@ -182,6 +182,79 @@ class WideResNetBlock(nn.Module):
         return out + self.shortcut(x)
 
 
+class InnerNetInternalWRNBlock(nn.Module):
+    """Wide residual block with InnerNet only at the internal position.
+
+    WRN uses pre-norm: BN→ReLU→Conv. Two activation positions:
+    1. relu(bn1(x)) — post-skip from previous block (keep as ReLU)
+    2. relu(bn2(out)) — internal, between conv1 and conv2 (replace with InnerNet)
+    """
+    def __init__(self, in_ch, out_ch, stride=1, dropout=0.3, inner_hidden=32):
+        super().__init__()
+        self.bn1 = nn.BatchNorm2d(in_ch)
+        self.conv1 = nn.Conv2d(in_ch, out_ch * 2, 3, stride=stride, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_ch * 2)
+        self.inner = InnerNetVGGActivation(inner_hidden)  # internal activation
+        self.conv2 = nn.Conv2d(out_ch, out_ch, 3, stride=1, padding=1, bias=False)
+        self.dropout = nn.Dropout(dropout)
+
+        self.shortcut = nn.Sequential()
+        if stride != 1 or in_ch != out_ch:
+            self.shortcut = nn.Conv2d(in_ch, out_ch, 1, stride=stride, bias=False)
+
+    def forward(self, x):
+        out = self.conv1(torch.relu(self.bn1(x)))   # position 1: ReLU (post-skip, keep)
+        out = self.dropout(out)
+        out = self.inner(self.bn2(out))              # position 2: InnerNet (internal)
+        out = self.conv2(out)
+        return out + self.shortcut(x)
+
+
+class InnerNetInternalWRN(nn.Module):
+    """WideResNet-28-10 with InnerNet only at internal positions."""
+    def __init__(self, config):
+        super().__init__()
+        self.config = config
+        num_classes = config.model.num_classes
+        depth = getattr(config.model, 'depth', 28)
+        widen = getattr(config.model, 'widen_factor', 10)
+        dropout = getattr(config.model, 'dropout', 0.3)
+        inner_hidden = getattr(config.model, 'inner_hidden', 32)
+
+        n = (depth - 4) // 6
+        channels = [16, 16 * widen, 32 * widen, 64 * widen]
+
+        self.conv1 = nn.Conv2d(3, channels[0], 3, stride=1, padding=1, bias=False)
+
+        self.group1 = self._make_group(channels[0], channels[1], n, stride=1, dropout=dropout, inner_hidden=inner_hidden)
+        self.group2 = self._make_group(channels[1], channels[2], n, stride=2, dropout=dropout, inner_hidden=inner_hidden)
+        self.group3 = self._make_group(channels[2], channels[3], n, stride=2, dropout=dropout, inner_hidden=inner_hidden)
+
+        self.bn = nn.BatchNorm2d(channels[3])
+        self.fc = nn.Linear(channels[3], num_classes)
+
+        if config.model.loss == 'CrossEntropy':
+            self.loss_func = nn.CrossEntropyLoss()
+
+    def _make_group(self, in_ch, out_ch, n_blocks, stride, dropout, inner_hidden):
+        layers = [InnerNetInternalWRNBlock(in_ch, out_ch, stride, dropout, inner_hidden)]
+        for _ in range(1, n_blocks):
+            layers.append(InnerNetInternalWRNBlock(out_ch, out_ch, 1, dropout, inner_hidden))
+        return nn.Sequential(*layers)
+
+    def forward(self, x, labels, collect=False):
+        out = self.conv1(x)
+        out = self.group1(out)
+        out = self.group2(out)
+        out = self.group3(out)
+        out = torch.relu(self.bn(out))
+        out = torch.nn.functional.adaptive_avg_pool2d(out, 1)
+        out = out.view(out.size(0), -1)
+        out = self.fc(out)
+        loss = self.loss_func(out, labels)
+        return out, loss, []
+
+
 class WideResNet(nn.Module):
     """WideResNet-28-10 for CIFAR. Strong baseline (~80-82% on CIFAR-100)."""
     def __init__(self, config):
