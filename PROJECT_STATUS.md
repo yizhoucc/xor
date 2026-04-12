@@ -58,12 +58,12 @@
 | U11 | VGG-16 SwiGLU | ❌ lr=0.01+grad_clip 仍 1% 准确率。SwiGLU 与 VGG 深层 conv+SGD 不兼容，记为负面结果 |
 | U12 | GPT Transformer 2arg 卡死 | ⏳ 已取消重启 |
 | U13 | Transformer 全规模 SwiGLU 对比 | ⏳ d=64/128/192/PTB ✅。d=256 pending。GPT(d=256): GELU 72.54 > SwiGLU 75.30，大模型趋势不同 |
-| U14 | LSTM 2×2 消融多数据集 | ⏳ PTB ✅ Standard 赢。Wiki-103 在跑(慢)。CNN/DM OOM 已加内存重提交 |
+| U14 | LSTM 2×2 消融多数据集 | ⏳ PTB ✅。Wiki-103 + CNN/DM 全部 OOM，64G 重提交 |
 | U15 | RL 加 seeds + 只报 PPO | ✅ LunarLander 30s: InnerNet 187.6 > ReLU 158.8 > SwiGLU -249.7。InnerNet 赢（10 seeds 时输，30 seeds 翻了） |
 | U16 | Masked LM（类 BERT） | ⏳ SwiGLU 93.83, GELU 101.39 完成。InnerNet 在跑 |
 | U17 | Transformer Classic InnerNet FFN | ✅ Wiki 95.49 ≈ Semantic 95.26, PTB 208.81 ≈ Semantic 207.81。TF 上 Classic ≈ Semantic |
 | U18 | d=64 InnerNet 学到了什么 | TODO | d=64 时 InnerNet (112.66) ≈ SwiGLU (112.31)，可视化 InnerNet 学到的 2D 函数，看是不是真的像 SwiGLU |
-| U19 | ResNet/WRN 只换内部 ReLU | ⏳ 已提交 15 jobs | ResNet CIFAR-10 ×5, ResNet CIFAR-100+aug ×5, WRN CIFAR-100+aug ×5 |
+| U19 | ResNet/WRN 只换内部 ReLU | ⏳ ResNet C100+aug **74.2%** vs ReLU 73.51% vs 旧全换 71.72%！**内部换有效果**。CIFAR-10/WRN 在跑 |
 
 ### 🟡 Major
 
