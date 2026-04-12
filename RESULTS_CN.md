@@ -73,6 +73,53 @@ Configs: `config/experiments/ae_mnist_2arg.yaml`，exp: `exp/ae_mnist_2arg_*`
 
 四种 InnerNet 变体差不多（94.9~95.5），内部用什么激活和配对方式都不重要，双输入结构本身有用。和 LSTM 不一样（LSTM 上 Classic 明显比 Semantic 好），Transformer 上两种配对没区别。
 
+### GPT (d=256, 6 层, 20 epochs)
+
+| 模型 | WikiText-2 PPL |
+|------|---------------|
+| GELU | **72.54** |
+| SwiGLU | 75.30 |
+| InnerNet | ⏳ |
+
+GPT 上 GELU 反而最好。大模型趋势和小模型不一样，不知道为什么。InnerNet 还在跑。
+
+Config: `config/experiments/transformer_wikitext_gpt_*.yaml`
+
+### MLM 掩码预测（BERT 式，WikiText-2）
+
+| 模型 | PPL |
+|------|-----|
+| SwiGLU | **93.83** |
+| GELU | 101.39 |
+| InnerNet | ⏳ |
+
+SwiGLU 比 GELU 好 -7.5%。InnerNet 在跑。AE 是我们最好的结果，掩码预测和 AE 类似（都是重建），看看 InnerNet 在这里能不能也好用。
+
+Config: `config/experiments/mlm_wikitext_*.yaml`
+
+### ViT CIFAR-10（5 seeds）
+
+| 模型 | Accuracy |
+|------|----------|
+| SwiGLU | **81.54±0.29%** |
+| GELU | 79.46±0.23% |
+| InnerNet | 78.18±0.96% |
+
+InnerNet 最差。ViT 有 residual + self-attention，和 ResNet 一样，InnerNet 没用。
+
+Config: `config/experiments/vit_cifar_*.yaml`
+
+### MLP-Mixer CIFAR-10（5 seeds）
+
+| 模型 | Accuracy |
+|------|----------|
+| GELU | **81.26±0.29%** |
+| InnerNet | 80.21±0.22% |
+
+InnerNet 稍差 -1%。Mixer 也有 residual。
+
+Config: `config/experiments/mixer_cifar_*.yaml`
+
 Configs: `config/experiments/transformer_wikitext_*.yaml`，exp: `exp/transformer_wikitext_*`
 
 ## 4. LSTM
