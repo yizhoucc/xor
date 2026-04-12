@@ -63,15 +63,15 @@ Configs: `config/experiments/ae_mnist_2arg.yaml`，exp: `exp/ae_mnist_2arg_*`
 
 ### FFN 设计变体（PTB d=128）
 
-| 模型 | PPL |
-|------|-----|
-| SwiGLU | **205.82** |
-| InnerNet Semantic | 207.81 |
-| InnerNet Classic | ⏳ 在跑 |
-| SiLU-InnerNet | 208.43 |
-| GELU | 212.28 |
+| 模型 | WikiText-2 PPL | PTB PPL |
+|------|---------------|---------|
+| SwiGLU | — | **205.82** |
+| SiLU-InnerNet | **94.90** | 208.43 |
+| InnerNet Semantic | 95.26 | 207.81 |
+| InnerNet Classic | 95.49 | 208.81 |
+| GELU | 96.82 | 212.28 |
 
-InnerNet 里面换 SiLU 没用（208.43 vs 207.81）。内部用什么激活不重要，双输入结构本身才有用。Classic 版本在跑，看看 LSTM 那边的 classic > semantic 在 Transformer 上是不是也一样。
+四种 InnerNet 变体差不多（94.9~95.5），内部用什么激活和配对方式都不重要，双输入结构本身有用。和 LSTM 不一样（LSTM 上 Classic 明显比 Semantic 好），Transformer 上两种配对没区别。
 
 Configs: `config/experiments/transformer_wikitext_*.yaml`，exp: `exp/transformer_wikitext_*`
 
@@ -107,10 +107,10 @@ Configs: `lstm_wikitext_classic.yaml`, `lstm_ptb_classic.yaml`, `lstm_wikitext10
 |------|---------|-----------|------|
 | AE MNIST | 0.0039 | 0.0039 | 没差 |
 | ResNet CIFAR-10 | 86.09% | 86.00% | 没差 |
-| CNN CIFAR-10 | 78.57% | ⏳ | — |
-| MLP MNIST | 98.0% | ⏳ | — |
+| CNN CIFAR-10 | 78.57% | 77.35% | -1.2% |
+| MLP MNIST | 98.0% | 97.95% | 没差 |
 
-目前看 pretrain 不需要，end-to-end 一样。等 CNN/MLP 确认。
+MLP/AE/ResNet 都没差。CNN 稍微差一点（-1.2%），pretrain 对 CNN 有一点帮助但不大。整体结论：pretrain 不是必须的。
 
 Configs: `config/experiments/*_e2e.yaml`，exp: `exp/*_e2e_*`
 
@@ -160,11 +160,11 @@ Housing -5% 有点效果。Diabetes 持平。Wine 反而更差 +9.3%。低维表
 ## 在跑的
 
 - TF SwiGLU d=192 在跑，d=256 排队
-- TF Classic InnerNet（Wiki + PTB）在跑
+- ~~TF Classic InnerNet~~ ✅ 完成，Classic ≈ Semantic
 - LSTM Wiki-103 + CNN/DM 在跑
 - MLM（BERT 式掩码预测）SwiGLU 跑完 PPL=93.83，GELU/InnerNet 在跑
 - PPO LunarLander 30 seeds 在跑
-- 训练消融 CNN/MLP 在跑
+- ~~训练消融 CNN/MLP~~ ✅ 完成，pretrain 不是必须的
 - GPT d=256 在跑
 
 ## 总结

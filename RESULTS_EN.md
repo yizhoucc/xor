@@ -71,17 +71,18 @@ InnerNet consistently beats GELU across all model sizes. At d=64, InnerNet ≈ S
 
 **Implication**: InnerNet serves as an **architecture discovery tool** — it independently converges to a dual-input gating pattern similar to SwiGLU, validating that two-argument activations naturally learn multiplicative gating.
 
-### Transformer FFN Design Variants (PTB d=128)
+### Transformer FFN Design Variants (d=128)
 
-| Model | PPL |
-|-------|-----|
-| SwiGLU (fixed gate) | **205.82±0.98** |
-| InnerNet Semantic (dual proj) | 207.81±1.58 |
-| InnerNet Classic (adjacent pair) | ⏳ |
-| SiLU-InnerNet | 208.43±1.44 |
-| GELU baseline | 212.28±0.88 |
+| Model | WikiText-2 PPL | PTB PPL |
+|-------|---------------|---------|
+| SwiGLU (fixed gate) | 92.98±1.14 | **205.82±0.98** |
+| InnerNet (semantic) | **95.26±1.00** | 207.81±1.58 |
+| InnerNet (classic) | 95.49 | 208.81 |
+| GELU baseline | 96.82±1.19 | 212.28±0.88 |
 
-SiLU inside InnerNet doesn't help — the internal activation function doesn't matter; the dual-input structure itself is what matters.
+All InnerNet variants perform similarly (~95.3 WikiText-2, ~208 PTB), regardless of pairing strategy or internal activation. The dual-input structure itself is what matters.
+
+Config: `config/experiments/transformer_wikitext_classic_2arg.yaml`, exp: `exp/transformer_wikitext_classic_*`
 
 ## 4. LSTM Language Models (WikiText-2, PPL↓, 5 seeds)
 
