@@ -63,7 +63,7 @@
 | U16 | Masked LM（类 BERT） | ⏳ SwiGLU 93.83, GELU 101.39 完成。InnerNet 在跑 |
 | U17 | Transformer Classic InnerNet FFN | ✅ Wiki 95.49 ≈ Semantic 95.26, PTB 208.81 ≈ Semantic 207.81。TF 上 Classic ≈ Semantic |
 | U18 | d=64 InnerNet 学到了什么 | TODO | d=64 时 InnerNet (112.66) ≈ SwiGLU (112.31)，可视化 InnerNet 学到的 2D 函数，看是不是真的像 SwiGLU |
-| U19 | ResNet/WRN 只换内部 ReLU | 🔧 执行中 | 之前整个 block 换 InnerNet 没用。只换 conv1-conv2 之间的（没 skip 保护的），对标 TF FFN 的成功做法 |
+| U19 | ResNet/WRN 只换内部 ReLU | ⏳ 已提交 15 jobs | ResNet CIFAR-10 ×5, ResNet CIFAR-100+aug ×5, WRN CIFAR-100+aug ×5 |
 
 ### 🟡 Major
 
