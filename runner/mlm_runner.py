@@ -216,8 +216,8 @@ class MLMRunner:
 
         # Load pretrained InnerNet
         if self.is_innernet and gaussian_weights is not None:
-            for block in model.model.blocks:
-                block.ffn.inner_net.load_state_dict(gaussian_weights)
+            # Shared inner_net — loading once applies to all layers
+            model.model.blocks[0].ffn.inner_net.load_state_dict(gaussian_weights)
 
         optimizer = optim.Adam(model.parameters(), lr=self.lr)
         criterion = nn.CrossEntropyLoss(ignore_index=-100)

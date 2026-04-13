@@ -62,8 +62,9 @@
 | U15 | RL 加 seeds + 只报 PPO | ✅ LunarLander 30s: InnerNet 187.6 > ReLU 158.8 > SwiGLU -249.7。InnerNet 赢（10 seeds 时输，30 seeds 翻了） |
 | U16 | Masked LM（类 BERT） | ⏳ SwiGLU 93.83, GELU 101.39 完成。InnerNet 在跑 |
 | U17 | Transformer Classic InnerNet FFN | ✅ Wiki 95.49 ≈ Semantic 95.26, PTB 208.81 ≈ Semantic 207.81。TF 上 Classic ≈ Semantic |
-| U18 | d=64 InnerNet 学到了什么 | TODO | d=64 时 InnerNet (112.66) ≈ SwiGLU (112.31)，可视化 InnerNet 学到的 2D 函数，看是不是真的像 SwiGLU |
-| U19 | ResNet/WRN 只换内部 ReLU | ⏳ ResNet C100+aug **74.2%** vs ReLU 73.51% vs 旧全换 71.72%！**内部换有效果**。CIFAR-10/WRN 在跑 |
+| U18 | d=64 InnerNet 学到了什么 | TODO | d=64 时 InnerNet ≈ SwiGLU，可视化看是不是真的像 SwiGLU |
+| U19 | ResNet/WRN 只换内部 ReLU | ⚠️ 暂停 | 初步结果有效果但代码有 param sharing bug，需要先修 U20 |
+| **U20** | **修复 InnerNet parameter sharing** | 🔴 **关键 bug** | Transformer/ResNet/WRN 的 InnerNet 每层各一个，没有共享。原始论文设计是所有层共享一个。**影响所有非 CNN/MLP 的 InnerNet 结果** |
 
 ### 🟡 Major
 

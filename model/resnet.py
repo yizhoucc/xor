@@ -64,17 +64,17 @@ class InnerNetBlock(nn.Module):
     """ResNet block with InnerNet activation.
 
     Conv outputs 2× channels, InnerNet halves them back.
+    inner_net is shared across all blocks.
     """
-    def __init__(self, in_ch, out_ch, stride=1, inner_hidden=32):
+    def __init__(self, in_ch, out_ch, stride=1, inner_net=None):
         super().__init__()
-        # Double output channels so InnerNet can pair them
         self.conv1 = nn.Conv2d(in_ch, out_ch * 2, 3, stride=stride, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(out_ch * 2)
-        self.inner1 = InnerNetAct(inner_hidden)
+        self.inner1 = inner_net  # shared
 
         self.conv2 = nn.Conv2d(out_ch, out_ch * 2, 3, stride=1, padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(out_ch * 2)
-        self.inner2 = InnerNetAct(inner_hidden)
+        self.inner2 = inner_net  # shared
 
         self.shortcut = nn.Sequential()
         if stride != 1 or in_ch != out_ch:
@@ -94,15 +94,13 @@ class InnerNetBlock(nn.Module):
 class InnerNetInternalBlock(nn.Module):
     """ResNet block with InnerNet ONLY at the internal position (between conv1 and conv2).
 
-    Post-skip activation stays as ReLU. This mirrors the Transformer FFN
-    approach where InnerNet replaces activation inside the FFN but residual
-    connection wraps outside.
+    Post-skip activation stays as ReLU. inner_net is shared across all blocks.
     """
-    def __init__(self, in_ch, out_ch, stride=1, inner_hidden=32):
+    def __init__(self, in_ch, out_ch, stride=1, inner_net=None):
         super().__init__()
         self.conv1 = nn.Conv2d(in_ch, out_ch * 2, 3, stride=stride, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(out_ch * 2)
-        self.inner = InnerNetAct(inner_hidden)  # only internal activation is InnerNet
+        self.inner = inner_net  # shared
 
         self.conv2 = nn.Conv2d(out_ch, out_ch, 3, stride=1, padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(out_ch)
@@ -123,22 +121,23 @@ class InnerNetInternalBlock(nn.Module):
 
 
 class InnerNetInternalResNet(nn.Module):
-    """ResNet-18 with InnerNet only at internal positions (between conv1 and conv2).
-    Post-skip activation remains ReLU."""
+    """ResNet-18 with InnerNet only at internal positions (shared across all blocks)."""
     def __init__(self, config):
         super().__init__()
         self.config = config
         num_classes = config.model.num_classes
         inner_hidden = getattr(config.model, 'inner_hidden', 32)
 
+        self.inner_net = InnerNetAct(inner_hidden)  # shared across all blocks
+
         self.conv1 = nn.Conv2d(3, 64, 3, stride=1, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
 
-        self.layer1 = self._make_layer(64, 64, 2, stride=1, inner_hidden=inner_hidden)
-        self.layer2 = self._make_layer(64, 128, 2, stride=2, inner_hidden=inner_hidden)
-        self.layer3 = self._make_layer(128, 256, 2, stride=2, inner_hidden=inner_hidden)
-        self.layer4 = self._make_layer(256, 512, 2, stride=2, inner_hidden=inner_hidden)
+        self.layer1 = self._make_layer(64, 64, 2, stride=1)
+        self.layer2 = self._make_layer(64, 128, 2, stride=2)
+        self.layer3 = self._make_layer(128, 256, 2, stride=2)
+        self.layer4 = self._make_layer(256, 512, 2, stride=2)
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512, num_classes)
@@ -146,10 +145,10 @@ class InnerNetInternalResNet(nn.Module):
         if config.model.loss == 'CrossEntropy':
             self.loss_func = nn.CrossEntropyLoss()
 
-    def _make_layer(self, in_ch, out_ch, num_blocks, stride, inner_hidden):
-        layers = [InnerNetInternalBlock(in_ch, out_ch, stride, inner_hidden)]
+    def _make_layer(self, in_ch, out_ch, num_blocks, stride):
+        layers = [InnerNetInternalBlock(in_ch, out_ch, stride, inner_net=self.inner_net)]
         for _ in range(1, num_blocks):
-            layers.append(InnerNetInternalBlock(out_ch, out_ch, 1, inner_hidden))
+            layers.append(InnerNetInternalBlock(out_ch, out_ch, 1, inner_net=self.inner_net))
         return nn.Sequential(*layers)
 
     def forward(self, x, labels, collect=False):
@@ -209,21 +208,23 @@ class BaselineResNet(nn.Module):
 
 
 class InnerNetResNet(nn.Module):
-    """ResNet-18 style for CIFAR-10 with InnerNet activation."""
+    """ResNet-18 style for CIFAR-10 with InnerNet activation (shared across all blocks)."""
     def __init__(self, config):
         super().__init__()
         self.config = config
         num_classes = config.model.num_classes
         inner_hidden = getattr(config.model, 'inner_hidden', 32)
 
+        self.inner_net = InnerNetAct(inner_hidden)  # shared across all blocks
+
         self.conv1 = nn.Conv2d(3, 64, 3, stride=1, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
-        self.relu = nn.ReLU(inplace=True)  # First layer uses ReLU
+        self.relu = nn.ReLU(inplace=True)
 
-        self.layer1 = self._make_layer(64, 64, 2, stride=1, inner_hidden=inner_hidden)
-        self.layer2 = self._make_layer(64, 128, 2, stride=2, inner_hidden=inner_hidden)
-        self.layer3 = self._make_layer(128, 256, 2, stride=2, inner_hidden=inner_hidden)
-        self.layer4 = self._make_layer(256, 512, 2, stride=2, inner_hidden=inner_hidden)
+        self.layer1 = self._make_layer(64, 64, 2, stride=1)
+        self.layer2 = self._make_layer(64, 128, 2, stride=2)
+        self.layer3 = self._make_layer(128, 256, 2, stride=2)
+        self.layer4 = self._make_layer(256, 512, 2, stride=2)
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512, num_classes)
@@ -233,10 +234,10 @@ class InnerNetResNet(nn.Module):
         elif config.model.loss == 'MSE':
             self.loss_func = nn.MSELoss()
 
-    def _make_layer(self, in_ch, out_ch, num_blocks, stride, inner_hidden=32):
-        layers = [InnerNetBlock(in_ch, out_ch, stride, inner_hidden)]
+    def _make_layer(self, in_ch, out_ch, num_blocks, stride):
+        layers = [InnerNetBlock(in_ch, out_ch, stride, inner_net=self.inner_net)]
         for _ in range(1, num_blocks):
-            layers.append(InnerNetBlock(out_ch, out_ch, 1, inner_hidden))
+            layers.append(InnerNetBlock(out_ch, out_ch, 1, inner_net=self.inner_net))
         return nn.Sequential(*layers)
 
     def forward(self, x, labels, collect=False):

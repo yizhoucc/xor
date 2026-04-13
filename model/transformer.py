@@ -31,12 +31,13 @@ class InnerNetFFN(nn.Module):
 
     Two separate projections d→d_ff create value and gate signals.
     InnerNet combines each (value[i], gate[i]) pair into a scalar.
+    The inner_net is shared across all layers (passed in from outside).
     """
-    def __init__(self, d_model, d_ff, inner_hidden=32, dropout=0.1):
+    def __init__(self, d_model, d_ff, inner_net, dropout=0.1):
         super().__init__()
         self.w1a = nn.Linear(d_model, d_ff)  # value projection
         self.w1b = nn.Linear(d_model, d_ff)  # gate projection
-        self.inner_net = InnerNetFFNActivation(hidden_dim=inner_hidden)
+        self.inner_net = inner_net  # shared across layers
         self.w2 = nn.Linear(d_ff, d_model)
         self.dropout = nn.Dropout(dropout)
 
@@ -69,11 +70,12 @@ class SiLUInnerNetFFN(nn.Module):
     """FFN with SiLU-InnerNet: classic pairing (single proj → 2× → pair adjacent).
 
     Tests whether SiLU inductive bias helps InnerNet learn SwiGLU-like functions.
+    The inner_net is shared across all layers.
     """
-    def __init__(self, d_model, d_ff, inner_hidden=32, dropout=0.1):
+    def __init__(self, d_model, d_ff, inner_net, dropout=0.1):
         super().__init__()
         self.w1 = nn.Linear(d_model, d_ff * 2)  # single proj, 2× width
-        self.inner_net = SiLUInnerNetFFNActivation(hidden_dim=inner_hidden)
+        self.inner_net = inner_net  # shared across layers
         self.w2 = nn.Linear(d_ff, d_model)
         self.dropout = nn.Dropout(dropout)
         self.d_ff = d_ff
@@ -91,12 +93,12 @@ class ClassicInnerNetFFN(nn.Module):
     """FFN with Classic InnerNet: single projection → 2× width → pair adjacent.
 
     Mirrors the LSTM finding that classic (adjacent) pairing > semantic pairing.
-    Uses standard ReLU InnerNet (not SiLU).
+    The inner_net is shared across all layers.
     """
-    def __init__(self, d_model, d_ff, inner_hidden=32, dropout=0.1):
+    def __init__(self, d_model, d_ff, inner_net, dropout=0.1):
         super().__init__()
         self.w1 = nn.Linear(d_model, d_ff * 2)  # single proj, 2× width
-        self.inner_net = InnerNetFFNActivation(hidden_dim=inner_hidden)
+        self.inner_net = inner_net  # shared across layers
         self.w2 = nn.Linear(d_ff, d_model)
         self.dropout = nn.Dropout(dropout)
         self.d_ff = d_ff
@@ -272,10 +274,11 @@ class SiLUInnerNetTransformer(nn.Module):
         super().__init__()
         self.embedding = nn.Embedding(vocab_size, d_model)
         self.pos_enc = PositionalEncoding(d_model, max_len, dropout)
+        shared_inner = SiLUInnerNetFFNActivation(hidden_dim=inner_hidden)
         self.blocks = nn.ModuleList([
             TransformerBlock(
                 d_model, n_heads,
-                SiLUInnerNetFFN(d_model, d_ff, inner_hidden, dropout),
+                SiLUInnerNetFFN(d_model, d_ff, shared_inner, dropout),
                 dropout
             ) for _ in range(n_layers)
         ])
@@ -305,10 +308,11 @@ class ClassicInnerNetTransformer(nn.Module):
         super().__init__()
         self.embedding = nn.Embedding(vocab_size, d_model)
         self.pos_enc = PositionalEncoding(d_model, max_len, dropout)
+        shared_inner = InnerNetFFNActivation(hidden_dim=inner_hidden)
         self.blocks = nn.ModuleList([
             TransformerBlock(
                 d_model, n_heads,
-                ClassicInnerNetFFN(d_model, d_ff, inner_hidden, dropout),
+                ClassicInnerNetFFN(d_model, d_ff, shared_inner, dropout),
                 dropout
             ) for _ in range(n_layers)
         ])
@@ -334,10 +338,11 @@ class InnerNetTransformer(nn.Module):
         super().__init__()
         self.embedding = nn.Embedding(vocab_size, d_model)
         self.pos_enc = PositionalEncoding(d_model, max_len, dropout)
+        shared_inner = InnerNetFFNActivation(hidden_dim=inner_hidden)
         self.blocks = nn.ModuleList([
             TransformerBlock(
                 d_model, n_heads,
-                InnerNetFFN(d_model, d_ff, inner_hidden, dropout),
+                InnerNetFFN(d_model, d_ff, shared_inner, dropout),
                 dropout
             ) for _ in range(n_layers)
         ])

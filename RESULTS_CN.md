@@ -51,27 +51,15 @@ Configs: `config/experiments/ae_mnist_2arg.yaml`，exp: `exp/ae_mnist_2arg_*`
 
 ### 全规模对比
 
-| 配置 | InnerNet | GELU | SwiGLU | vs GELU |
-|------|----------|------|--------|---------|
-| WikiText-2 d=64 | **112.66** | 116.63 | 112.31 | **-3.4%** |
-| WikiText-2 d=128 | **95.26** | 96.82 | 92.98 | -1.6% |
-| WikiText-2 d=192 | **88.14** | 89.11 | ⏳ | -1.1% |
-| WikiText-2 d=256 | **85.40** | 86.05 | ⏳ | -0.8% |
-| PTB d=128 | **207.81** | 212.28 | 205.82 | -2.1% |
+| 配置 | GELU | SwiGLU | InnerNet |
+|------|------|--------|----------|
+| WikiText-2 d=64 | 116.63 | 112.31 | ⏳ 重跑 |
+| WikiText-2 d=128 | 96.82 | 92.98 | ⏳ 重跑 |
+| WikiText-2 d=192 | 89.11 | 85.43 | ⏳ 重跑 |
+| WikiText-2 d=256 | 86.05 | ⏳ | ⏳ 重跑 |
+| PTB d=128 | 212.28 | 205.82 | ⏳ 重跑 |
 
-所有规模都赢 GELU。d=64 的时候 InnerNet 和 SwiGLU 差不多（112.66 vs 112.31），InnerNet 自己学出了 SwiGLU 的门控。模型越大优势越小，因为大模型本身容量够了。
-
-### FFN 设计变体（PTB d=128）
-
-| 模型 | WikiText-2 PPL | PTB PPL |
-|------|---------------|---------|
-| SwiGLU | — | **205.82** |
-| SiLU-InnerNet | **94.90** | 208.43 |
-| InnerNet Semantic | 95.26 | 207.81 |
-| InnerNet Classic | 95.49 | 208.81 |
-| GELU | 96.82 | 212.28 |
-
-四种 InnerNet 变体差不多（94.9~95.5），内部用什么激活和配对方式都不重要，双输入结构本身有用。和 LSTM 不一样（LSTM 上 Classic 明显比 Semantic 好），Transformer 上两种配对没区别。
+⚠️ **之前的 InnerNet 结果有 bug**：每层各有一个 InnerNet，没有 parameter sharing。论文设计是所有层共享一个 InnerNet（就像 ReLU 到处都是同一个函数）。已修复代码，需要全部重跑。GELU 和 SwiGLU 不受影响。
 
 ### GPT (d=256, 6 层, 20 epochs)
 
@@ -79,9 +67,9 @@ Configs: `config/experiments/ae_mnist_2arg.yaml`，exp: `exp/ae_mnist_2arg_*`
 |------|---------------|
 | GELU | **72.54** |
 | SwiGLU | 75.30 |
-| InnerNet | ⏳ |
+| InnerNet | ⏳ 重跑 |
 
-GPT 上 GELU 反而最好。大模型趋势和小模型不一样，不知道为什么。InnerNet 还在跑。
+GELU 和 SwiGLU 结果不受 bug 影响。InnerNet 需要重跑。
 
 Config: `config/experiments/transformer_wikitext_gpt_*.yaml`
 
@@ -91,9 +79,9 @@ Config: `config/experiments/transformer_wikitext_gpt_*.yaml`
 |------|-----|
 | SwiGLU | **93.83** |
 | GELU | 101.39 |
-| InnerNet | ⏳ |
+| InnerNet | ⏳ 重跑 |
 
-SwiGLU 比 GELU 好 -7.5%。InnerNet 在跑。AE 是我们最好的结果，掩码预测和 AE 类似（都是重建），看看 InnerNet 在这里能不能也好用。
+SwiGLU 比 GELU 好 -7.5%。InnerNet 需要重跑（param sharing bug）。
 
 Config: `config/experiments/mlm_wikitext_*.yaml`
 
@@ -103,9 +91,7 @@ Config: `config/experiments/mlm_wikitext_*.yaml`
 |------|----------|
 | SwiGLU | **81.54±0.29%** |
 | GELU | 79.46±0.23% |
-| InnerNet | 78.18±0.96% |
-
-InnerNet 最差。ViT 有 residual + self-attention，和 ResNet 一样，InnerNet 没用。
+| InnerNet | 78.18±0.96%（有 param sharing bug，需重跑） |
 
 Config: `config/experiments/vit_cifar_*.yaml`
 
@@ -114,9 +100,7 @@ Config: `config/experiments/vit_cifar_*.yaml`
 | 模型 | Accuracy |
 |------|----------|
 | GELU | **81.26±0.29%** |
-| InnerNet | 80.21±0.22% |
-
-InnerNet 稍差 -1%。Mixer 也有 residual。
+| InnerNet | 80.21±0.22%（有 param sharing bug，需重跑） |
 
 Config: `config/experiments/mixer_cifar_*.yaml`
 
@@ -175,14 +159,14 @@ MLP CIFAR-10 宽度缩放：
 
 **InnerNet w=128 ≈ ReLU w=256，省 55% 参数。**
 
-## 7. ResNet（没用）
+## 7. ResNet
 
-| 数据集 | InnerNet | ReLU |
-|--------|----------|------|
-| CIFAR-10 | 86.09 | 86.33 |
-| CIFAR-100 | 56.78 | 57.95 |
+之前的 InnerNet ResNet 结果有 param sharing bug，需要重跑。ReLU baseline 不受影响：
+- CIFAR-10 ReLU: 86.33
+- CIFAR-100 ReLU: 57.95
+- CIFAR-100+aug ReLU: 73.51
 
-持平。skip connection 已经做了 InnerNet 想做的事。这个负面结果有理论价值，英文保留了。
+另外在试 internal-only（只换 block 内部的 ReLU，不换 skip 后面的），也需要用修复后的共享版本重跑。
 
 ## 8. RL（不稳定，英文暂不写）
 
@@ -204,18 +188,17 @@ Housing -5% 有点效果。Diabetes 持平。Wine 反而更差 +9.3%。低维表
 | 文本分类 TF-IDF | 稀疏特征不适合，已归档 |
 | CNN ×0.25 | 太小了配对开销太大 |
 
-## 在跑的
+## 在跑的 / 要做的
 
-- TF SwiGLU d=192 在跑，d=256 排队
-- ~~TF Classic InnerNet~~ ✅ 完成，Classic ≈ Semantic
-- LSTM Wiki-103 + CNN/DM 在跑
-- MLM（BERT 式掩码预测）SwiGLU 跑完 PPL=93.83，GELU/InnerNet 在跑
-- PPO LunarLander 30 seeds 在跑
-- ~~训练消融 CNN/MLP~~ ✅ 完成，pretrain 不是必须的
-- GPT d=256 在跑
+- ⚠️ **U20: param sharing 修复后重跑所有 Transformer/ResNet/WRN/ViT/Mixer/MLM 的 InnerNet 实验**
+- TF SwiGLU d=256 排队（不受 bug 影响）
+- LSTM Wiki-103 + CNN/DM 在跑（LSTM 不受影响）
+- PPO LunarLander 30 seeds ✅ 完成
 
 ## 总结
 
-没 skip 的前馈网络都有效果。AE 最好（-43%），CNN 也不错（+4.6%），Transformer FFN 有效（-3.4%），参数省一半。InnerNet 自己学出了 SwiGLU，说明能当架构搜索用。
+确认有效果的（代码正确）：CNN (+0.4~4.6%)，AE (-43%)，LSTM WikiText-2 (-6.2%)，参数省一半。
 
-不好用的也清楚：有 skip 没用，LSTM 看数据集。越简单越好——相邻配对 > 语义配对，pretrain 可能不需要。
+需要重新确认的（param sharing bug）：Transformer FFN 所有 InnerNet 结果，ResNet InnerNet，ViT/Mixer InnerNet，MLM InnerNet。
+
+LSTM 看数据集（WikiText-2 好用，PTB 不好用）。pretrain 可能不需要。

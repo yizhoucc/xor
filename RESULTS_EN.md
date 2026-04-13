@@ -8,9 +8,9 @@ InnerNet replaces scalar activations (ReLU) with a small learned MLP that takes 
 
 **Three core claims supported by evidence:**
 
-1. **InnerNet improves feedforward networks without skip connections** — CNN (+0.4–4.6%), AE (-43% MSE), Transformer FFN (-0.8–3.4% PPL), with 40% fewer parameters
-2. **InnerNet acts as an architecture discovery tool** — it automatically learns dual-input gating patterns resembling SwiGLU, validating that learnable activations can rediscover hand-designed structures
-3. **Simplicity wins** — simple adjacent pairing > deliberate semantic pairing; no pretrain needed (end-to-end ≈ 3-phase); removing tanh bounds helps
+1. **InnerNet improves feedforward networks without skip connections** — CNN (+0.4–4.6%), AE (-43% MSE), with 40% fewer parameters. Transformer FFN results pending re-run.
+2. **InnerNet acts as an architecture discovery tool** — pending confirmation with corrected parameter sharing
+3. **Simplicity wins** — simple adjacent pairing > deliberate semantic pairing (LSTM); no pretrain needed (end-to-end ≈ 3-phase)
 
 **Clear boundaries:** InnerNet is redundant when skip connections already provide cross-feature interaction (ResNet).
 
@@ -59,30 +59,17 @@ Configs: `config/experiments/ae_mnist_2arg.yaml`, exp pattern: `exp/ae_mnist_2ar
 
 ### Transformer FFN — InnerNet vs GELU vs SwiGLU
 
-| Config | InnerNet | GELU | SwiGLU | InnerNet vs GELU |
-|--------|----------|------|--------|-----------------|
-| WikiText-2 d=64 | **112.66±0.66** | 116.63±0.84 | 112.31±0.49 | **-3.4%** |
-| WikiText-2 d=128 | **95.26±1.00** | 96.82±1.19 | 92.98±1.14 | **-1.6%** |
-| WikiText-2 d=192 | **88.14±0.80** | 89.11±0.92 | ⏳ | **-1.1%** |
-| WikiText-2 d=256 | **85.40±1.15** | 86.05±0.97 | ⏳ | **-0.8%** |
-| PTB d=128 | **207.81±1.58** | 212.28±0.88 | 205.82±0.98 | **-2.1%** |
+| Config | GELU | SwiGLU | InnerNet |
+|--------|------|--------|----------|
+| WikiText-2 d=64 | 116.63±0.84 | 112.31±0.49 | ⏳ rerun (param sharing fix) |
+| WikiText-2 d=128 | 96.82±1.19 | 92.98±1.14 | ⏳ rerun |
+| WikiText-2 d=192 | 89.11±0.92 | 85.43 | ⏳ rerun |
+| WikiText-2 d=256 | 86.05±0.97 | ⏳ | ⏳ rerun |
+| PTB d=128 | 212.28±0.88 | 205.82±0.98 | ⏳ rerun |
 
-InnerNet consistently beats GELU across all model sizes. At d=64, InnerNet ≈ SwiGLU (112.66 vs 112.31) — the learned activation matches the hand-designed one. SwiGLU has a slight edge at larger scales.
+**Note**: Previous InnerNet results had a parameter sharing bug (each layer had its own InnerNet instead of sharing one). All InnerNet Transformer results are being re-run with correct shared parameters.
 
-**Implication**: InnerNet serves as an **architecture discovery tool** — it independently converges to a dual-input gating pattern similar to SwiGLU, validating that two-argument activations naturally learn multiplicative gating.
-
-### Transformer FFN Design Variants (d=128)
-
-| Model | WikiText-2 PPL | PTB PPL |
-|-------|---------------|---------|
-| SwiGLU (fixed gate) | 92.98±1.14 | **205.82±0.98** |
-| InnerNet (semantic) | **95.26±1.00** | 207.81±1.58 |
-| InnerNet (classic) | 95.49 | 208.81 |
-| GELU baseline | 96.82±1.19 | 212.28±0.88 |
-
-All InnerNet variants perform similarly (~95.3 WikiText-2, ~208 PTB), regardless of pairing strategy or internal activation. The dual-input structure itself is what matters.
-
-Config: `config/experiments/transformer_wikitext_classic_2arg.yaml`, exp: `exp/transformer_wikitext_classic_*`
+Config: `config/experiments/transformer_wikitext_2arg.yaml`, exp: `exp/transformer_wikitext_2arg_*`
 
 ## 4. LSTM Language Models (WikiText-2, PPL↓, 5 seeds)
 
@@ -121,12 +108,10 @@ Config: `config/experiments/lstm_wikitext_classic.yaml`, exp pattern: `exp/lstm_
 
 ## 8. ResNet — Skip Connections (SGD, 150 ep, 5 seeds)
 
-| Dataset | InnerNet | ReLU | Diff |
-|---------|----------|------|------|
-| CIFAR-10 | 86.09±0.82 | 86.33±0.34 | -0.24 (neutral) |
-| CIFAR-100 | 56.78±2.77 | 57.95±0.52 | -1.17 (neutral) |
-
-**Skip connections make InnerNet redundant.** The residual path `y = F(x) + x` already provides cross-feature interaction, making InnerNet's dual-input activation unnecessary.
+Previous ResNet InnerNet results had a parameter sharing bug and are being re-run. ReLU baselines are valid:
+- CIFAR-10 ReLU: 86.33±0.34
+- CIFAR-100 ReLU: 57.95±0.52
+- CIFAR-100+aug ReLU: 73.51±0.18
 
 ## 9. Big MLP MNIST (3×256, dropout=0.3, 5 seeds)
 

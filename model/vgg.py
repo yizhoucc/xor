@@ -185,16 +185,14 @@ class WideResNetBlock(nn.Module):
 class InnerNetInternalWRNBlock(nn.Module):
     """Wide residual block with InnerNet only at the internal position.
 
-    WRN uses pre-norm: BN→ReLU→Conv. Two activation positions:
-    1. relu(bn1(x)) — post-skip from previous block (keep as ReLU)
-    2. relu(bn2(out)) — internal, between conv1 and conv2 (replace with InnerNet)
+    inner_net is shared across all blocks.
     """
-    def __init__(self, in_ch, out_ch, stride=1, dropout=0.3, inner_hidden=32):
+    def __init__(self, in_ch, out_ch, stride=1, dropout=0.3, inner_net=None):
         super().__init__()
         self.bn1 = nn.BatchNorm2d(in_ch)
         self.conv1 = nn.Conv2d(in_ch, out_ch * 2, 3, stride=stride, padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(out_ch * 2)
-        self.inner = InnerNetVGGActivation(inner_hidden)  # internal activation
+        self.inner = inner_net  # shared
         self.conv2 = nn.Conv2d(out_ch, out_ch, 3, stride=1, padding=1, bias=False)
         self.dropout = nn.Dropout(dropout)
 
@@ -211,7 +209,7 @@ class InnerNetInternalWRNBlock(nn.Module):
 
 
 class InnerNetInternalWRN(nn.Module):
-    """WideResNet-28-10 with InnerNet only at internal positions."""
+    """WideResNet-28-10 with InnerNet only at internal positions (shared)."""
     def __init__(self, config):
         super().__init__()
         self.config = config
@@ -221,14 +219,16 @@ class InnerNetInternalWRN(nn.Module):
         dropout = getattr(config.model, 'dropout', 0.3)
         inner_hidden = getattr(config.model, 'inner_hidden', 32)
 
+        self.inner_net = InnerNetVGGActivation(inner_hidden)  # shared
+
         n = (depth - 4) // 6
         channels = [16, 16 * widen, 32 * widen, 64 * widen]
 
         self.conv1 = nn.Conv2d(3, channels[0], 3, stride=1, padding=1, bias=False)
 
-        self.group1 = self._make_group(channels[0], channels[1], n, stride=1, dropout=dropout, inner_hidden=inner_hidden)
-        self.group2 = self._make_group(channels[1], channels[2], n, stride=2, dropout=dropout, inner_hidden=inner_hidden)
-        self.group3 = self._make_group(channels[2], channels[3], n, stride=2, dropout=dropout, inner_hidden=inner_hidden)
+        self.group1 = self._make_group(channels[0], channels[1], n, stride=1, dropout=dropout)
+        self.group2 = self._make_group(channels[1], channels[2], n, stride=2, dropout=dropout)
+        self.group3 = self._make_group(channels[2], channels[3], n, stride=2, dropout=dropout)
 
         self.bn = nn.BatchNorm2d(channels[3])
         self.fc = nn.Linear(channels[3], num_classes)
@@ -236,10 +236,10 @@ class InnerNetInternalWRN(nn.Module):
         if config.model.loss == 'CrossEntropy':
             self.loss_func = nn.CrossEntropyLoss()
 
-    def _make_group(self, in_ch, out_ch, n_blocks, stride, dropout, inner_hidden):
-        layers = [InnerNetInternalWRNBlock(in_ch, out_ch, stride, dropout, inner_hidden)]
+    def _make_group(self, in_ch, out_ch, n_blocks, stride, dropout):
+        layers = [InnerNetInternalWRNBlock(in_ch, out_ch, stride, dropout, inner_net=self.inner_net)]
         for _ in range(1, n_blocks):
-            layers.append(InnerNetInternalWRNBlock(out_ch, out_ch, 1, dropout, inner_hidden))
+            layers.append(InnerNetInternalWRNBlock(out_ch, out_ch, 1, dropout, inner_net=self.inner_net))
         return nn.Sequential(*layers)
 
     def forward(self, x, labels, collect=False):

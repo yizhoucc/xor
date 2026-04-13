@@ -245,8 +245,8 @@ class LMRunner:
         # Load pretrained InnerNet
         if self.is_innernet and gaussian_weights is not None:
             if self.model_name in ('InnerNetTransformer', 'SiLUInnerNetTransformer', 'ClassicInnerNetTransformer'):
-                for block in model.blocks:
-                    block.ffn.inner_net.load_state_dict(gaussian_weights)
+                # Shared inner_net — loading once applies to all layers
+                model.blocks[0].ffn.inner_net.load_state_dict(gaussian_weights)
             elif self.model_name == 'InnerNetAttnTransformer':
                 model.attn_inner_net.load_state_dict(gaussian_weights)
             else:
