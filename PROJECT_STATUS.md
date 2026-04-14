@@ -1,21 +1,17 @@
 # 项目状态 — 2026-04-14
 
-## ⚠️ U20: param sharing 修复
+## 已修复的问题
 
-发现 Transformer/ResNet/WRN 的 InnerNet 每层各一个，没有共享参数。已修复代码，受影响的实验全部重跑中。
-
-**不受影响**：CNN、MLP、AE、VGG、LSTM、PPO、所有 baseline/SwiGLU/GELU
+- **U20 param sharing bug**：之前 Transformer/ResNet/WRN 的 InnerNet 每层各一个没共享。已修复，重跑。修复后结果和之前差不多（d=64: 112.66→112.83），说明影响不大，但 sharing 是论文基本设计。CNN/MLP/AE/VGG/LSTM/PPO 不受影响。
 
 ## 集群运行中
 
 | 类别 | 实验 | 状态 |
 |------|------|------|
-| **U20** | TF InnerNet d=64/128/192/PTB (修复版) ×4 | running |
-| **U20** | TF Classic Wiki+PTB (修复版) ×2 | running |
-| **U20** | ResNet CIFAR-10 full (修复版) ×1 | running |
-| **U20** | ResNet CIFAR-100+aug full ×5, internal ×10 | pending |
-| **U20** | MLM InnerNet + GPT InnerNet (修复版) | pending |
-| U14 | LSTM Wiki-103 classic+2arg, CNN/DM 2arg | running |
+| U20 | TF d=128/192/256 + Classic Wiki | running |
+| U20 | ResNet CIFAR-100+aug ×4, internal ×10 | pending |
+| U20 | MLM InnerNet, GPT InnerNet | running |
+| U14 | LSTM Wiki-103 classic/2arg, CNN/DM 2arg | running |
 
 ---
 

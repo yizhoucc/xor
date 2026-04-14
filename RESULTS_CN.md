@@ -6,11 +6,12 @@
 
 把 ReLU 换成一个小 MLP（两个输入一个输出），让每个神经元能看到隔壁特征。没有 skip connection 的网络有效果，参数还少 40%。
 
-确认有效的：CNN、AE。LSTM 看数据集。Transformer 发现了 param sharing bug，在重跑。
+确认有效的：CNN、AE、Transformer FFN（部分出来了）、LSTM WikiText-2、PPO。
+不好用的：ResNet（skip connection）、LSTM PTB。
 
 ---
 
-## 1. CNN 图像分类（5 seeds）✅ 代码正确
+## 1. CNN 图像分类（5 seeds）
 
 | 数据集 | 2-arg | 1-arg | ReLU | ReLU+LN | ReLU 参数匹配 | SwiGLU | 提升 |
 |--------|-------|-------|------|---------|-------------|--------|------|
@@ -24,7 +25,7 @@
 
 Configs: `config/experiments/cnn_cifar_2arg.yaml` 等，exp: `exp/cnn_cifar_2arg_*`
 
-## 2. 自编码器 ✅ 代码正确
+## 2. 自编码器
 
 | 数据集 | InnerNet | ReLU | ReLU 参数匹配 | 改进 |
 |--------|----------|------|-------------|------|
@@ -36,21 +37,17 @@ Configs: `config/experiments/cnn_cifar_2arg.yaml` 等，exp: `exp/cnn_cifar_2arg
 
 Configs: `config/experiments/ae_mnist_2arg.yaml`，exp: `exp/ae_mnist_2arg_*`
 
-## 3. Transformer FFN ⚠️ 部分结果出来了
+## 3. Transformer FFN
 
-| 配置 | GELU | SwiGLU | InnerNet (修复版) | vs GELU |
-|------|------|--------|-----------------|---------|
+| 配置 | GELU | SwiGLU | InnerNet | vs GELU |
+|------|------|--------|----------|---------|
 | Wiki d=64 | 116.63 | 112.31 | **112.83** | **-3.3%** |
 | Wiki d=128 | 96.82 | 92.98 | ⏳ | — |
 | Wiki d=192 | 89.11 | 85.43 | ⏳ | — |
 | Wiki d=256 | 86.05 | ⏳ | ⏳ | — |
 | PTB d=128 | 212.28 | 205.82 | **207.91** | **-2.1%** |
-| Classic PTB | — | — | 208.62 | — |
-| Classic Wiki | — | — | ⏳ | — |
 
-param sharing 修复后 InnerNet 还是赢 GELU。d=64 时 InnerNet (112.83) 和 SwiGLU (112.31) 差不多。修复前后结果也差不多（112.66 → 112.83），小模型 sharing 影响不大。
-
-Configs: `config/experiments/transformer_wikitext_2arg.yaml`
+d=64 时 InnerNet (112.83) 和 SwiGLU (112.31) 差不多。d=128 以上在跑。
 
 ### GPT (d=256)
 
@@ -58,7 +55,9 @@ Configs: `config/experiments/transformer_wikitext_2arg.yaml`
 |------|-----|
 | GELU | **72.54** |
 | SwiGLU | 75.30 |
-| InnerNet | ⏳ 重跑 |
+| InnerNet | ⏳ |
+
+GPT 上 GELU 反而赢了 SwiGLU，不知道为什么。InnerNet 在跑。
 
 ### MLM 掩码预测（BERT 式）
 
@@ -66,16 +65,16 @@ Configs: `config/experiments/transformer_wikitext_2arg.yaml`
 |------|-----|
 | SwiGLU | **93.83** |
 | GELU | 101.39 |
-| InnerNet | ⏳ 重跑 |
+| InnerNet | ⏳ |
 
 ### ViT / MLP-Mixer CIFAR-10
 
-ViT: SwiGLU 81.54% > GELU 79.46%。InnerNet 需要重跑。
-Mixer: GELU 81.26%。InnerNet 需要重跑。
+ViT: SwiGLU 81.54% > GELU 79.46%。InnerNet 在跑。
+Mixer: GELU 81.26%。InnerNet 在跑。
 
-Configs: `config/experiments/transformer_wikitext_*.yaml`
+Configs: `config/experiments/transformer_wikitext_*.yaml`，exp: `exp/transformer_wikitext_*`
 
-## 4. LSTM ✅ 代码正确
+## 4. LSTM
 
 ### WikiText-2 好用
 
@@ -104,11 +103,11 @@ Configs: `config/experiments/transformer_wikitext_*.yaml`
 ### CNN/DailyMail
 ⏳ 在跑
 
-不知道怎么回事，WikiText-2 上 InnerNet 好用，PTB 上不好用。在用更多数据集研究。
+WikiText-2 上好用，PTB 上不好用。在用更多数据集研究。
 
 Configs: `lstm_wikitext_classic.yaml`, `lstm_ptb_classic.yaml`, `lstm_wikitext103_*.yaml`, `lstm_cnndm_*.yaml`
 
-## 5. 训练阶段消融 ✅ 代码正确
+## 5. 训练阶段消融
 
 | 任务 | 3-phase | End-to-end | 差异 |
 |------|---------|-----------|------|
@@ -117,23 +116,23 @@ Configs: `lstm_wikitext_classic.yaml`, `lstm_ptb_classic.yaml`, `lstm_wikitext10
 | CNN CIFAR-10 | 78.57% | 77.35% | -1.2% |
 | MLP MNIST | 98.0% | 97.95% | 没差 |
 
-pretrain 不是必须的。CNN 稍差一点。
+pretrain 不是必须的。以后默认 end-to-end。
 
 Configs: `config/experiments/*_e2e.yaml`
 
-## 6. 参数效率 ✅ 代码正确
+## 6. 参数效率
 
-InnerNet w=128 (415K) ≈ ReLU w=256 (921K) → **省 55% 参数**。优势随模型增大递增。
+InnerNet w=128 (415K) ≈ ReLU w=256 (921K) → **省 55% 参数**。
 
 ## 7. ResNet
 
-修复版 CIFAR-10（5/5 done）：**86.10%** vs ReLU 86.33% → 持平。skip connection 下 InnerNet 没用，修复前后一样。
+CIFAR-10：InnerNet 86.10% vs ReLU 86.33% → 持平。skip connection 下 InnerNet 没用。
 
-修复版 CIFAR-100+aug（1/5 done）：72.72% vs ReLU 73.51%。还在跑。
+CIFAR-100+aug：InnerNet 72.72% (1/5 done) vs ReLU 73.51%。还在跑。
 
-internal-only 也在重跑中。
+internal-only（只换 block 内部 ReLU）也在跑。
 
-## 8. PPO RL ✅ 代码正确
+## 8. PPO RL
 
 | 环境 | InnerNet | ReLU | SwiGLU |
 |------|----------|------|--------|
@@ -147,22 +146,22 @@ internal-only 也在重跑中。
 
 | 实验 | 情况 |
 |------|------|
-| ResNet | skip 做了同样的事，修复版初步确认还是没用 |
+| ResNet | skip connection 下没用 |
 | LSTM PTB | Standard 赢 |
 | VGG SwiGLU | 训练不了 |
 | CNN ×0.25 | 太小了 |
 
 ## 在跑的
 
-- TF d=128/d=192/d=256 + Classic Wiki 修复版在跑
-- ResNet CIFAR-100+aug ×4, internal ×10 pending
+- TF d=128/d=192/d=256 + Classic Wiki 在跑
+- ResNet CIFAR-100+aug, internal-only 在跑
 - MLM InnerNet, GPT InnerNet 在跑
 - LSTM Wiki-103 classic/2arg, CNN/DM 2arg 在跑
 
 ## 总结
 
-确认有效的：**CNN (+0.4~4.6%)，AE (-43%)，LSTM WikiText-2 (-6.2%)，参数省 55%，PPO LunarLander (+18%)**。
+有效的：**CNN (+0.4~4.6%)，AE (-43%)，TF FFN d=64 (-3.3%) PTB (-2.1%)，LSTM WikiText-2 (-6.2%)，参数省 55%，PPO LunarLander (+18%)**。
 
-Transformer 修复版出来了部分结果：d=64 InnerNet 112.83 赢 GELU 116.63 (-3.3%)，和 SwiGLU 112.31 差不多。PTB 也赢。其他规模在跑。
+没用的：ResNet（持平），LSTM PTB（更差）。
 
-ResNet 修复后还是持平。LSTM 看数据集。pretrain 不是必须的。
+LSTM 看数据集。pretrain 不需要，默认 end-to-end。

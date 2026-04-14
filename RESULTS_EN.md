@@ -6,13 +6,13 @@
 
 InnerNet replaces scalar activations (ReLU) with a small learned MLP that takes two inputs: `f(a, b) → output`. This lets each neuron "see" a neighboring feature before activating — similar to cortical neurons that perform soft XOR operations.
 
-**Core claims supported by evidence:**
+**Core claims:**
 
 1. **InnerNet improves feedforward networks without skip connections** — CNN (+0.4–4.6%), AE (-43% MSE), Transformer FFN (-2.1–3.3% PPL), with 40% fewer parameters
 2. **InnerNet as architecture discovery tool** — at small scale (d=64), InnerNet (112.83) independently matches SwiGLU (112.31)
 3. **Simplicity wins** — simple adjacent pairing > deliberate semantic pairing (LSTM); no pretrain needed (end-to-end ≈ 3-phase)
 
-**Clear boundaries:** InnerNet is redundant when skip connections already provide cross-feature interaction (ResNet).
+**Boundaries:** InnerNet is redundant when skip connections already provide cross-feature interaction (ResNet).
 
 ---
 
@@ -38,8 +38,6 @@ Configs: `config/experiments/cnn_cifar_2arg.yaml`, exp: `exp/cnn_cifar_2arg_*`
 | FashionMNIST | **0.0076** | 0.0086 | — | **-12%** |
 | CIFAR-10 | **0.0081** | 0.0105 | — | **-23%** |
 
-Strongest result. The bottleneck layer forces compression; dual-input interaction effectively doubles the information bandwidth per neuron.
-
 ### AE Capacity Scaling (latent dimension)
 
 | Latent Dim | InnerNet | ReLU | Improvement |
@@ -52,8 +50,6 @@ Strongest result. The bottleneck layer forces compression; dual-input interactio
 Configs: `config/experiments/ae_mnist_2arg.yaml`, exp: `exp/ae_mnist_2arg_*`
 
 ## 3. Transformer Language Models (PPL↓, 5 seeds)
-
-GELU and SwiGLU baselines are valid. InnerNet results are pending re-run after parameter sharing fix.
 
 | Config | GELU | SwiGLU | InnerNet | vs GELU |
 |--------|------|--------|----------|---------|
@@ -110,13 +106,12 @@ Config: `config/experiments/lstm_wikitext_classic.yaml`, exp: `exp/lstm_wikitext
 
 InnerNet provides consistent benefits in **feedforward networks without built-in feature interaction mechanisms**:
 
-- **Autoencoders**: -23% to -43% MSE — strongest results
-- **CNNs**: +0.4–4.6% accuracy with 40% fewer parameters — consistent across 5 datasets
+- **Autoencoders**: -23% to -43% MSE
+- **CNNs**: +0.4–4.6% accuracy with 40% fewer parameters, consistent across 5 datasets
+- **Transformer FFN**: -2.1–3.3% PPL; InnerNet ≈ SwiGLU at small scale (d=64)
 - **LSTM**: -6.2% PPL (WikiText-2, classic pairing)
 - **Parameter efficiency**: 55% parameter savings (InnerNet w=128 ≈ ReLU w=256)
 
 **Boundaries**: InnerNet is redundant when models already have built-in feature interaction (ResNet skip connections).
 
-**Simplicity principle**: Adjacent pairing > semantic pairing — the dual-input interaction itself, not the specific pairing strategy, drives the improvement.
-
-**Pending**: Transformer FFN results with corrected parameter sharing. Will update when available.
+**Simplicity principle**: Adjacent pairing > semantic pairing — the dual-input interaction itself drives the improvement.
