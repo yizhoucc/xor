@@ -55,7 +55,7 @@
 | U17 | Transformer Classic InnerNet FFN | ✅ Wiki 95.49 ≈ Semantic 95.26, PTB 208.81 ≈ Semantic 207.81。TF 上 Classic ≈ Semantic |
 | U18 | d=64 InnerNet 学到了什么 | TODO | d=64 时 InnerNet ≈ SwiGLU，可视化看是不是真的像 SwiGLU |
 | U19 | ResNet/WRN 只换内部 ReLU | ⚠️ 暂停 | 初步结果有效果但代码有 param sharing bug，需要先修 U20 |
-| **U20** | **修复 InnerNet parameter sharing** | ⏳ 代码已修复，29 jobs 已提交重跑 | TF d=64/128/192/256+PTB (5), TF Classic (2), ResNet full+internal (20), MLM (1), GPT (1) |
+| **U20** | **修复 InnerNet parameter sharing** | ⏳ 部分结果 | TF d=64 **112.83** ✅ PTB **207.91** ✅ Classic PTB 208.62 ✅ ResNet C10 86.10% ✅ (持平)。d=128/192/256+Classic Wiki/MLM/GPT 在跑 |
 
 ### 🟡 Major
 

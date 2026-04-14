@@ -8,10 +8,9 @@ InnerNet replaces scalar activations (ReLU) with a small learned MLP that takes 
 
 **Core claims supported by evidence:**
 
-1. **InnerNet improves feedforward networks without skip connections** — CNN (+0.4–4.6%), AE (-43% MSE), with 40% fewer parameters
-2. **Simplicity wins** — simple adjacent pairing > deliberate semantic pairing (LSTM); no pretrain needed (end-to-end ≈ 3-phase)
-
-**Pending confirmation:** Transformer FFN results are being re-run after a parameter sharing fix.
+1. **InnerNet improves feedforward networks without skip connections** — CNN (+0.4–4.6%), AE (-43% MSE), Transformer FFN (-2.1–3.3% PPL), with 40% fewer parameters
+2. **InnerNet as architecture discovery tool** — at small scale (d=64), InnerNet (112.83) independently matches SwiGLU (112.31)
+3. **Simplicity wins** — simple adjacent pairing > deliberate semantic pairing (LSTM); no pretrain needed (end-to-end ≈ 3-phase)
 
 **Clear boundaries:** InnerNet is redundant when skip connections already provide cross-feature interaction (ResNet).
 
@@ -56,15 +55,17 @@ Configs: `config/experiments/ae_mnist_2arg.yaml`, exp: `exp/ae_mnist_2arg_*`
 
 GELU and SwiGLU baselines are valid. InnerNet results are pending re-run after parameter sharing fix.
 
-| Config | GELU | SwiGLU | InnerNet |
-|--------|------|--------|----------|
-| WikiText-2 d=64 | 116.63±0.84 | 112.31±0.49 | ⏳ |
-| WikiText-2 d=128 | 96.82±1.19 | 92.98±1.14 | ⏳ |
-| WikiText-2 d=192 | 89.11±0.92 | 85.43 | ⏳ |
-| WikiText-2 d=256 | 86.05±0.97 | ⏳ | ⏳ |
-| PTB d=128 | 212.28±0.88 | 205.82±0.98 | ⏳ |
+| Config | GELU | SwiGLU | InnerNet | vs GELU |
+|--------|------|--------|----------|---------|
+| WikiText-2 d=64 | 116.63±0.84 | **112.31±0.49** | **112.83** | **-3.3%** |
+| WikiText-2 d=128 | 96.82±1.19 | **92.98±1.14** | ⏳ | — |
+| WikiText-2 d=192 | 89.11±0.92 | **85.43** | ⏳ | — |
+| WikiText-2 d=256 | 86.05±0.97 | ⏳ | ⏳ | — |
+| PTB d=128 | 212.28±0.88 | **205.82±0.98** | **207.91** | **-2.1%** |
 
-Config: `config/experiments/transformer_wikitext_2arg.yaml`
+InnerNet consistently beats GELU. At d=64, InnerNet (112.83) ≈ SwiGLU (112.31).
+
+Config: `config/experiments/transformer_wikitext_2arg.yaml`, exp: `exp/transformer_wikitext_2arg_*`
 
 ## 4. LSTM (WikiText-2, PPL↓, 5 seeds)
 

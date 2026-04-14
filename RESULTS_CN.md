@@ -36,19 +36,21 @@ Configs: `config/experiments/cnn_cifar_2arg.yaml` 等，exp: `exp/cnn_cifar_2arg
 
 Configs: `config/experiments/ae_mnist_2arg.yaml`，exp: `exp/ae_mnist_2arg_*`
 
-## 3. Transformer FFN ⚠️ InnerNet 结果在重跑
+## 3. Transformer FFN ⚠️ 部分结果出来了
 
-| 配置 | GELU | SwiGLU | InnerNet (修复版) |
-|------|------|--------|-----------------|
-| Wiki d=64 | 116.63 | 112.31 | ⏳ |
-| Wiki d=128 | 96.82 | 92.98 | ⏳ |
-| Wiki d=192 | 89.11 | 85.43 | ⏳ |
-| Wiki d=256 | 86.05 | ⏳ | ⏳ |
-| PTB d=128 | 212.28 | 205.82 | ⏳ |
-| Classic Wiki | — | — | ⏳ |
-| Classic PTB | — | — | ⏳ |
+| 配置 | GELU | SwiGLU | InnerNet (修复版) | vs GELU |
+|------|------|--------|-----------------|---------|
+| Wiki d=64 | 116.63 | 112.31 | **112.83** | **-3.3%** |
+| Wiki d=128 | 96.82 | 92.98 | ⏳ | — |
+| Wiki d=192 | 89.11 | 85.43 | ⏳ | — |
+| Wiki d=256 | 86.05 | ⏳ | ⏳ | — |
+| PTB d=128 | 212.28 | 205.82 | **207.91** | **-2.1%** |
+| Classic PTB | — | — | 208.62 | — |
+| Classic Wiki | — | — | ⏳ | — |
 
-之前的 InnerNet 结果有 param sharing bug（每层各一个 InnerNet，没有共享）。已修复，在重跑。GELU 和 SwiGLU 不受影响。
+param sharing 修复后 InnerNet 还是赢 GELU。d=64 时 InnerNet (112.83) 和 SwiGLU (112.31) 差不多。修复前后结果也差不多（112.66 → 112.83），小模型 sharing 影响不大。
+
+Configs: `config/experiments/transformer_wikitext_2arg.yaml`
 
 ### GPT (d=256)
 
@@ -123,13 +125,13 @@ Configs: `config/experiments/*_e2e.yaml`
 
 InnerNet w=128 (415K) ≈ ReLU w=256 (921K) → **省 55% 参数**。优势随模型增大递增。
 
-## 7. ResNet ⚠️ InnerNet 在重跑
+## 7. ResNet
 
-ReLU baseline 不受影响：CIFAR-10 86.33, CIFAR-100 57.95, CIFAR-100+aug 73.51。
+修复版 CIFAR-10（5/5 done）：**86.10%** vs ReLU 86.33% → 持平。skip connection 下 InnerNet 没用，修复前后一样。
 
-修复版初步结果：CIFAR-10 ~86.2%（4/5 done，持平），CIFAR-100+aug 72.72%（1/5 done，还是差）。
+修复版 CIFAR-100+aug（1/5 done）：72.72% vs ReLU 73.51%。还在跑。
 
-internal-only（只换 block 内部 ReLU）也在重跑。
+internal-only 也在重跑中。
 
 ## 8. PPO RL ✅ 代码正确
 
@@ -152,14 +154,15 @@ internal-only（只换 block 内部 ReLU）也在重跑。
 
 ## 在跑的
 
-- ⚠️ **U20 param sharing 修复版**：TF 6 jobs（在跑，快出结果），ResNet full+internal 20 jobs（部分在跑），MLM 1 job，GPT 1 job
-- LSTM Wiki-103 classic/2arg 在跑
-- LSTM CNN/DM 在跑
+- TF d=128/d=192/d=256 + Classic Wiki 修复版在跑
+- ResNet CIFAR-100+aug ×4, internal ×10 pending
+- MLM InnerNet, GPT InnerNet 在跑
+- LSTM Wiki-103 classic/2arg, CNN/DM 2arg 在跑
 
 ## 总结
 
 确认有效的：**CNN (+0.4~4.6%)，AE (-43%)，LSTM WikiText-2 (-6.2%)，参数省 55%，PPO LunarLander (+18%)**。
 
-等结果的：Transformer FFN（最关键，param sharing 修复版在跑），ResNet internal-only。
+Transformer 修复版出来了部分结果：d=64 InnerNet 112.83 赢 GELU 116.63 (-3.3%)，和 SwiGLU 112.31 差不多。PTB 也赢。其他规模在跑。
 
-LSTM 看数据集。pretrain 不是必须的。
+ResNet 修复后还是持平。LSTM 看数据集。pretrain 不是必须的。
