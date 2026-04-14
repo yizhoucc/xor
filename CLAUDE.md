@@ -185,6 +185,9 @@ InnerNet 254.1 ± 69.3 vs ReLU 150.6 ± 58.5 (+69%)
 - 详见 `archive/README.md`
 - 原则：不删除，只移动。知道做过、不好用、不再跑。需要时可以回去读细节
 
+### 训练规则
+- **默认 end-to-end 训练**（不分阶段，不 pretrain InnerNet）。只有碰到学不会的情况再尝试论文的 3-phase 训练（pretrain → joint → freeze）。
+
 ### 工作笔记与 Context 管理
 - **`PROJECT_STATUS.md` 兼做工作笔记**：执行长任务时，把计划、执行状态、中间发现写入此文件的 header 区域，保持上下文和记忆。读的时候读完 header 即可，不用看全文。不要怕 status 文档过长。
 - **每次代码修改、结果分析、任何变动，都必须同步更新 `PROJECT_STATUS.md`。**
