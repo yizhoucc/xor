@@ -1,30 +1,21 @@
-# 项目状态 — 2026-04-10
+# 项目状态 — 2026-04-14
 
-## 集群运行中 (~27 jobs)
+## ⚠️ U20: param sharing 修复
+
+发现 Transformer/ResNet/WRN 的 InnerNet 每层各一个，没有共享参数。已修复代码，受影响的实验全部重跑中。
+
+**不受影响**：CNN、MLP、AE、VGG、LSTM、PPO、所有 baseline/SwiGLU/GELU
+
+## 集群运行中
 
 | 类别 | 实验 | 状态 |
 |------|------|------|
-| Critical seeds | CNN SVHN 2arg ×2 running + ×2 pending | running |
-| Critical seeds | CNN FMNIST 1arg ×4 | pending |
-| U2 | VGG-16 InnerNet CIFAR-100 (×5) | pending |
-| U11 | VGG-16 SwiGLU CIFAR-100 v2 (×5, lr=0.01) | pending |
-| U12 | GPT Transformer 2arg d=256 (重启) | pending |
-| U5 | SiLU-InnerNet WikiText-2 | running (seed 4/5) |
-| **U13** | **TF SwiGLU d=64/192/256 + PTB (×4 jobs)** | **新提交** |
-| **U15** | **PPO LunarLander 30 seeds ×3** | **running** |
-| **U14** | **LSTM 消融 PTB ×5 + WikiText-103 ×5** | **新提交** |
-| **U16** | **MLM (BERT-style) ×3** | **新提交** |
-| **U7** | **训练阶段消融 e2e ×20** | **新提交** |
-| **U17** | **TF Classic InnerNet FFN (Wiki + PTB)** | **新提交** |
-
-### 已完成（本轮）
-- ✅ ResNet-18+aug CIFAR-100: ReLU 73.51±0.18, InnerNet 71.72±0.52 (n=4, 排除 59.43% outlier)
-- ✅ WRN-28-10 CIFAR-100: 74.80±0.15 (n=5)
-- ✅ VGG-16+BN CIFAR-100 ReLU: ~68.69% (n=4, 1 seed pending)
-- ✅ LSTM 消融 2×2: 全部完成
-- ✅ SiLU-InnerNet PTB: 208.43 (没帮助)
-- ✅ SwiGLU CNN CIFAR-10: 79.79±0.56 (n=5)
-- ✅ SwiGLU CNN CIFAR-100: 46.48±0.50 (n=5)
+| **U20** | TF InnerNet d=64/128/192/PTB (修复版) ×4 | running |
+| **U20** | TF Classic Wiki+PTB (修复版) ×2 | running |
+| **U20** | ResNet CIFAR-10 full (修复版) ×1 | running |
+| **U20** | ResNet CIFAR-100+aug full ×5, internal ×10 | pending |
+| **U20** | MLM InnerNet + GPT InnerNet (修复版) | pending |
+| U14 | LSTM Wiki-103 classic+2arg, CNN/DM 2arg | running |
 
 ---
 
