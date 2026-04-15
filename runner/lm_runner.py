@@ -202,7 +202,8 @@ class LMRunner:
             gaussian_weights = pretrain_inner_net_gaussian(temp_inner, self.device)
             logger.info("InnerNet pretrained.")
 
-        seeds = list(range(42, 42 + self.num_seeds))
+        start_seed = self.config.lm.get('start_seed', 42)
+        seeds = list(range(start_seed, start_seed + self.num_seeds))
         all_ppl_histories = []
 
         for si, seed in enumerate(seeds):

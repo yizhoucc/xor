@@ -1,0 +1,20 @@
+exp_name: lstm_wikitext103_classic_s44
+task_type: language_model
+seed: 44
+use_gpu: true
+exp_dir: exp
+model:
+  name: ClassicInnerNetLSTMModel
+  inner_hidden: 32
+lm:
+  dataset: wikitext103
+  context_size: 32
+  embed_dim: 64
+  hidden_dim: 128
+  batch_size: 128
+  epochs: 3
+  lr: 0.001
+  grad_clip: 1.0
+  num_seeds: 1
+  start_seed: 44
+  num_workers: 4
