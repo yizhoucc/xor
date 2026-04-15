@@ -47,7 +47,11 @@ Configs: `config/experiments/ae_mnist_2arg.yaml`，exp: `exp/ae_mnist_2arg_*`
 | Wiki d=256 | 86.05 | ⏳ | ⏳ | — |
 | PTB d=128 | 212.28 | 205.82 | **207.91** | **-2.1%** |
 
-InnerNet 一直赢 GELU。d=64 时 InnerNet (112.83) 和 SwiGLU (112.31) 差不多。d=128 也赢（95.23 vs 96.82）。
+InnerNet 一直赢 GELU。InnerNet 一直赢 GELU。模型越大优势越小（-3.3% → -1.6% → -0.8%）。d=64 时 InnerNet 和 SwiGLU 差不多。SwiGLU 一直比 InnerNet 好，尤其是大模型。
+
+SwiGLU 是 InnerNet 的子集（InnerNet 理论上能学成 SwiGLU 一样），但实际打不过。在做 warm-start 实验（U21）：先训好 SwiGLU → InnerNet 拟合 SwiGLU → 替换 → 继续训练，看能不能超过 SwiGLU。如果能 → 之前是优化问题；如果不能 → SwiGLU 可能就是最优的。
+
+Config: `scripts/swiglu_warmstart.py`，exp: `exp/warmstart_d128`
 
 ### MLM 掩码预测（BERT 式）
 
@@ -155,10 +159,11 @@ Configs: `config/experiments/resnet_cifar_internal_2arg.yaml`
 
 ## 在跑的
 
-- TF d=192/d=256 + Classic Wiki 在跑
-- ResNet C10 internal 3 seed 重提交了
+- TF d=256 在跑
+- ResNet C10 internal 3 seed OOM 重提交了
 - GPT InnerNet 在跑
 - LSTM Wiki-103/CNN-DM 拆成单 seed 并行跑了
+- U21 SwiGLU warm-start InnerNet (d=128) 在跑
 
 ## 总结
 

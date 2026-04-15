@@ -52,7 +52,7 @@
 | U18 | d=64 InnerNet 学到了什么 | TODO | d=64 时 InnerNet ≈ SwiGLU，可视化看是不是真的像 SwiGLU |
 | U19 | ResNet/WRN 只换内部 ReLU | ✅ **有效果** | C100+aug **74.97%** vs ReLU 73.51% (+1.5%), C10 **87.7%** vs 86.33% (+1.4%, 2/5 done) |
 | U21 | SwiGLU warm-start InnerNet | ⏳ 已提交 | d=128 WikiText-2, 5 seeds。SwiGLU 训 10ep → InnerNet 拟合 → 替换 → finetune 5ep |
-| **U20** | **修复 InnerNet parameter sharing** | ⏳ | TF d=64 112.83 d=128 95.23 PTB 207.91 ✅。ResNet full 持平, **internal +1.5%** ✅。MLM InnerNet 124.82 比 GELU 差 ✅。d=192/256/GPT 在跑 |
+| **U20** | **修复 InnerNet parameter sharing** | ⏳ | TF d=64 112.83, d=128 95.23, d=192 88.42, PTB 207.91 ✅。ResNet full 持平, **internal +1.5%** ✅。MLM 124.82 差 ✅。d=256/GPT 在跑 |
 
 ### 🟡 Major
 

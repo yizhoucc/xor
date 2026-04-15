@@ -55,11 +55,11 @@ Configs: `config/experiments/ae_mnist_2arg.yaml`, exp: `exp/ae_mnist_2arg_*`
 |--------|------|--------|----------|---------|
 | WikiText-2 d=64 | 116.63±0.84 | **112.31±0.49** | **112.83** | **-3.3%** |
 | WikiText-2 d=128 | 96.82±1.19 | **92.98±1.14** | **95.23** | **-1.6%** |
-| WikiText-2 d=192 | 89.11±0.92 | **85.43** | ⏳ | — |
+| WikiText-2 d=192 | 89.11±0.92 | **85.43** | **88.42** | **-0.8%** |
 | WikiText-2 d=256 | 86.05±0.97 | ⏳ | ⏳ | — |
 | PTB d=128 | 212.28±0.88 | **205.82±0.98** | **207.91** | **-2.1%** |
 
-InnerNet consistently beats GELU. At d=64, InnerNet (112.83) ≈ SwiGLU (112.31).
+InnerNet consistently beats GELU across all scales (-0.8% to -3.3%). Improvement decreases with model size. At d=64, InnerNet (112.83) ≈ SwiGLU (112.31), independently matching the hand-designed gating function.
 
 Config: `config/experiments/transformer_wikitext_2arg.yaml`, exp: `exp/transformer_wikitext_2arg_*`
 
@@ -120,7 +120,7 @@ InnerNet provides consistent benefits in **feedforward networks without built-in
 
 - **Autoencoders**: -23% to -43% MSE
 - **CNNs**: +0.4–4.6% accuracy with 40% fewer parameters, consistent across 5 datasets
-- **Transformer FFN**: -1.6–3.3% PPL; InnerNet ≈ SwiGLU at small scale (d=64)
+- **Transformer FFN**: -0.8–3.3% PPL across 3 model sizes; InnerNet ≈ SwiGLU at small scale (d=64)
 - **LSTM**: -6.2% PPL (WikiText-2, classic pairing)
 - **ResNet internal-only**: +1.5% on CIFAR-100 — position matters
 - **Parameter efficiency**: 55% parameter savings (InnerNet w=128 ≈ ReLU w=256)
