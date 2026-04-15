@@ -50,8 +50,8 @@
 | U16 | Masked LM（类 BERT） | ⏳ SwiGLU 93.83, GELU 101.39 完成。InnerNet 在跑 |
 | U17 | Transformer Classic InnerNet FFN | ✅ Wiki 95.49 ≈ Semantic 95.26, PTB 208.81 ≈ Semantic 207.81。TF 上 Classic ≈ Semantic |
 | U18 | d=64 InnerNet 学到了什么 | TODO | d=64 时 InnerNet ≈ SwiGLU，可视化看是不是真的像 SwiGLU |
-| U19 | ResNet/WRN 只换内部 ReLU | ⚠️ 暂停 | 初步结果有效果但代码有 param sharing bug，需要先修 U20 |
-| **U20** | **修复 InnerNet parameter sharing** | ⏳ 部分结果 | TF d=64 **112.83** ✅ PTB **207.91** ✅ Classic PTB 208.62 ✅ ResNet C10 86.10% ✅ (持平)。d=128/192/256+Classic Wiki/MLM/GPT 在跑 |
+| U19 | ResNet/WRN 只换内部 ReLU | ✅ **有效果** | C100+aug **74.97%** vs ReLU 73.51% (+1.5%), C10 **87.7%** vs 86.33% (+1.4%, 2/5 done) |
+| **U20** | **修复 InnerNet parameter sharing** | ⏳ | TF d=64 112.83 d=128 95.23 PTB 207.91 ✅。ResNet full 持平, **internal +1.5%** ✅。MLM InnerNet 124.82 比 GELU 差 ✅。d=192/256/GPT 在跑 |
 
 ### 🟡 Major
 

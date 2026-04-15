@@ -42,12 +42,22 @@ Configs: `config/experiments/ae_mnist_2arg.yaml`，exp: `exp/ae_mnist_2arg_*`
 | 配置 | GELU | SwiGLU | InnerNet | vs GELU |
 |------|------|--------|----------|---------|
 | Wiki d=64 | 116.63 | 112.31 | **112.83** | **-3.3%** |
-| Wiki d=128 | 96.82 | 92.98 | ⏳ | — |
+| Wiki d=128 | 96.82 | 92.98 | **95.23** | **-1.6%** |
 | Wiki d=192 | 89.11 | 85.43 | ⏳ | — |
 | Wiki d=256 | 86.05 | ⏳ | ⏳ | — |
 | PTB d=128 | 212.28 | 205.82 | **207.91** | **-2.1%** |
 
-d=64 时 InnerNet (112.83) 和 SwiGLU (112.31) 差不多。d=128 以上在跑。
+InnerNet 一直赢 GELU。d=64 时 InnerNet (112.83) 和 SwiGLU (112.31) 差不多。d=128 也赢（95.23 vs 96.82）。
+
+### MLM 掩码预测（BERT 式）
+
+| 模型 | PPL |
+|------|-----|
+| SwiGLU | **93.83** |
+| GELU | 101.39 |
+| InnerNet | 124.82 |
+
+InnerNet 比 GELU 差。掩码预测上 InnerNet 没用。
 
 ### GPT (d=256)
 
@@ -57,22 +67,7 @@ d=64 时 InnerNet (112.83) 和 SwiGLU (112.31) 差不多。d=128 以上在跑。
 | SwiGLU | 75.30 |
 | InnerNet | ⏳ |
 
-GPT 上 GELU 反而赢了 SwiGLU，不知道为什么。InnerNet 在跑。
-
-### MLM 掩码预测（BERT 式）
-
-| 模型 | PPL |
-|------|-----|
-| SwiGLU | **93.83** |
-| GELU | 101.39 |
-| InnerNet | ⏳ |
-
-### ViT / MLP-Mixer CIFAR-10
-
-ViT: SwiGLU 81.54% > GELU 79.46%。InnerNet 在跑。
-Mixer: GELU 81.26%。InnerNet 在跑。
-
-Configs: `config/experiments/transformer_wikitext_*.yaml`，exp: `exp/transformer_wikitext_*`
+Configs: `config/experiments/transformer_wikitext_*.yaml`
 
 ## 4. LSTM
 
@@ -126,11 +121,18 @@ InnerNet w=128 (415K) ≈ ReLU w=256 (921K) → **省 55% 参数**。
 
 ## 7. ResNet
 
-CIFAR-10：InnerNet 86.10% vs ReLU 86.33% → 持平。skip connection 下 InnerNet 没用。
+全换没用（CIFAR-10 86.10% vs ReLU 86.33%，CIFAR-100+aug 73.00% vs 73.51%）。
 
-CIFAR-100+aug：InnerNet 72.72% (1/5 done) vs ReLU 73.51%。还在跑。
+**Internal-only（只换 block 内部）有效果**：
 
-internal-only（只换 block 内部 ReLU）也在跑。
+| 数据集 | Internal InnerNet | ReLU | 全换 |
+|--------|------------------|------|------|
+| CIFAR-10 | **87.7%** (2/5 done) | 86.33% | 86.10% |
+| CIFAR-100+aug | **74.97%** (5 seeds) | 73.51% | 73.00% |
+
+只换没 skip 保护的位置就有效果（+1.4~1.5%），全换反而没用。CIFAR-10 还有 3 seed OOM 重提交了。
+
+Configs: `config/experiments/resnet_cifar_internal_2arg.yaml`
 
 ## 8. PPO RL
 
@@ -146,22 +148,22 @@ internal-only（只换 block 内部 ReLU）也在跑。
 
 | 实验 | 情况 |
 |------|------|
-| ResNet | skip connection 下没用 |
+| ResNet 全换 | skip connection 下没用（但 internal-only 有效果） |
+| MLM InnerNet | 比 GELU 差（124.82 vs 101.39） |
 | LSTM PTB | Standard 赢 |
-| VGG SwiGLU | 训练不了 |
 | CNN ×0.25 | 太小了 |
 
 ## 在跑的
 
-- TF d=128/d=192/d=256 + Classic Wiki 在跑
-- ResNet CIFAR-100+aug, internal-only 在跑
-- MLM InnerNet, GPT InnerNet 在跑
-- LSTM Wiki-103 classic/2arg, CNN/DM 2arg 在跑
+- TF d=192/d=256 + Classic Wiki 在跑
+- ResNet C10 internal 3 seed 重提交了
+- GPT InnerNet 在跑
+- LSTM Wiki-103/CNN-DM 拆成单 seed 并行跑了
 
 ## 总结
 
-有效的：**CNN (+0.4~4.6%)，AE (-43%)，TF FFN d=64 (-3.3%) PTB (-2.1%)，LSTM WikiText-2 (-6.2%)，参数省 55%，PPO LunarLander (+18%)**。
+有效的：**CNN (+0.4~4.6%)，AE (-43%)，TF FFN d=64 (-3.3%) d=128 (-1.6%) PTB (-2.1%)，LSTM WikiText-2 (-6.2%)，ResNet internal-only (+1.5%)，参数省 55%，PPO LunarLander (+18%)**。
 
-没用的：ResNet（持平），LSTM PTB（更差）。
+没用的：ResNet 全换（持平），MLM InnerNet（差），LSTM PTB（差）。
 
-LSTM 看数据集。pretrain 不需要，默认 end-to-end。
+关键发现：InnerNet 放在没 skip 保护的位置有效果。ResNet 全换没用但 internal-only 赢 +1.5%。

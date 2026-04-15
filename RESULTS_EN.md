@@ -8,11 +8,11 @@ InnerNet replaces scalar activations (ReLU) with a small learned MLP that takes 
 
 **Core claims:**
 
-1. **InnerNet improves feedforward networks without skip connections** — CNN (+0.4–4.6%), AE (-43% MSE), Transformer FFN (-2.1–3.3% PPL), with 40% fewer parameters
+1. **InnerNet improves at positions without skip-connection bypass** — CNN (+0.4–4.6%), AE (-43% MSE), Transformer FFN (-1.6–3.3% PPL), ResNet internal-only (+1.5%), with 40% fewer parameters
 2. **InnerNet as architecture discovery tool** — at small scale (d=64), InnerNet (112.83) independently matches SwiGLU (112.31)
 3. **Simplicity wins** — simple adjacent pairing > deliberate semantic pairing (LSTM); no pretrain needed (end-to-end ≈ 3-phase)
 
-**Boundaries:** InnerNet is redundant when skip connections already provide cross-feature interaction (ResNet).
+**Boundaries:** InnerNet is redundant at positions protected by skip connections, but effective at internal positions even in residual networks (ResNet internal-only: +1.5%).
 
 ---
 
@@ -54,7 +54,7 @@ Configs: `config/experiments/ae_mnist_2arg.yaml`, exp: `exp/ae_mnist_2arg_*`
 | Config | GELU | SwiGLU | InnerNet | vs GELU |
 |--------|------|--------|----------|---------|
 | WikiText-2 d=64 | 116.63±0.84 | **112.31±0.49** | **112.83** | **-3.3%** |
-| WikiText-2 d=128 | 96.82±1.19 | **92.98±1.14** | ⏳ | — |
+| WikiText-2 d=128 | 96.82±1.19 | **92.98±1.14** | **95.23** | **-1.6%** |
 | WikiText-2 d=192 | 89.11±0.92 | **85.43** | ⏳ | — |
 | WikiText-2 d=256 | 86.05±0.97 | ⏳ | ⏳ | — |
 | PTB d=128 | 212.28±0.88 | **205.82±0.98** | **207.91** | **-2.1%** |
@@ -95,11 +95,23 @@ Config: `config/experiments/lstm_wikitext_classic.yaml`, exp: `exp/lstm_wikitext
 | ReLU | 97.93±0.07 |
 | Improvement | **+0.46%** |
 
-## 7. Where InnerNet Does Not Help
+## 7. ResNet — Position Matters
+
+| Setup | CIFAR-10 | CIFAR-100+aug |
+|-------|----------|---------------|
+| ReLU baseline | 86.33% | 73.51% |
+| InnerNet (all positions) | 86.10% (neutral) | 73.00% (neutral) |
+| **InnerNet (internal-only)** | **87.7%** (2/5 done) | **74.97%** (+1.5%) |
+
+Replacing ALL activations (including post-skip) shows no benefit. But replacing ONLY the internal activation (between conv1 and conv2, no skip protection) improves performance. This mirrors the Transformer FFN finding — InnerNet helps at positions without residual bypass.
+
+Config: `config/experiments/resnet_cifar_internal_2arg.yaml`, `resnet_cifar100_aug_internal_2arg.yaml`
+
+## 8. Where InnerNet Does Not Help
 
 | Experiment | Result | Interpretation |
 |------------|--------|---------------|
-| ResNet (skip connections) | Neutral | Residual path already provides cross-feature interaction |
+| ResNet (all positions) | Neutral | Post-skip activation redundant with residual path |
 | CNN at very small scale (×0.25) | Worse (-5%) | Channel-pairing overhead dominates when model is tiny |
 
 ## Summary
@@ -108,10 +120,11 @@ InnerNet provides consistent benefits in **feedforward networks without built-in
 
 - **Autoencoders**: -23% to -43% MSE
 - **CNNs**: +0.4–4.6% accuracy with 40% fewer parameters, consistent across 5 datasets
-- **Transformer FFN**: -2.1–3.3% PPL; InnerNet ≈ SwiGLU at small scale (d=64)
+- **Transformer FFN**: -1.6–3.3% PPL; InnerNet ≈ SwiGLU at small scale (d=64)
 - **LSTM**: -6.2% PPL (WikiText-2, classic pairing)
+- **ResNet internal-only**: +1.5% on CIFAR-100 — position matters
 - **Parameter efficiency**: 55% parameter savings (InnerNet w=128 ≈ ReLU w=256)
 
-**Boundaries**: InnerNet is redundant when models already have built-in feature interaction (ResNet skip connections).
+**Boundaries**: InnerNet is redundant at positions protected by skip connections, but effective at unprotected internal positions even in residual networks.
 
 **Simplicity principle**: Adjacent pairing > semantic pairing — the dual-input interaction itself drives the improvement.
