@@ -182,24 +182,75 @@ def main():
         ppl_after_swap = evaluate(innernet_model, val_loader, device)
         logger.info(f"  PPL after swap: {ppl_after_swap:.2f} (SwiGLU was {swiglu_ppl[-1]:.2f})")
 
-        # Phase 3: Finetune InnerNet
-        logger.info("--- Phase 3: Finetune InnerNet ---")
-        optimizer = optim.Adam(innernet_model.parameters(), lr=args.finetune_lr)
+        # Phase 3a: Finetune InnerNet only (freeze network)
+        logger.info("--- Phase 3a: Finetune InnerNet ONLY (network frozen) ---")
+        # Freeze everything except inner_net
+        for name, param in innernet_model.named_parameters():
+            if 'inner_net' not in name:
+                param.requires_grad = False
+        optimizer_frozen = optim.Adam(filter(lambda p: p.requires_grad, innernet_model.parameters()), lr=args.finetune_lr)
+
+        frozen_ppl = [ppl_after_swap]
+        for epoch in range(args.finetune_epochs):
+            train_one_epoch(innernet_model, train_loader, optimizer_frozen, device)
+            ppl = evaluate(innernet_model, val_loader, device)
+            frozen_ppl.append(ppl)
+            logger.info(f"  Frozen Ep {epoch+1}/{args.finetune_epochs}: PPL={ppl:.2f}")
+
+        best_frozen = min(frozen_ppl)
+        logger.info(f"  Frozen best: {best_frozen:.2f} (SwiGLU was {best_swiglu:.2f})")
+
+        # Unfreeze all for Phase 3b
+        for param in innernet_model.parameters():
+            param.requires_grad = True
+
+        # Reload swap state for Phase 3b (fresh start, don't continue from frozen)
+        innernet_model2 = InnerNetTransformer(
+            vocab_size, args.d_model, args.n_heads, args.d_ff,
+            args.n_layers, args.context_size, 32, dropout
+        ).to(device)
+        inn_dict2 = innernet_model2.state_dict()
+        for k, v in swiglu_state.items():
+            if k in inn_dict2 and v.shape == inn_dict2[k].shape:
+                inn_dict2[k] = v
+        innernet_model2.load_state_dict(inn_dict2, strict=False)
+        for block in innernet_model2.blocks:
+            block.ffn.inner_net.load_state_dict(fitted_inner_weights)
+
+        # Phase 3b: Finetune all (full unfreeze)
+        logger.info("--- Phase 3b: Finetune ALL (full unfreeze) ---")
+        optimizer = optim.Adam(innernet_model2.parameters(), lr=args.finetune_lr)
 
         innernet_ppl = [ppl_after_swap]
         for epoch in range(args.finetune_epochs):
-            train_one_epoch(innernet_model, train_loader, optimizer, device)
-            ppl = evaluate(innernet_model, val_loader, device)
+            train_one_epoch(innernet_model2, train_loader, optimizer, device)
+            ppl = evaluate(innernet_model2, val_loader, device)
             innernet_ppl.append(ppl)
-            logger.info(f"  Finetune Ep {epoch+1}/{args.finetune_epochs}: PPL={ppl:.2f}")
+            logger.info(f"  Full Ep {epoch+1}/{args.finetune_epochs}: PPL={ppl:.2f}")
 
         best_innernet = min(innernet_ppl)
-        logger.info(f"  InnerNet best: {best_innernet:.2f} (SwiGLU was {best_swiglu:.2f})")
+        logger.info(f"  Full best: {best_innernet:.2f} (SwiGLU was {best_swiglu:.2f})")
+
+        # Also continue SwiGLU for same total epochs (fair comparison)
+        logger.info("--- Phase 4: Continue SwiGLU (fair comparison) ---")
+        optimizer_swiglu2 = optim.Adam(swiglu_model.parameters(), lr=args.finetune_lr)
+        swiglu_cont_ppl = []
+        for epoch in range(args.finetune_epochs):
+            train_one_epoch(swiglu_model, train_loader, optimizer_swiglu2, device)
+            ppl = evaluate(swiglu_model, val_loader, device)
+            swiglu_cont_ppl.append(ppl)
+            logger.info(f"  SwiGLU cont Ep {epoch+1}/{args.finetune_epochs}: PPL={ppl:.2f}")
+        best_swiglu_cont = min(swiglu_cont_ppl)
+        logger.info(f"  SwiGLU continued best: {best_swiglu_cont:.2f}")
 
         all_results.append({
             'seed': seed,
             'swiglu_ppl': swiglu_ppl,
+            'swiglu_cont_ppl': swiglu_cont_ppl,
+            'best_swiglu_cont': best_swiglu_cont,
             'ppl_after_swap': ppl_after_swap,
+            'frozen_ppl': frozen_ppl,
+            'best_frozen': best_frozen,
             'innernet_ppl': innernet_ppl,
             'best_swiglu': best_swiglu,
             'best_innernet': best_innernet,
@@ -207,19 +258,25 @@ def main():
 
     # Summary
     swiglu_bests = [r['best_swiglu'] for r in all_results]
+    swiglu_cont_bests = [r['best_swiglu_cont'] for r in all_results]
+    frozen_bests = [r['best_frozen'] for r in all_results]
     innernet_bests = [r['best_innernet'] for r in all_results]
     swap_ppls = [r['ppl_after_swap'] for r in all_results]
 
     logger.info(f"\n{'='*60}")
     logger.info(f"SUMMARY ({len(seeds)} seeds)")
-    logger.info(f"  SwiGLU best:      {np.mean(swiglu_bests):.2f} ± {np.std(swiglu_bests):.2f}")
+    logger.info(f"  SwiGLU {args.epochs}ep:      {np.mean(swiglu_bests):.2f} ± {np.std(swiglu_bests):.2f}")
+    logger.info(f"  SwiGLU +{args.finetune_epochs}ep cont: {np.mean(swiglu_cont_bests):.2f} ± {np.std(swiglu_cont_bests):.2f}")
     logger.info(f"  After swap:       {np.mean(swap_ppls):.2f} ± {np.std(swap_ppls):.2f}")
-    logger.info(f"  InnerNet best:    {np.mean(innernet_bests):.2f} ± {np.std(innernet_bests):.2f}")
-    logger.info(f"  Improvement:      {np.mean(swiglu_bests) - np.mean(innernet_bests):.2f}")
+    logger.info(f"  InnerNet frozen:  {np.mean(frozen_bests):.2f} ± {np.std(frozen_bests):.2f}")
+    logger.info(f"  InnerNet full:    {np.mean(innernet_bests):.2f} ± {np.std(innernet_bests):.2f}")
+    logger.info(f"  vs SwiGLU cont:   {np.mean(swiglu_cont_bests) - np.mean(innernet_bests):.2f}")
 
     results = {
         'all_results': all_results,
         'mean_swiglu': float(np.mean(swiglu_bests)),
+        'mean_swiglu_cont': float(np.mean(swiglu_cont_bests)),
+        'mean_frozen': float(np.mean(frozen_bests)),
         'mean_innernet': float(np.mean(innernet_bests)),
         'mean_swap': float(np.mean(swap_ppls)),
     }
