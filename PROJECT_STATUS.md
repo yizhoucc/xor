@@ -6,12 +6,16 @@
 
 ## 集群运行中
 
+**优先级：Transformer > ResNet > LSTM**
+
 | 类别 | 实验 | 状态 |
 |------|------|------|
-| U20 | TF d=128/192/256 + Classic Wiki | running |
-| U20 | ResNet CIFAR-100+aug ×4, internal ×10 | pending |
-| U20 | MLM InnerNet, GPT InnerNet | running |
-| U14 | LSTM Wiki-103 classic/2arg, CNN/DM 2arg | running |
+| U20 | TF d=256 | running（今晚出） |
+| U20 | GPT InnerNet v4 | running |
+| U21 | SwiGLU warmstart d=128 | pending |
+| U19 | ResNet C10/C100 internal ×6 | pending |
+| U14 | LSTM Wiki-103 ×15 | running |
+| U14 | ~~LSTM CNN/DM~~ | 暂停（占太多 GPU，以后再跑） |
 
 ---
 
@@ -45,13 +49,13 @@
 | U11 | VGG-16 SwiGLU | ❌ lr=0.01+grad_clip 仍 1% 准确率。SwiGLU 与 VGG 深层 conv+SGD 不兼容，记为负面结果 |
 | U12 | GPT Transformer 2arg 卡死 | ⏳ 已取消重启 |
 | U13 | Transformer 全规模 SwiGLU 对比 | ⏳ d=64/128/192/PTB ✅。d=256 pending。GPT(d=256): GELU 72.54 > SwiGLU 75.30，大模型趋势不同 |
-| U14 | LSTM 2×2 消融多数据集 | ⏳ PTB ✅。Wiki-103 + CNN/DM 全部 OOM，64G 重提交 |
+| U14 | LSTM 2×2 消融多数据集 | ⏳ PTB ✅。Wiki-103 在跑(单 seed 并行)。CNN/DM 暂停(占太多 GPU，Transformer 优先) |
 | U15 | RL 加 seeds + 只报 PPO | ✅ LunarLander 30s: InnerNet 187.6 > ReLU 158.8 > SwiGLU -249.7。InnerNet 赢（10 seeds 时输，30 seeds 翻了） |
 | U16 | Masked LM（类 BERT） | ⏳ SwiGLU 93.83, GELU 101.39 完成。InnerNet 在跑 |
 | U17 | Transformer Classic InnerNet FFN | ✅ Wiki 95.49 ≈ Semantic 95.26, PTB 208.81 ≈ Semantic 207.81。TF 上 Classic ≈ Semantic |
 | U18 | d=64 InnerNet 学到了什么 | TODO | d=64 时 InnerNet ≈ SwiGLU，可视化看是不是真的像 SwiGLU |
 | U19 | ResNet/WRN 只换内部 ReLU | ✅ **有效果** | C100+aug **74.97%** vs ReLU 73.51% (+1.5%), C10 **87.7%** vs 86.33% (+1.4%, 2/5 done) |
-| U21 | SwiGLU warm-start InnerNet | ⏳ 已提交 | d=128 WikiText-2, 5 seeds。SwiGLU 训 10ep → InnerNet 拟合 → 替换 → finetune 5ep |
+| U21 | SwiGLU warm-start InnerNet | ⏳ pending (Transformer 优先) | d=128 WikiText-2, 5 seeds。SwiGLU 训 10ep → InnerNet 拟合 → 替换 → finetune 5ep |
 | **U20** | **修复 InnerNet parameter sharing** | ⏳ | TF d=64 112.83, d=128 95.23, d=192 88.42, PTB 207.91 ✅。ResNet full 持平, **internal +1.5%** ✅。MLM 124.82 差 ✅。d=256/GPT 在跑 |
 
 ### 🟡 Major
