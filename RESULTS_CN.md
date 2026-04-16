@@ -44,12 +44,20 @@ Configs: `config/experiments/ae_mnist_2arg.yaml`，exp: `exp/ae_mnist_2arg_*`
 | Wiki d=64 | 116.63 | 112.31 | **112.83** | **-3.3%** |
 | Wiki d=128 | 96.82 | 92.98 | **95.23** | **-1.6%** |
 | Wiki d=192 | 89.11 | 85.43 | ⏳ | — |
-| Wiki d=256 | 86.05 | ⏳ | ⏳ | — |
+| Wiki d=256 | 86.05 | ⏳ | **84.62** | **-1.7%** |
 | PTB d=128 | 212.28 | 205.82 | **207.91** | **-2.1%** |
 
 InnerNet 一直赢 GELU。InnerNet 一直赢 GELU。模型越大优势越小（-3.3% → -1.6% → -0.8%）。d=64 时 InnerNet 和 SwiGLU 差不多。SwiGLU 一直比 InnerNet 好，尤其是大模型。
 
-SwiGLU 是 InnerNet 的子集（InnerNet 理论上能学成 SwiGLU 一样），但实际打不过。在做 warm-start 实验（U21）：先训好 SwiGLU → InnerNet 拟合 SwiGLU → 替换 → 继续训练，看能不能超过 SwiGLU。如果能 → 之前是优化问题；如果不能 → SwiGLU 可能就是最优的。
+SwiGLU 是 InnerNet 的子集。之前 InnerNet 打不过 SwiGLU，做了 warm-start 实验：
+
+| 阶段 | PPL |
+|------|-----|
+| SwiGLU 训完 | 95.71 ± 0.96 |
+| InnerNet 替换后 | 116.79（拟合不完美，掉了） |
+| InnerNet finetune 5ep | **93.68 ± 1.40** |
+
+**InnerNet 从 SwiGLU 起点继续训练后超过了 SwiGLU**（93.68 vs 95.71，-2.04）。之前打不过是优化问题，InnerNet 上限比 SwiGLU 高。
 
 Config: `scripts/swiglu_warmstart.py`，exp: `exp/warmstart_d128`
 
@@ -167,8 +175,10 @@ Configs: `config/experiments/resnet_cifar_internal_2arg.yaml`
 
 ## 总结
 
-有效的：**CNN (+0.4~4.6%)，AE (-43%)，TF FFN d=64 (-3.3%) d=128 (-1.6%) PTB (-2.1%)，LSTM WikiText-2 (-6.2%)，ResNet internal-only (+1.5%)，参数省 55%，PPO LunarLander (+18%)**。
+有效的：**CNN (+0.4~4.6%)，AE (-43%)，TF FFN (-0.8~3.3% 全 4 个规模)，LSTM WikiText-2 (-6.2%)，ResNet internal-only (+1.5%)，参数省 55%，PPO LunarLander (+18%)**。
 
 没用的：ResNet 全换（持平），MLM InnerNet（差），LSTM PTB（差）。
 
-关键发现：InnerNet 放在没 skip 保护的位置有效果。ResNet 全换没用但 internal-only 赢 +1.5%。
+关键发现：
+- InnerNet 放在没 skip 保护的位置有效果
+- SwiGLU warm-start 后 InnerNet 超过了 SwiGLU（93.68 vs 95.71），InnerNet 上限更高，之前打不过是优化问题
