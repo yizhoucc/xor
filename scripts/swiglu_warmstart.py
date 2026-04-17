@@ -161,7 +161,7 @@ def main():
 
         innernet_model = InnerNetTransformer(
             vocab_size, args.d_model, args.n_heads, args.d_ff,
-            args.n_layers, args.context_size, 32, args.lr
+            args.n_layers, args.context_size, 32, 0.1
         ).to(device)
 
         # Copy matching weights from SwiGLU
@@ -207,7 +207,7 @@ def main():
         # Reload swap state for Phase 3b (fresh start, don't continue from frozen)
         innernet_model2 = InnerNetTransformer(
             vocab_size, args.d_model, args.n_heads, args.d_ff,
-            args.n_layers, args.context_size, 32, dropout
+            args.n_layers, args.context_size, 32, 0.1
         ).to(device)
         inn_dict2 = innernet_model2.state_dict()
         for k, v in swiglu_state.items():
