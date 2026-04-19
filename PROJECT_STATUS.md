@@ -53,7 +53,7 @@
 | U17 | Transformer Classic InnerNet FFN | ✅ Wiki 95.49 ≈ Semantic 95.26, PTB 208.81 ≈ Semantic 207.81。TF 上 Classic ≈ Semantic |
 | U18 | d=64 InnerNet 学到了什么 | TODO | d=64 时 InnerNet ≈ SwiGLU，可视化看是不是真的像 SwiGLU |
 | U19 | ResNet/WRN 只换内部 ReLU | ✅ **有效果** | C100+aug **74.97%** vs ReLU 73.51% (+1.5%), C10 **87.7%** vs 86.33% (+1.4%, 2/5 done) |
-| U21 | InnerNet vs SwiGLU 对比 | ⏳ 重新设计提交 | v1 不公平(SwiGLU 没收敛)。新版两个实验：(1) 公平对比：SwiGLU 10ep fork，各续 10ep (2) InnerNet 上限：SwiGLU 20ep 收敛后 freeze network，non-shared InnerNet 训到收敛 |
+| U21 | InnerNet vs SwiGLU 对比 | ✅ | 公平对比(各20ep): InnerNet 76.85 vs SwiGLU 77.04, **InnerNet 赢 0.19 PPL (4/5 seeds)**。Frozen: 77.11 vs 77.04 持平。InnerNet 上限略高但主要靠和 network 一起调整 |
 | **U20** | **修复 InnerNet parameter sharing** | ✅ TF 全完成 | d=64 112.83, d=128 95.23, d=192 88.42, **d=256 84.62**, PTB 207.91。全部赢 GELU。ResNet full 持平, internal +1.5%。MLM 124.82 差 |
 
 ### 🟡 Major

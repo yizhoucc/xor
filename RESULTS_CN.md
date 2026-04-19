@@ -49,17 +49,28 @@ Configs: `config/experiments/ae_mnist_2arg.yaml`，exp: `exp/ae_mnist_2arg_*`
 
 InnerNet 一直赢 GELU。InnerNet 一直赢 GELU。模型越大优势越小（-3.3% → -1.6% → -0.8%）。d=64 时 InnerNet 和 SwiGLU 差不多。SwiGLU 一直比 InnerNet 好，尤其是大模型。
 
-SwiGLU 是 InnerNet 的子集。之前 InnerNet 打不过 SwiGLU，做了 warm-start 实验：
+SwiGLU 是 InnerNet 的子集。从头训 InnerNet 打不过 SwiGLU，做了两个对比实验：
 
-| 阶段 | PPL |
-|------|-----|
-| SwiGLU 训完 | 95.71 ± 0.96 |
-| InnerNet 替换后 | 116.79（拟合不完美，掉了） |
-| InnerNet finetune 5ep | **93.68 ± 1.40** |
+**公平对比（各 20ep，5 seeds）**：SwiGLU 训 10ep → fork → 各续 10ep
 
-**InnerNet 从 SwiGLU 起点继续训练后超过了 SwiGLU**（93.68 vs 95.71，-2.04）。之前打不过是优化问题，InnerNet 上限比 SwiGLU 高。
+| | SwiGLU 20ep | InnerNet 20ep |
+|--|-------------|---------------|
+| 均值 | 77.04±0.79 | **76.85±0.63** |
+| 赢的 seeds | 1/5 | **4/5** |
 
-Config: `scripts/swiglu_warmstart.py`，exp: `exp/warmstart_d128`
+InnerNet 从 SwiGLU 初始化后继续训，4/5 seeds 赢了，均值好 0.19 PPL。
+
+**Frozen（只动 InnerNet，5 seeds）**：SwiGLU 20ep 收敛 → freeze network → non-shared InnerNet 训到收敛
+
+| | SwiGLU | Frozen InnerNet |
+|--|--------|-----------------|
+| 均值 | 77.04 | 77.11 |
+
+持平。只动 InnerNet 参数超不过 SwiGLU。改进主要来自 InnerNet 和 network 一起调整。
+
+结论：InnerNet 上限略高于 SwiGLU，但差距小（0.19 PPL）。从头训打不过是优化问题。
+
+Config: `scripts/innernet_vs_swiglu.py`，exp: `exp/inner_vs_swiglu`
 
 ### MLM 掩码预测（BERT 式）
 
