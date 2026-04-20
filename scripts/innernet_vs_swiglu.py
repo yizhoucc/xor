@@ -141,6 +141,10 @@ def main():
     fit_innernet_to_swiglu(inner_template, device)
     fitted_weights = inner_template.state_dict()
 
+    # Save fitted weights for visualization
+    torch.save(fitted_weights, os.path.join(args.save_dir, 'inner_weights_fitted.pth'))
+    logger.info(f"Saved fitted InnerNet weights")
+
     seeds = list(range(42, 42 + args.num_seeds))
     all_results = []
 
@@ -204,6 +208,11 @@ def main():
             in_ppl_phase2.append(ppl)
             logger.info(f"  InnerNet Ep {ep+11}/20: PPL={ppl:.2f}")
         best_innernet_20 = min(in_ppl_phase2)
+
+        # Save InnerNet weights for visualization
+        inner_weights_after = innernet_model.blocks[0].ffn.inner_net.state_dict()
+        torch.save(inner_weights_after, os.path.join(args.save_dir, f'inner_weights_seed{seed}.pth'))
+        logger.info(f"  Saved InnerNet weights to inner_weights_seed{seed}.pth")
 
         logger.info(f"  EXP1 RESULT: SwiGLU@20ep={best_swiglu_20:.2f} vs InnerNet@20ep={best_innernet_20:.2f}")
 
