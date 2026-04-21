@@ -54,10 +54,10 @@
 | U18 | d=64 InnerNet 学到了什么 | TODO | d=64 时 InnerNet ≈ SwiGLU，可视化看是不是真的像 SwiGLU |
 | U19 | ResNet/WRN 只换内部 ReLU | ✅ **有效果** | C100+aug **74.97%** vs ReLU 73.51% (+1.5%), C10 **87.7%** vs 86.33% (+1.4%, 2/5 done) |
 | U21 | InnerNet vs SwiGLU 对比 | ⏳ 多配置在跑 | d=128: InnerNet 76.85 vs SwiGLU 77.04 (4/5 赢)。**MLM: InnerNet 37-39 vs SwiGLU 52-57 大幅赢**。PTB: 3/3 赢。d=64: 差不多但 frozen 赢。d=256: 在跑 |
-| U22 | AE SwiGLU 基线 + warm-start | TODO | AE 没有 SwiGLU 对比 |
-| U23 | CNN CIFAR-10 warm-start | TODO | SwiGLU 79.79 赢 InnerNet 78.57，warm-start 试反转 |
-| U24 | LSTM SwiGLU + warm-start | TODO | LSTM 没有 SwiGLU 对比 |
-| U25 | TF d=192 warm-start | TODO | d=192 SwiGLU 85.43 赢 InnerNet 88.42 |
+| U22 | AE warm-start | ⏳ 已提交 | AE SwiGLU vs InnerNet，5 seeds |
+| U23 | CNN CIFAR-10 warm-start | ⏳ 已提交 | SwiGLU 79.79 赢了，试反转 |
+| U24 | LSTM warm-start | ⏳ 已提交 | LSTM SwiGLU vs InnerNet |
+| U25 | TF d=192 warm-start | ⏳ 已提交 | 5 seeds |
 | **U20** | **修复 InnerNet parameter sharing** | ✅ TF 全完成 | d=64 112.83, d=128 95.23, d=192 88.42, **d=256 84.62**, PTB 207.91。全部赢 GELU。ResNet full 持平, internal +1.5%。MLM 124.82 差 |
 
 ### 🟡 Major
