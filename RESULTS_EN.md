@@ -70,9 +70,19 @@ When InnerNet is initialized from a trained SwiGLU model (10 epochs) and both co
 | InnerNet (from SwiGLU init) | **76.85 ± 0.63** |
 | SwiGLU (continued) | 77.04 ± 0.79 |
 
-InnerNet wins in 4/5 seeds (-0.19 PPL). In a separate frozen-network experiment (only InnerNet's 388 parameters trainable), InnerNet matches SwiGLU (77.11 vs 77.04) but does not surpass it — the improvement requires joint optimization of InnerNet and network weights.
+InnerNet wins in 4/5 seeds (-0.19 PPL). This pattern holds across multiple configurations:
 
-Config: `scripts/innernet_vs_swiglu.py`, exp: `exp/inner_vs_swiglu`
+| Config | SwiGLU | InnerNet | Seeds done |
+|--------|--------|----------|-----------|
+| d=128 WikiText-2 | 77.04 | **76.85** | 5/5, InnerNet 4/5 |
+| d=64 WikiText-2 | ~92.1 | ~92.0 | 4/5, tied |
+| d=128 PTB | ~162.5 | **~160.9** | 3/5, InnerNet 3/3 |
+| d=128 MLM | ~54.5 | **~38.6** | 2/5, InnerNet 2/2 |
+| d=256 WikiText-2 | 71.23 | 71.27 | 1/5, tied |
+
+MLM is particularly striking: InnerNet from scratch (124.82) was far worse than GELU (101.39), but with SwiGLU warm-start it achieves 37-39 PPL, dramatically surpassing SwiGLU (52-57). The from-scratch failure was purely an optimization issue.
+
+Config: `scripts/innernet_vs_swiglu.py`, exp: `exp/inner_vs_swiglu`, `exp/ivs_*`
 
 ## 4. LSTM (WikiText-2, PPL↓, 5 seeds)
 

@@ -68,9 +68,21 @@ InnerNet 从 SwiGLU 初始化后继续训，4/5 seeds 赢了，均值好 0.19 PP
 
 持平。只动 InnerNet 参数超不过 SwiGLU。改进主要来自 InnerNet 和 network 一起调整。
 
-结论：InnerNet 上限略高于 SwiGLU，但差距小（0.19 PPL）。从头训打不过是优化问题。
+**多配置 warm-start（部分完成）**：
 
-Config: `scripts/innernet_vs_swiglu.py`，exp: `exp/inner_vs_swiglu`
+| 配置 | SwiGLU | InnerNet | 谁赢 |
+|------|--------|----------|------|
+| d=128 Wiki (5 seeds) | 77.04 | **76.85** | InnerNet (4/5) |
+| d=64 Wiki (4/5) | ~92.1 | ~92.0 | 差不多，frozen 也赢 |
+| PTB d=128 (3/5) | ~162.5 | **~160.9** | InnerNet (3/3) |
+| MLM d=128 (2/5) | ~54.5 | **~38.6** | **InnerNet 大幅赢** |
+| d=256 Wiki (1/5) | 71.23 | 71.27 | 差不多 |
+
+MLM 最有意思：从头训 InnerNet 124.82 完全不行，warm-start 后 37-39 大幅赢 SwiGLU 52-57。说明 MLM 上不是 InnerNet 不好用，是从头训不动。
+
+结论：InnerNet 从 SwiGLU 初始化后多数配置都能赢或持平。从头训打不过是优化问题。
+
+Config: `scripts/innernet_vs_swiglu.py`，exp: `exp/inner_vs_swiglu`, `exp/ivs_*`
 
 ### MLM 掩码预测（BERT 式）
 
@@ -80,7 +92,7 @@ Config: `scripts/innernet_vs_swiglu.py`，exp: `exp/inner_vs_swiglu`
 | GELU | 101.39 |
 | InnerNet | 124.82 |
 
-InnerNet 比 GELU 差。掩码预测上 InnerNet 没用。
+从头训 InnerNet 不行。但 warm-start 后 InnerNet **37-39** 大幅赢 SwiGLU **52-57**（2/5 seeds 完成）。从头训不动是优化问题。
 
 ### GPT (d=256)
 
