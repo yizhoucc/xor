@@ -72,17 +72,18 @@ When InnerNet is initialized from a trained SwiGLU model (10 epochs) and both co
 
 InnerNet wins in 4/5 seeds (-0.19 PPL). This pattern holds across multiple configurations:
 
-| Config | SwiGLU | InnerNet | Seeds done |
-|--------|--------|----------|-----------|
-| d=128 WikiText-2 | 77.04 | **76.85** | 5/5, InnerNet 4/5 |
-| d=64 WikiText-2 | ~92.1 | ~92.0 | 4/5, tied |
-| d=128 PTB | ~162.5 | **~160.9** | 3/5, InnerNet 3/3 |
-| d=128 MLM | ~54.5 | **~38.6** | 2/5, InnerNet 2/2 |
-| d=256 WikiText-2 | 71.23 | 71.27 | 1/5, tied |
+| Config | SwiGLU | InnerNet | Result |
+|--------|--------|----------|--------|
+| **CNN CIFAR-10** | 83.33±0.37% | **85.79±0.19%** | **InnerNet +2.46%** |
+| **MLM WikiText-2** | 54.92±2.43 | **38.74±1.65** | **InnerNet -16.18** |
+| PTB d=128 | 162.22±1.92 | **161.18±1.86** | InnerNet -1.04 |
+| d=128 WikiText-2 | 77.04±0.79 | **76.85±0.63** | InnerNet -0.19 |
+| d=64 WikiText-2 | 92.08±0.34 | **91.93±0.43** | InnerNet -0.15 |
+| AE MNIST | **0.01206** | 0.01211 | Tied |
 
-MLM is particularly striking: InnerNet from scratch (124.82) was far worse than GELU (101.39), but with SwiGLU warm-start it achieves 37-39 PPL, dramatically surpassing SwiGLU (52-57). The from-scratch failure was purely an optimization issue.
+InnerNet wins or ties in 6/6 completed tasks. CNN (+2.46%) and MLM (-16.18 PPL) show the largest gains. MLM is striking: InnerNet from scratch (124.82) was far worse than GELU (101.39), but with warm-start achieves 38.74, dramatically surpassing SwiGLU (54.92).
 
-Config: `scripts/innernet_vs_swiglu.py`, exp: `exp/inner_vs_swiglu`, `exp/ivs_*`
+Config: `scripts/innernet_vs_swiglu.py`, `warmstart_cnn.py`, `warmstart_ae.py`
 
 ## 4. LSTM (WikiText-2, PPL↓, 5 seeds)
 

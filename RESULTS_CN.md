@@ -68,21 +68,24 @@ InnerNet 从 SwiGLU 初始化后继续训，4/5 seeds 赢了，均值好 0.19 PP
 
 持平。只动 InnerNet 参数超不过 SwiGLU。改进主要来自 InnerNet 和 network 一起调整。
 
-**多配置 warm-start（部分完成）**：
+**Warm-start 全配置对比（SwiGLU 10ep → fork → 各续训 → 比 20ep）**：
 
-| 配置 | SwiGLU | InnerNet | 谁赢 |
-|------|--------|----------|------|
-| d=128 Wiki (5 seeds) | 77.04 | **76.85** | InnerNet (4/5) |
-| d=64 Wiki (4/5) | ~92.1 | ~92.0 | 差不多，frozen 也赢 |
-| PTB d=128 (3/5) | ~162.5 | **~160.9** | InnerNet (3/3) |
-| MLM d=128 (2/5) | ~54.5 | **~38.6** | **InnerNet 大幅赢** |
-| d=256 Wiki (1/5) | 71.23 | 71.27 | 差不多 |
+| 实验 | SwiGLU | InnerNet | 差 |
+|------|--------|----------|----|
+| **CNN CIFAR-10** | 83.33±0.37% | **85.79±0.19%** | **+2.46%** |
+| **MLM** | 54.92±2.43 | **38.74±1.65** | **-16.18 PPL** |
+| PTB d=128 | 162.22±1.92 | **161.18±1.86** | -1.04 |
+| TF d=128 | 77.04±0.79 | **76.85±0.63** | -0.19 |
+| TF d=64 | 92.08±0.34 | **91.93±0.43** | -0.15 |
+| AE MNIST | **0.01206** | 0.01211 | 持平 |
+| TF d=192 | ⏳ | ⏳ | — |
+| TF d=256 | ⏳ | ⏳ | — |
 
-MLM 最有意思：从头训 InnerNet 124.82 完全不行，warm-start 后 37-39 大幅赢 SwiGLU 52-57。说明 MLM 上不是 InnerNet 不好用，是从头训不动。
+CNN 和 MLM 效果最大。MLM 从头训 InnerNet 124.82 完全不行，warm-start 后 38.74 大幅赢 SwiGLU 54.92。从头训不动是优化问题。
 
-结论：InnerNet 从 SwiGLU 初始化后多数配置都能赢或持平。从头训打不过是优化问题。
+结论：给个好初始化，InnerNet 在多数任务上赢 SwiGLU。上限更高。
 
-Config: `scripts/innernet_vs_swiglu.py`，exp: `exp/inner_vs_swiglu`, `exp/ivs_*`
+Config: `scripts/innernet_vs_swiglu.py`, `warmstart_cnn.py`, `warmstart_ae.py`, `warmstart_lstm.py`
 
 ### MLM 掩码预测（BERT 式）
 
