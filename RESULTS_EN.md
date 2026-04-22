@@ -147,6 +147,8 @@ InnerNet provides consistent benefits in **feedforward networks without built-in
 - **ResNet internal-only**: +1.5% on CIFAR-100 — position matters
 - **Parameter efficiency**: 55% parameter savings (InnerNet w=128 ≈ ReLU w=256)
 
+**Warm-start insight**: InnerNet wins or ties SwiGLU in 6/6 completed warm-start tasks. The from-scratch gap is an optimization issue, not capacity. The advantage decreases with model size (d=64: -0.15, d=128: -0.19, d=256: ~0), suggesting InnerNet is most impactful for small/on-device models and finetuning scenarios.
+
 **Boundaries**: InnerNet is redundant at positions protected by skip connections, but effective at unprotected internal positions even in residual networks.
 
 **Simplicity principle**: Adjacent pairing > semantic pairing — the dual-input interaction itself drives the improvement.

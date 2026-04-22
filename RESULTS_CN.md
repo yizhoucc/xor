@@ -85,6 +85,8 @@ CNN 和 MLM 效果最大。MLM 从头训 InnerNet 124.82 完全不行，warm-sta
 
 结论：给个好初始化，InnerNet 在多数任务上赢 SwiGLU。上限更高。
 
+模型越大差距越小（d=64 赢 0.15, d=128 赢 0.19, d=256 差不多）。因为大模型架构本身足够复杂，单个激活函数的边际贡献小。InnerNet 更适合小模型 / on-device 场景和 finetune 阶段。
+
 Config: `scripts/innernet_vs_swiglu.py`, `warmstart_cnn.py`, `warmstart_ae.py`, `warmstart_lstm.py`
 
 ### MLM 掩码预测（BERT 式）
@@ -207,4 +209,6 @@ Configs: `config/experiments/resnet_cifar_internal_2arg.yaml`
 
 关键发现：
 - InnerNet 放在没 skip 保护的位置有效果
-- SwiGLU warm-start 后 InnerNet 超过了 SwiGLU（93.68 vs 95.71），InnerNet 上限更高，之前打不过是优化问题
+- Warm-start 后 InnerNet 在 6/6 任务上赢或持平 SwiGLU，从头训打不过是优化问题
+- 模型越大 InnerNet 优势越小——大模型架构本身够复杂，单个激活函数边际贡献小
+- InnerNet 适合：(1) 小模型 / on-device (2) finetune 阶段替换 SwiGLU (3) 架构搜索工具
