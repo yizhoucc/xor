@@ -7,6 +7,19 @@
 - 模型越大 InnerNet 优势越小——大模型架构本身够复杂，单个激活函数边际贡献小
 - 适合场景：小模型 / on-device, finetune 阶段, 架构搜索
 
+## 论文 Story 思路
+
+### 角度 A: Architecture Discovery Tool
+InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活函数 → 训练 → 可视化学到的 2D 函数 → 提炼新公式 → 部署。类似 NAS 但连续可微。SwiGLU 当年也是搜索出来的，InnerNet 是同类方法。
+
+### 角度 B: Efficient Finetuning
+现有 LLM 用 SwiGLU。finetune 时替换成 InnerNet，只加 97 个参数。和 LoRA（加在权重上）互补，InnerNet 加在激活函数上。小模型效果更大。
+
+### 角度 C: Understanding Activation Functions
+学术贡献不在"赢 0.19 PPL"，在于理解：固定激活不是最优的、优化比表达能力更关键、位置决定效果、小模型受益更大。这些发现对下一代激活函数设计有指导意义。
+
+标题方向：不说"beats SwiGLU"，说"Learnable activation functions reveal optimization barriers" 或 "Two-argument activations as differentiable architecture search"。
+
 ## 已修复的问题
 
 - **U20 param sharing bug**：之前 Transformer/ResNet/WRN 的 InnerNet 每层各一个没共享。已修复，重跑。修复后结果和之前差不多（d=64: 112.66→112.83），说明影响不大，但 sharing 是论文基本设计。CNN/MLP/AE/VGG/LSTM/PPO 不受影响。
