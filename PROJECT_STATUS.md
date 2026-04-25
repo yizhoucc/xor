@@ -79,7 +79,8 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 | U24 | LSTM warm-start | ⏳ | 已提交 |
 | U25 | TF d=192 warm-start | ⏳ 在跑 | seed 42 InnerNet 75.02 vs SwiGLU 75.06, seed 43 InnerNet **73.52** vs SwiGLU 73.93 |
 | U26 | GPT warm-start | ⏳ 已提交 | d=256 6层 很慢 |
-| U27 | ViT warm-start | ⏳ 已提交 | 5 seeds |
+| U27 | ViT warm-start | ✅ | SwiGLU 77.54% vs InnerNet 77.59% 持平 (4/5 done) |
+| U28 | MLP-Mixer warm-start | ⏳ 已提交 | 5 seeds |
 | **U20** | **修复 InnerNet parameter sharing** | ✅ TF 全完成 | d=64 112.83, d=128 95.23, d=192 88.42, **d=256 84.62**, PTB 207.91。全部赢 GELU。ResNet full 持平, internal +1.5%。MLM 124.82 差 |
 
 ### 🟡 Major
