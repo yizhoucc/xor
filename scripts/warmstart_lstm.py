@@ -65,7 +65,6 @@ class LSTMModel(nn.Module):
         self.cell = cell
         self.fc = nn.Linear(hidden_size, vocab_size)
         self.hidden_size = hidden_size
-        self.fc.weight = self.embedding.weight
 
     def forward(self, x):
         emb = self.embedding(x)  # [B, S, E]
