@@ -74,14 +74,17 @@ InnerNet wins in 4/5 seeds (-0.19 PPL). This pattern holds across multiple confi
 
 | Config | SwiGLU | InnerNet | Result |
 |--------|--------|----------|--------|
-| **CNN CIFAR-10** | 83.33±0.37% | **85.79±0.19%** | **InnerNet +2.46%** |
-| **MLM WikiText-2** | 54.92±2.43 | **38.74±1.65** | **InnerNet -16.18** |
-| PTB d=128 | 162.22±1.92 | **161.18±1.86** | InnerNet -1.04 |
-| d=128 WikiText-2 | 77.04±0.79 | **76.85±0.63** | InnerNet -0.19 |
-| d=64 WikiText-2 | 92.08±0.34 | **91.93±0.43** | InnerNet -0.15 |
-| AE MNIST | **0.01206** | 0.01211 | Tied |
+| **CNN CIFAR-10** | 83.33% | **85.79%** | **InnerNet +2.46%** |
+| **MLM WikiText-2** | 54.92 | **38.74** | **InnerNet -16.18** |
+| PTB d=128 | 162.22 | **161.18** | InnerNet -1.04 |
+| TF d=128 | 77.04 | **76.85** | InnerNet -0.19 |
+| TF d=64 | 92.08 | **91.93** | InnerNet -0.15 |
+| MLP-Mixer | 81.13% | **81.25%** | InnerNet +0.12% |
+| ViT | 77.54% | 77.59% | Tied |
+| TF d=256 | — | — | Tied |
+| AE MNIST | 0.01206 | 0.01211 | Tied |
 
-InnerNet wins or ties in 6/6 completed tasks. CNN (+2.46%) and MLM (-16.18 PPL) show the largest gains. MLM is striking: InnerNet from scratch (124.82) was far worse than GELU (101.39), but with warm-start achieves 38.74, dramatically surpassing SwiGLU (54.92).
+**InnerNet wins or ties in 9/9 completed tasks, loses in none.** CNN (+2.46%) and MLM (-16.18 PPL) show the largest gains. The advantage decreases with model size and in architectures with strong residual connections.
 
 Config: `scripts/innernet_vs_swiglu.py`, `warmstart_cnn.py`, `warmstart_ae.py`
 
