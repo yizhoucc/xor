@@ -105,7 +105,13 @@ CNN 和 MLM 效果最大。MLM 从头训 InnerNet 124.82 完全不行，warm-sta
 
 主要项：**f(a,b) ≈ 0.12·a·b + 0.11 - 0.06·b + 0.03·a²·b**
 
-最大的是简单乘法 `a·b`，不是 sigmoid 门控。4 阶多项式 MSE=0.003 就能近似。正在跑 MLM/CNN/d=64 的单 seed 拿权重，看不同任务学到的函数是不是一样。
+最大的是简单乘法 `a·b`，不是 sigmoid 门控。4 阶多项式 MSE=0.003 就能近似。4 个任务的 InnerNet 2D 函数对比（fig10）：
+- d=64 几乎没偏离 SwiGLU（效果也持平）
+- d=128 压缩了范围，变成温和交互
+- CNN 保留门控结构但有变化
+- MLM 偏离最大（效果也最好，-15.7 PPL）
+
+**偏离越大效果越好。** 不同任务需要不同的激活函数——这就是可学习激活函数的价值。
 
 Config: `scripts/finetune_qwen.py`, `scripts/innernet_vs_swiglu.py`
 

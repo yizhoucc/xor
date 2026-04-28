@@ -94,7 +94,7 @@ Pending. Qwen uses SwiGLU with dual projections (gate_proj + up_proj), directly 
 
 After warm-start training, InnerNet diverges from SwiGLU entirely. Dominant terms: **f(a,b) ≈ 0.12·a·b + 0.11 - 0.06·b + 0.03·a²·b**. The learned function is a scaled multiplicative interaction, not sigmoid gating. Degree-4 polynomial fits with MSE=0.003.
 
-Visualization runs submitted for MLM, CNN, d=64 to compare learned functions across tasks.
+Visualization across 4 tasks (fig10): d=64 stays close to SwiGLU (performance tied), MLM diverges most (largest gain: -15.7 PPL). Greater divergence from SwiGLU correlates with larger improvement. Different tasks learn different optimal activation functions.
 
 Config: `scripts/finetune_qwen.py`
 

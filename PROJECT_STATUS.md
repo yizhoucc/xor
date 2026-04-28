@@ -76,12 +76,12 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 | U21 | InnerNet vs SwiGLU 对比 | ✅ 9/12 完成 | **9/9 InnerNet 赢或持平，0 输**。CNN +2.46%, MLM -16.18, PTB -1.04, d=128 -0.19, d=64 -0.15, Mixer +0.12%, ViT/d=256/AE 持平 |
 | U22 | AE warm-start | ✅ | 持平 (0.01206 vs 0.01211) |
 | U23 | CNN warm-start | ✅ | **InnerNet +2.46%** |
-| U24 | LSTM warm-start | ⏳ | 没输出，检查 |
+| U24 | LSTM warm-start | ⏳ 3/5 **InnerNet 输** | SwiGLU 赢（~105 vs ~106），LSTM 是唯一 warm-start InnerNet 输的 |
 | U25 | TF d=192 warm-start | ⏳ 在跑 | 3/5 InnerNet 3/3 赢 |
 | U26 | GPT warm-start | ⏳ 在跑 | 3/5 done, 2赢1输 |
 | U27 | ViT warm-start | ✅ | 持平 (77.54 vs 77.59) |
 | U28 | Mixer warm-start | ✅ | InnerNet 略好 (81.25 vs 81.13) |
-| U29 | 可视化训练后 InnerNet 2D 函数 | ⏳ | d=128 已有权重。MLM/CNN/d=64 单 seed 在跑拿权重。所有 warm-start 脚本已加自动保存 |
+| U29 | 可视化训练后 InnerNet 2D 函数 | ✅ | 4 任务对比完成。不同任务学到不同函数——d=64 接近 SwiGLU，MLM 偏离最大。偏离越大效果越好 |
 | U30 | Scaling law 图 | TODO | d=64/128/192/256 的优势画曲线 |
 | U31 | 训练曲线 | TODO | warm-start 两条分支 PPL 随 epoch 变化 |
 | U32 | 参数量和推理速度 | TODO | InnerNet 加了多少参数，推理慢多少 |
