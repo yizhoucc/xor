@@ -172,6 +172,12 @@ def main():
             in_acc.append(acc)
             if (ep+1) % 20 == 0: logger.info(f"  InnerNet Ep {args.fork_epoch+ep+1}: acc={acc*100:.2f}%")
         best_in = max(in_acc)
+        # Save InnerNet weights
+        try:
+            inner_state = inner_act.net.state_dict() if hasattr(inner_act, "net") else in_model.cell.inner_net.state_dict()
+            torch.save(inner_state, os.path.join(args.save_dir, f"inner_weights_seed{seed}.pth"))
+            logger.info(f"  Saved InnerNet weights")
+        except: pass
 
         logger.info(f"  RESULT: SwiGLU={best_sw*100:.2f}% vs InnerNet={best_in*100:.2f}%")
         all_results.append({'seed': seed, 'best_sw': best_sw, 'best_in': best_in})

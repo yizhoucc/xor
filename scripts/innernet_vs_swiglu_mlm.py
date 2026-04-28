@@ -175,6 +175,10 @@ def main():
             in_ppl.append(ppl)
             logger.info(f"  InnerNet Ep {ep+11}/20: PPL={ppl:.2f}")
         best_innernet = min(in_ppl)
+        try:
+            torch.save(shared_inner.state_dict(), os.path.join(args.save_dir, f"inner_weights_seed{seed}.pth"))
+            logger.info(f"  Saved InnerNet weights")
+        except: pass
 
         logger.info(f"  RESULT: SwiGLU={best_swiglu:.2f} vs InnerNet={best_innernet:.2f}")
 
