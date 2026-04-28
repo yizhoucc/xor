@@ -86,6 +86,14 @@ InnerNet wins in 4/5 seeds (-0.19 PPL). This pattern holds across multiple confi
 
 **InnerNet wins or ties in 9/9 completed tasks, loses in none.** CNN (+2.46%) and MLM (-16.18 PPL) show the largest gains. The advantage decreases with model size and in architectures with strong residual connections.
 
+### Qwen2.5-0.5B Finetune (Real Pretrained Model)
+
+Pending. Qwen uses SwiGLU with dual projections (gate_proj + up_proj), directly matching InnerNet FFN structure. SwiGLU finetune → InnerNet warm-start on SST-2 classification + WikiText-2 PPL.
+
+Config: `scripts/finetune_qwen.py`
+
+---
+
 Config: `scripts/innernet_vs_swiglu.py`, `warmstart_cnn.py`, `warmstart_ae.py`
 
 ## 4. LSTM (WikiText-2, PPL↓, 5 seeds)

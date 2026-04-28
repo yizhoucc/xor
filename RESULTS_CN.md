@@ -93,6 +93,14 @@ CNN 和 MLM 效果最大。MLM 从头训 InnerNet 124.82 完全不行，warm-sta
 
 模型越大差距越小（d=64 赢 0.15, d=128 赢 0.19, d=256 差不多）。因为大模型架构本身足够复杂，单个激活函数的边际贡献小。InnerNet 更适合小模型 / on-device 场景和 finetune 阶段。
 
+### Qwen2.5-0.5B finetune（真实预训练模型）
+
+⏳ 在跑。Qwen 用 SwiGLU（gate_proj + up_proj + down_proj），和我们的 InnerNet FFN 结构完全对应。做法：SwiGLU finetune 3ep → InnerNet 替换 → 继续 finetune 3ep。任务：SST-2 分类 + WikiText-2 PPL。
+
+Config: `scripts/finetune_qwen.py`
+
+---
+
 Config: `scripts/innernet_vs_swiglu.py`, `warmstart_cnn.py`, `warmstart_ae.py`, `warmstart_lstm.py`
 
 ### MLM 掩码预测（BERT 式）
