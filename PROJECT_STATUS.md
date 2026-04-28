@@ -81,12 +81,12 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 | U26 | GPT warm-start | ⏳ 在跑 | 3/5 done, 2赢1输 |
 | U27 | ViT warm-start | ✅ | 持平 (77.54 vs 77.59) |
 | U28 | Mixer warm-start | ✅ | InnerNet 略好 (81.25 vs 81.13) |
-| U29 | 可视化训练后 InnerNet 2D 函数 | TODO | 已有权重文件，对比 SwiGLU 看偏离了什么 |
+| U29 | 可视化训练后 InnerNet 2D 函数 | ⏳ | d=128 已有权重。MLM/CNN/d=64 单 seed 在跑拿权重。所有 warm-start 脚本已加自动保存 |
 | U30 | Scaling law 图 | TODO | d=64/128/192/256 的优势画曲线 |
 | U31 | 训练曲线 | TODO | warm-start 两条分支 PPL 随 epoch 变化 |
 | U32 | 参数量和推理速度 | TODO | InnerNet 加了多少参数，推理慢多少 |
-| U33 | 提炼 InnerNet 为简单公式 | TODO | 训练后的 2D 函数拟合成简单公式，"发现新激活函数" |
-| U34 | Qwen2.5-0.5B finetune | ⏳ | SST-2 分类 + WikiText PPL。SwiGLU baseline → InnerNet warm-start。Qwen 用 SwiGLU 双投影，直接替换 |
+| U33 | 提炼 InnerNet 为简单公式 | ✅ d=128 | f(a,b)≈0.12·a·b+0.11-0.06·b+0.03·a²·b。和 SwiGLU 完全不同，变成缩小版乘法交互 |
+| U34 | Qwen2.5-0.5B finetune | ⏳ 已提交 | SST-2 + WikiText PPL。SwiGLU → InnerNet 直接替换（Qwen 双投影） |
 | U35 | InnerNet hidden dim 消融 | TODO | hidden=8/16/32/64 对比，InnerNet 需要多大才够 |
 | **U20** | **修复 InnerNet parameter sharing** | ✅ TF 全完成 | d=64 112.83, d=128 95.23, d=192 88.42, **d=256 84.62**, PTB 207.91。全部赢 GELU。ResNet full 持平, internal +1.5%。MLM 124.82 差 |
 

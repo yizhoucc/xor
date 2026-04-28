@@ -88,7 +88,13 @@ InnerNet wins in 4/5 seeds (-0.19 PPL). This pattern holds across multiple confi
 
 ### Qwen2.5-0.5B Finetune (Real Pretrained Model)
 
-Pending. Qwen uses SwiGLU with dual projections (gate_proj + up_proj), directly matching InnerNet FFN structure. SwiGLU finetune → InnerNet warm-start on SST-2 classification + WikiText-2 PPL.
+Pending. Qwen uses SwiGLU with dual projections (gate_proj + up_proj), directly matching InnerNet FFN. Direct weight copy, no workaround. SST-2 + WikiText-2 PPL, 3 seeds.
+
+### Distilled InnerNet Formula (d=128 WikiText-2)
+
+After warm-start training, InnerNet diverges from SwiGLU entirely. Dominant terms: **f(a,b) ≈ 0.12·a·b + 0.11 - 0.06·b + 0.03·a²·b**. The learned function is a scaled multiplicative interaction, not sigmoid gating. Degree-4 polynomial fits with MSE=0.003.
+
+Visualization runs submitted for MLM, CNN, d=64 to compare learned functions across tasks.
 
 Config: `scripts/finetune_qwen.py`
 

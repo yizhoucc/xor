@@ -95,9 +95,17 @@ CNN 和 MLM 效果最大。MLM 从头训 InnerNet 124.82 完全不行，warm-sta
 
 ### Qwen2.5-0.5B finetune（真实预训练模型）
 
-⏳ 在跑。Qwen 用 SwiGLU（gate_proj + up_proj + down_proj），和我们的 InnerNet FFN 结构完全对应。做法：SwiGLU finetune 3ep → InnerNet 替换 → 继续 finetune 3ep。任务：SST-2 分类 + WikiText-2 PPL。
+⏳ 在跑。Qwen 用 SwiGLU（gate_proj + up_proj + down_proj），和我们的结构完全对应，权重直接复制。SST-2 + WikiText PPL，3 seeds。
 
-Config: `scripts/finetune_qwen.py`
+### 提炼 InnerNet 为简单公式（d=128）
+
+训练后的 InnerNet 和 SwiGLU 完全不同了。SwiGLU 范围 ±14 有 sigmoid 门控，InnerNet 压缩到 ±3.75 变成温和的交互。
+
+主要项：**f(a,b) ≈ 0.12·a·b + 0.11 - 0.06·b + 0.03·a²·b**
+
+最大的是简单乘法 `a·b`，不是 sigmoid 门控。4 阶多项式 MSE=0.003 就能近似。正在跑 MLM/CNN/d=64 的单 seed 拿权重，看不同任务学到的函数是不是一样。
+
+Config: `scripts/finetune_qwen.py`, `scripts/innernet_vs_swiglu.py`
 
 ---
 
