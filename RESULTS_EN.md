@@ -72,32 +72,23 @@ When InnerNet is initialized from a trained SwiGLU model (10 epochs) and both co
 
 InnerNet wins in 4/5 seeds (-0.19 PPL). This pattern holds across multiple configurations:
 
-| Config | SwiGLU | InnerNet | Result |
-|--------|--------|----------|--------|
-| **CNN CIFAR-10** | 83.33% | **85.79%** | **InnerNet +2.46%** |
-| **MLM WikiText-2** | 54.92 | **38.74** | **InnerNet -16.18** |
-| PTB d=128 | 162.22 | **161.18** | InnerNet -1.04 |
-| TF d=128 | 77.04 | **76.85** | InnerNet -0.19 |
-| TF d=64 | 92.08 | **91.93** | InnerNet -0.15 |
-| MLP-Mixer | 81.13% | **81.25%** | InnerNet +0.12% |
-| ViT | 77.54% | 77.59% | Tied |
-| TF d=256 | — | — | Tied |
-| AE MNIST | 0.01206 | 0.01211 | Tied |
+| Config | SwiGLU | Shared (97p) | Δ | Non-shared (388p) | Δ |
+|--------|--------|-------------|-----|------------------|-----|
+| **CNN CIFAR-10** | 83.33% | **85.79%** | **+2.46%** | — | — |
+| **MLM WikiText-2** | 54.92 | **38.74** | **-16.18** | ⏳ | — |
+| PTB d=128 | 162.22 | **161.18** | -1.04 | **~162.6** | **-1.95** |
+| TF d=128 | 77.04 | **76.85** | -0.19 | ⏳ | — |
+| TF d=64 | 92.08 | **91.93** | -0.15 | — | — |
+| MLP-Mixer | 81.13% | **81.25%** | +0.12% | — | — |
+| ViT | 77.54% | 77.59% | Tied | — | — |
+| TF d=256 | — | — | Tied | — | — |
+| AE MNIST | 0.01206 | 0.01211 | Tied | — | — |
+| GPT d=256 | ~73.1 | ~73.2 | Tied | — | — |
+| **LSTM** | **104.71** | 105.79 | **+1.08** | — | — |
 
-| GPT d=256 | ~73.1 | ~73.2 | Tied |
-| **LSTM** | **104.71** | 105.79 | **InnerNet loses** |
+**Shared: 10/11 wins or ties (LSTM only loss). Non-shared PTB: 2× larger margin (-1.95 vs -1.04).**
 
-**InnerNet wins or ties in 10/11 completed tasks. LSTM is the only loss.** CNN (+2.46%) and MLM (-16.18 PPL) show the largest gains.
-
-### Shared vs Non-shared InnerNet
-
-Non-shared (per-layer, 388 params) outperforms shared (97 params):
-
-| PTB | Shared vs SwiGLU | Non-shared vs SwiGLU |
-|-----|-------------------|---------------------|
-| Margin | -1.04 PPL | **-1.95 PPL** |
-
-Each layer learns a distinct activation function (fig11). The parameter overhead is negligible (291 extra params). Non-shared better aligns with biological neurons, which exhibit different activation patterns across brain regions.
+Each layer learns a distinct activation function when non-shared (fig11). Parameter overhead negligible (291 extra). Non-shared aligns with biological neuron diversity.
 
 ### Qwen2.5-0.5B Finetune (Real Pretrained Model)
 
