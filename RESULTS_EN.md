@@ -84,7 +84,10 @@ InnerNet wins in 4/5 seeds (-0.19 PPL). This pattern holds across multiple confi
 | TF d=256 | — | — | Tied |
 | AE MNIST | 0.01206 | 0.01211 | Tied |
 
-**InnerNet wins or ties in 9/9 completed tasks, loses in none.** CNN (+2.46%) and MLM (-16.18 PPL) show the largest gains. The advantage decreases with model size and in architectures with strong residual connections. All results use shared InnerNet (97 params). Non-shared (per-layer, 388 params) experiment in progress.
+| GPT d=256 | ~73.1 | ~73.2 | Tied |
+| **LSTM** | **104.71** | 105.79 | **InnerNet loses** |
+
+**InnerNet wins or ties in 10/11 completed tasks. LSTM is the only loss.** CNN (+2.46%) and MLM (-16.18 PPL) show the largest gains. Non-shared InnerNet (per-layer, 388 params) wins 5/5 on PTB with larger margins than shared.
 
 ### Qwen2.5-0.5B Finetune (Real Pretrained Model)
 

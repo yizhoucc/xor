@@ -73,12 +73,12 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 | U17 | Transformer Classic InnerNet FFN | ✅ Wiki 95.49 ≈ Semantic 95.26, PTB 208.81 ≈ Semantic 207.81。TF 上 Classic ≈ Semantic |
 | U18 | d=64 InnerNet 学到了什么 | TODO | d=64 时 InnerNet ≈ SwiGLU，可视化看是不是真的像 SwiGLU |
 | U19 | ResNet/WRN 只换内部 ReLU | ✅ **有效果** | C100+aug **74.97%** vs ReLU 73.51% (+1.5%), C10 **87.7%** vs 86.33% (+1.4%, 2/5 done) |
-| U21 | InnerNet vs SwiGLU 对比 | ✅ 9/12 完成 | **9/9 InnerNet 赢或持平，0 输**。CNN +2.46%, MLM -16.18, PTB -1.04, d=128 -0.19, d=64 -0.15, Mixer +0.12%, ViT/d=256/AE 持平 |
+| U21 | InnerNet vs SwiGLU 对比 | ✅ 11/11 完成 | **10/11 赢或持平，LSTM 唯一输**。CNN +2.46%, MLM -16.18, PTB -1.04, GPT/ViT/d=256/AE 持平。LSTM 输 (105.79 vs 104.71) |
 | U22 | AE warm-start | ✅ | 持平 (0.01206 vs 0.01211) |
 | U23 | CNN warm-start | ✅ | **InnerNet +2.46%** |
-| U24 | LSTM warm-start | ⏳ 3/5 **InnerNet 输** | SwiGLU 赢（~105 vs ~106），LSTM 是唯一 warm-start InnerNet 输的 |
+| U24 | LSTM warm-start | ✅ **InnerNet 输** | SwiGLU 104.71 vs InnerNet 105.79。LSTM 唯一 warm-start InnerNet 输的 |
 | U25 | TF d=192 warm-start | ⏳ 在跑 | 3/5 InnerNet 3/3 赢 |
-| U26 | GPT warm-start | ⏳ 在跑 | 3/5 done, 2赢1输 |
+| U26 | GPT warm-start | ✅ | 持平 (2赢2输1差不多，~73.1 vs ~73.2) |
 | U27 | ViT warm-start | ✅ | 持平 (77.54 vs 77.59) |
 | U28 | Mixer warm-start | ✅ | InnerNet 略好 (81.25 vs 81.13) |
 | U29 | 可视化训练后 InnerNet 2D 函数 | ✅ | 4 任务对比完成。不同任务学到不同函数——d=64 接近 SwiGLU，MLM 偏离最大。偏离越大效果越好 |
@@ -88,7 +88,8 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 | U33 | 提炼 InnerNet 为简单公式 | ✅ d=128 | f(a,b)≈0.12·a·b+0.11-0.06·b+0.03·a²·b。和 SwiGLU 完全不同，变成缩小版乘法交互 |
 | U34 | Qwen2.5-0.5B finetune | ⏳ 已提交 | SST-2 + WikiText PPL。SwiGLU → InnerNet 直接替换（Qwen 双投影） |
 | U35 | InnerNet hidden dim 消融 | TODO | hidden=8/16/32/64 对比，InnerNet 需要多大才够 |
-| U36 | Non-shared warm-start | ⏳ 已提交 | PTB/MLM/Wiki d=128 每层独立 InnerNet（388 params），对比 shared（97 params）。存每层权重看不同层是否学不同函数 |
+| U36 | Non-shared warm-start | ⏳ PTB ✅ 5/5 赢 | Non-shared PTB 全赢 (159-167 vs 160-171)。MLM 在跑 |
+| U37 | Free-init (不同初始化) | ⏳ 在跑 | 4 种初始化: swiglu_fitted/multiply/random/identity。seed 1 swiglu_fitted=72.15 (SwiGLU=77.46) |
 | **U20** | **修复 InnerNet parameter sharing** | ✅ TF 全完成 | d=64 112.83, d=128 95.23, d=192 88.42, **d=256 84.62**, PTB 207.91。全部赢 GELU。ResNet full 持平, internal +1.5%。MLM 124.82 差 |
 
 ### 🟡 Major

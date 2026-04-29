@@ -85,9 +85,14 @@ InnerNet 从 SwiGLU 初始化后继续训，4/5 seeds 赢了，均值好 0.19 PP
 | GPT | ⏳ | ⏳ 2赢1输 | — | 在跑 |
 | LSTM | ⏳ | ⏳ | — | 检查 |
 
-**9/9 完成的任务 InnerNet 赢或持平，没有输。** 以上全是 shared InnerNet（所有层共享同一个，97 params）。
+| GPT d=256 | ~73.1 | ~73.2 | 持平 | ✅ |
+| **LSTM** | **104.71** | 105.79 | **InnerNet 输** | ✅ |
 
-Non-shared（每层独立 InnerNet，388 params）在 PTB/MLM/Wiki 上在跑，看每层是否需要不同的激活函数。
+**10/11 完成的任务 InnerNet 赢或持平。LSTM 唯一输。** 以上全是 shared InnerNet（97 params）。
+
+Non-shared PTB（每层独立，388 params）5/5 赢 SwiGLU，差距比 shared 更大。MLM 在跑。
+
+Free-init 实验在跑：同一个 SwiGLU network，4 种 InnerNet 初始化（swiglu_fitted/multiply/random/identity），看哪种最好。
 
 CNN 和 MLM 效果最大。MLM 从头训 InnerNet 124.82 完全不行，warm-start 后 38.74 大幅赢 SwiGLU 54.92。从头训不动是优化问题。
 
