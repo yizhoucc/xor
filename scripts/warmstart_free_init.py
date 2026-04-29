@@ -29,6 +29,8 @@ class InnerNetAct(nn.Module):
     def __init__(self, hidden=32):
         super().__init__()
         self.net = nn.Sequential(nn.Linear(2, hidden), nn.ReLU(), nn.Linear(hidden, 1))
+    def forward(self, x):
+        return self.net(x)
 
 
 def fit_to_target(inner_net, device, target_fn, steps=2000, lr=1e-3):
