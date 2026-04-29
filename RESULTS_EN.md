@@ -87,7 +87,17 @@ InnerNet wins in 4/5 seeds (-0.19 PPL). This pattern holds across multiple confi
 | GPT d=256 | ~73.1 | ~73.2 | Tied |
 | **LSTM** | **104.71** | 105.79 | **InnerNet loses** |
 
-**InnerNet wins or ties in 10/11 completed tasks. LSTM is the only loss.** CNN (+2.46%) and MLM (-16.18 PPL) show the largest gains. Non-shared InnerNet (per-layer, 388 params) wins 5/5 on PTB with larger margins than shared.
+**InnerNet wins or ties in 10/11 completed tasks. LSTM is the only loss.** CNN (+2.46%) and MLM (-16.18 PPL) show the largest gains.
+
+### Shared vs Non-shared InnerNet
+
+Non-shared (per-layer, 388 params) outperforms shared (97 params):
+
+| PTB | Shared vs SwiGLU | Non-shared vs SwiGLU |
+|-----|-------------------|---------------------|
+| Margin | -1.04 PPL | **-1.95 PPL** |
+
+Each layer learns a distinct activation function (fig11). The parameter overhead is negligible (291 extra params). Non-shared better aligns with biological neurons, which exhibit different activation patterns across brain regions.
 
 ### Qwen2.5-0.5B Finetune (Real Pretrained Model)
 

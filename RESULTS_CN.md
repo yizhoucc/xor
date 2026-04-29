@@ -90,9 +90,18 @@ InnerNet 从 SwiGLU 初始化后继续训，4/5 seeds 赢了，均值好 0.19 PP
 
 **10/11 完成的任务 InnerNet 赢或持平。LSTM 唯一输。** 以上全是 shared InnerNet（97 params）。
 
-Non-shared PTB（每层独立，388 params）5/5 赢 SwiGLU，差距比 shared 更大。MLM 在跑。
+### Shared vs Non-shared
 
-Free-init 实验在跑：同一个 SwiGLU network，4 种 InnerNet 初始化（swiglu_fitted/multiply/random/identity），看哪种最好。
+| | Shared (97 params) | Non-shared (388 params) |
+|--|-------------------|------------------------|
+| PTB vs SwiGLU | -1.04 PPL | **-1.95 PPL** |
+| 所有层 | 同一个函数 | 每层不同 |
+
+Non-shared 赢的幅度是 shared 的 2 倍。每层学到了不同的函数（fig11）。省的参数差 291 个，对整个模型来说不算什么。
+
+原论文说模拟生物神经元——生物大脑里不同区域的神经元激活特性不同，non-shared 更符合生物学。shared 是"通用激活函数"（像 ReLU），non-shared 是"自适应激活函数"。
+
+Free-init 在跑（4 种 InnerNet 初始化对比）。MLM non-shared 在跑。
 
 CNN 和 MLM 效果最大。MLM 从头训 InnerNet 124.82 完全不行，warm-start 后 38.74 大幅赢 SwiGLU 54.92。从头训不动是优化问题。
 

@@ -6,6 +6,7 @@
 - Warm-start 后 InnerNet 在 6/6 任务上赢或持平 SwiGLU，从头训打不过是优化问题
 - 模型越大 InnerNet 优势越小——大模型架构本身够复杂，单个激活函数边际贡献小
 - 适合场景：小模型 / on-device, finetune 阶段, 架构搜索
+- Non-shared（每层不同 InnerNet）比 shared 效果更好（PTB -1.95 vs -1.04），参数差可以忽略
 
 ## 论文 Story 思路
 
