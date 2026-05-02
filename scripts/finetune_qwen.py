@@ -97,11 +97,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--save_dir', default='exp/finetune_qwen')
     parser.add_argument('--model_name', default='Qwen/Qwen2.5-0.5B')
-    parser.add_argument('--epochs', type=int, default=3)
-    parser.add_argument('--lr', type=float, default=2e-5)
+    parser.add_argument('--epochs', type=int, default=5)
+    parser.add_argument('--lr', type=float, default=5e-5)
     parser.add_argument('--batch_size', type=int, default=8)
     parser.add_argument('--max_length', type=int, default=128)
-    parser.add_argument('--max_samples', type=int, default=3000)
+    parser.add_argument('--max_samples', type=int, default=10000)
     parser.add_argument('--num_seeds', type=int, default=3)
     args = parser.parse_args()
 
@@ -153,10 +153,16 @@ def main():
         logger.info("--- Phase 1: SwiGLU baseline ---")
         model_sw = AutoModelForSequenceClassification.from_pretrained(
             args.model_name, num_labels=2, trust_remote_code=True,
-            torch_dtype=torch.float16).to(device)
+            torch_dtype=torch.bfloat16).to(device)
         model_sw.config.pad_token_id = tokenizer.pad_token_id
 
-        opt_sw = optim.AdamW(model_sw.parameters(), lr=args.lr)
+        # Higher lr for classification head, lower for pretrained body
+        head_params = [p for n, p in model_sw.named_parameters() if 'score' in n]
+        body_params = [p for n, p in model_sw.named_parameters() if 'score' not in n]
+        opt_sw = optim.AdamW([
+            {'params': body_params, 'lr': args.lr},
+            {'params': head_params, 'lr': args.lr * 10},
+        ])
         sw_accs = []
         for ep in range(args.epochs):
             model_sw.train()
@@ -195,29 +201,24 @@ def main():
         torch.manual_seed(seed)
         model_in = AutoModelForSequenceClassification.from_pretrained(
             args.model_name, num_labels=2, trust_remote_code=True,
-            torch_dtype=torch.float16).to(device)
+            torch_dtype=torch.bfloat16).to(device)
         model_in.config.pad_token_id = tokenizer.pad_token_id
         model_in.load_state_dict(sw_state)
 
         shared_inner = InnerNetAct(32).to(device)
         shared_inner.load_state_dict(fitted_weights)
-        # Convert inner_net to float16
-        shared_inner = shared_inner.half()
+        shared_inner = shared_inner.to(torch.bfloat16)
         model_in = replace_swiglu_with_innernet(model_in, shared_inner)
 
-        # Eval after swap
-        model_in.eval()
-        correct = total = 0
-        with torch.no_grad():
-            for ids, mask, labels in val_loader:
-                ids, mask, labels = ids.to(device), mask.to(device), labels.to(device)
-                logits = model_in(ids, attention_mask=mask).logits
-                correct += (logits.argmax(1) == labels).sum().item()
-                total += labels.size(0)
-        acc_swap = correct / total
+        acc_swap = evaluate(model_in, val_loader, device)
         logger.info(f"  After swap: {acc_swap*100:.2f}% (SwiGLU was {sw_accs[-1]*100:.2f}%)")
 
-        opt_in = optim.AdamW(model_in.parameters(), lr=args.lr)
+        head_params_in = [p for n, p in model_in.named_parameters() if 'score' in n]
+        body_params_in = [p for n, p in model_in.named_parameters() if 'score' not in n]
+        opt_in = optim.AdamW([
+            {'params': body_params_in, 'lr': args.lr},
+            {'params': head_params_in, 'lr': args.lr * 10},
+        ])
         in_accs = [acc_swap]
         for ep in range(args.epochs):
             model_in.train()
