@@ -15,6 +15,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(message)s')
 logger = logging.getLogger(__name__)
 
+CKPT_DIR = '/user_data/yizhouc3/xor_checkpoints'
+
+def save_ckpt(model, exp_name, cond, seed, epoch):
+    d = os.path.join(CKPT_DIR, exp_name, f'{cond}_seed{seed}')
+    os.makedirs(d, exist_ok=True)
+    torch.save(model.state_dict(), os.path.join(d, f'ep{epoch:03d}.pth'))
+
+
 
 class InnerNetAct(nn.Module):
     def __init__(self, hidden=32):
