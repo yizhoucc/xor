@@ -204,7 +204,7 @@ def main():
                     total += labels.size(0)
             acc = correct / total
             sw_accs.append(acc)
-            save_ckpt(model_sw, 'finetune_qwen', 'swiglu', seed, ep+1)
+            save_ckpt(model_sw, os.path.basename(args.save_dir), 'swiglu', seed, ep+1)
             logger.info(f"  SwiGLU Ep {ep+1}: {acc*100:.2f}%")
         best_sw = max(sw_accs)
         sw_state = copy.deepcopy(model_sw.state_dict())
@@ -261,7 +261,7 @@ def main():
                     total += labels.size(0)
             acc = correct / total
             in_accs.append(acc)
-            save_ckpt(model_in, 'finetune_qwen', 'innernet', seed, ep+1)
+            save_ckpt(model_in, os.path.basename(args.save_dir), 'innernet', seed, ep+1)
             logger.info(f"  InnerNet Ep {ep+1}: {acc*100:.2f}%")
         best_in = max(in_accs)
 

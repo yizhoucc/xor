@@ -140,7 +140,7 @@ def run_frozen(model, train_loader, val_loader, device, max_epochs=50, patience=
         train_one_epoch(model, train_loader, optimizer, device)
         ppl = evaluate(model, val_loader, device)
         ppl_history.append(ppl)
-        save_ckpt(model, 'frozen_innernet', cond, seed, epoch+1)
+        save_ckpt(model, os.path.basename(args.save_dir), cond, seed, epoch+1)
 
         if ppl < best_ppl:
             best_ppl = ppl
@@ -215,7 +215,7 @@ def main():
             train_one_epoch(swiglu, train_loader, opt, device)
             ppl = evaluate(swiglu, val_loader, device)
             swiglu_ppl.append(ppl)
-            save_ckpt(swiglu, 'frozen_innernet', 'swiglu', seed, ep+1)
+            save_ckpt(swiglu, os.path.basename(args.save_dir), 'swiglu', seed, ep+1)
             logger.info(f"  SwiGLU Ep {ep+1}/{args.swiglu_epochs}: PPL={ppl:.2f}")
         best_swiglu = min(swiglu_ppl)
         swiglu_state = swiglu.state_dict()

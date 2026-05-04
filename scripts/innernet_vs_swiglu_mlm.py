@@ -142,7 +142,7 @@ def main():
             train_mlm_one_epoch(swiglu_model, train_loader, opt_sw, device, mask_token_id)
             ppl = evaluate_mlm(swiglu_model, val_loader, device, mask_token_id)
             sw_ppl.append(ppl)
-            save_ckpt(swiglu_model, 'ivs_mlm', 'swiglu_phase1', seed, ep+1)
+            save_ckpt(swiglu_model, os.path.basename(args.save_dir), 'swiglu_phase1', seed, ep+1)
             logger.info(f"  SwiGLU Ep {ep+1}/10: PPL={ppl:.2f}")
 
         swiglu_state = swiglu_base.state_dict()
@@ -155,7 +155,7 @@ def main():
             train_mlm_one_epoch(swiglu_model, train_loader, opt_sw, device, mask_token_id)
             ppl = evaluate_mlm(swiglu_model, val_loader, device, mask_token_id)
             sw_ppl2.append(ppl)
-            save_ckpt(swiglu_model, 'ivs_mlm', 'swiglu_phase2', seed, ep+1)
+            save_ckpt(swiglu_model, os.path.basename(args.save_dir), 'swiglu_phase2', seed, ep+1)
             logger.info(f"  SwiGLU Ep {ep+11}/20: PPL={ppl:.2f}")
         best_swiglu = min(sw_ppl + sw_ppl2)
 
@@ -183,7 +183,7 @@ def main():
             train_mlm_one_epoch(innernet_model, train_loader, opt_in, device, mask_token_id)
             ppl = evaluate_mlm(innernet_model, val_loader, device, mask_token_id)
             in_ppl.append(ppl)
-            save_ckpt(innernet_model, 'ivs_mlm', 'innernet', seed, ep+1)
+            save_ckpt(innernet_model, os.path.basename(args.save_dir), 'innernet', seed, ep+1)
             logger.info(f"  InnerNet Ep {ep+11}/20: PPL={ppl:.2f}")
         best_innernet = min(in_ppl)
         try:

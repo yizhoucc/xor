@@ -141,7 +141,7 @@ def main():
             train_epoch(swiglu_model, train_loader, opt_sw, device)
             acc = evaluate(swiglu_model, test_loader, device)
             sw_acc.append(acc)
-            save_ckpt(swiglu_model, 'warmstart_cnn', 'swiglu_phase1', seed, ep+1)
+            save_ckpt(swiglu_model, os.path.basename(args.save_dir), 'swiglu_phase1', seed, ep+1)
             if (ep+1) % 20 == 0: logger.info(f"  SwiGLU Ep {ep+1}: acc={acc*100:.2f}%")
 
         swiglu_state = copy.deepcopy(swiglu_model.state_dict())
@@ -153,7 +153,7 @@ def main():
             train_epoch(swiglu_model, train_loader, opt_sw, device)
             acc = evaluate(swiglu_model, test_loader, device)
             sw_acc2.append(acc)
-            save_ckpt(swiglu_model, 'warmstart_cnn', 'swiglu_phase2', seed, ep+1)
+            save_ckpt(swiglu_model, os.path.basename(args.save_dir), 'swiglu_phase2', seed, ep+1)
             if (ep+1) % 20 == 0: logger.info(f"  SwiGLU Ep {args.fork_epoch+ep+1}: acc={acc*100:.2f}%")
         best_sw = max(sw_acc + sw_acc2)
 
@@ -180,7 +180,7 @@ def main():
             train_epoch(inner_model, train_loader, opt_in, device)
             acc = evaluate(inner_model, test_loader, device)
             in_acc.append(acc)
-            save_ckpt(inner_model, 'warmstart_cnn', 'innernet', seed, ep+1)
+            save_ckpt(inner_model, os.path.basename(args.save_dir), 'innernet', seed, ep+1)
             if (ep+1) % 20 == 0: logger.info(f"  InnerNet Ep {args.fork_epoch+ep+1}: acc={acc*100:.2f}%")
         best_in = max(in_acc)
         # Save InnerNet weights

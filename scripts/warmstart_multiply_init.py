@@ -114,7 +114,7 @@ def run_lm_task(name, dataset_name, d_model, n_heads, d_ff, n_layers,
             train_ep(sw, train_loader, opt_sw, device)
             ppl = eval_ppl(sw, val_loader, device)
             sw_ppls.append(ppl)
-            save_ckpt(sw, 'multiply_init', f'swiglu_{name}', seed, ep+1)
+            save_ckpt(sw, os.path.basename(args.save_dir), f'swiglu_{name}', seed, ep+1)
         best_sw = min(sw_ppls)
 
         # Multiply-init InnerNet
@@ -128,7 +128,7 @@ def run_lm_task(name, dataset_name, d_model, n_heads, d_ff, n_layers,
             train_ep(model, train_loader, opt_in, device)
             ppl = eval_ppl(model, val_loader, device)
             in_ppls.append(ppl)
-            save_ckpt(model, 'multiply_init', f'multinit_{name}', seed, ep+1)
+            save_ckpt(model, os.path.basename(args.save_dir), f'multinit_{name}', seed, ep+1)
         best_in = min(in_ppls)
 
         logger.info(f"    SwiGLU={best_sw:.2f} vs MultInit={best_in:.2f}")
@@ -201,7 +201,7 @@ def run_mlm_task(fitted_weights, device, num_seeds=5):
             train_mlm(sw_model, opt_sw)
             ppl = eval_mlm(sw_model)
             sw_ppls.append(ppl)
-            save_ckpt(sw_model, 'multiply_init', 'swiglu_mlm', seed, ep+1)
+            save_ckpt(sw_model, os.path.basename(args.save_dir), 'swiglu_mlm', seed, ep+1)
         best_sw = min(sw_ppls)
 
         inner = InnerNetAct(32).to(device)
@@ -214,7 +214,7 @@ def run_mlm_task(fitted_weights, device, num_seeds=5):
             train_mlm(in_model, opt_in)
             ppl = eval_mlm(in_model)
             in_ppls.append(ppl)
-            save_ckpt(in_model, 'multiply_init', 'multinit_mlm', seed, ep+1)
+            save_ckpt(in_model, os.path.basename(args.save_dir), 'multinit_mlm', seed, ep+1)
         best_in = min(in_ppls)
 
         logger.info(f"    SwiGLU={best_sw:.2f} vs MultInit={best_in:.2f}")
