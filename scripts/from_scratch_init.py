@@ -75,11 +75,16 @@ def gaussian_pretrain(inner_net, device, steps=300):
 CKPT_DIR = '/user_data/yizhouc3/xor_checkpoints'
 
 
-def save_ckpt(model, exp_name, cond, seed, epoch):
-    """Save full model checkpoint to user_data."""
+def save_ckpt(model, exp_name, cond, seed, epoch, optimizer=None, metrics=None):
+    """Save full checkpoint to user_data."""
     d = os.path.join(CKPT_DIR, exp_name, f'{cond}_seed{seed}')
     os.makedirs(d, exist_ok=True)
-    torch.save(model.state_dict(), os.path.join(d, f'ep{epoch:03d}.pth'))
+    state = {'model_state_dict': model.state_dict(), 'epoch': epoch}
+    if optimizer is not None:
+        state['optimizer_state_dict'] = optimizer.state_dict()
+    if metrics is not None:
+        state['metrics'] = metrics
+    torch.save(state, os.path.join(d, f'ep{epoch:03d}.pth'))
 
 
 def eval_ppl(model, val_loader, device):
@@ -157,7 +162,7 @@ def main():
             train_ep(sw, train_loader, opt, device)
             ppl = eval_ppl(sw, val_loader, device)
             sw_ppls.append(ppl)
-            save_ckpt(sw, 'from_scratch_init', 'swiglu', seed, ep+1)
+            save_ckpt(sw, 'from_scratch_init', 'swiglu', seed, ep+1, opt, {'ppl': ppl})
             if (ep+1) % 5 == 0: logger.info(f"  SwiGLU Ep {ep+1}: PPL={ppl:.2f}")
         seed_results['swiglu'] = {'ppls': sw_ppls, 'best': min(sw_ppls)}
         logger.info(f"  SwiGLU best: {min(sw_ppls):.2f}")
@@ -172,7 +177,7 @@ def main():
             train_ep(model_rand, train_loader, opt, device)
             ppl = eval_ppl(model_rand, val_loader, device)
             rand_ppls.append(ppl)
-            save_ckpt(model_rand, 'from_scratch_init', 'random', seed, ep+1)
+            save_ckpt(model_rand, 'from_scratch_init', 'random', seed, ep+1, opt, {'ppl': ppl})
             if (ep+1) % 5 == 0: logger.info(f"  Random Ep {ep+1}: PPL={ppl:.2f}")
         seed_results['random'] = {'ppls': rand_ppls, 'best': min(rand_ppls)}
         logger.info(f"  Random best: {min(rand_ppls):.2f}")
@@ -190,7 +195,7 @@ def main():
             train_ep(model_gauss, train_loader, opt, device)
             ppl = eval_ppl(model_gauss, val_loader, device)
             gauss_ppls.append(ppl)
-            save_ckpt(model_gauss, 'from_scratch_init', 'gaussian', seed, ep+1)
+            save_ckpt(model_gauss, 'from_scratch_init', 'gaussian', seed, ep+1, opt, {'ppl': ppl})
             if (ep+1) % 5 == 0: logger.info(f"  Gaussian Ep {ep+1}: PPL={ppl:.2f}")
         seed_results['gaussian'] = {'ppls': gauss_ppls, 'best': min(gauss_ppls)}
         logger.info(f"  Gaussian best: {min(gauss_ppls):.2f}")
@@ -207,7 +212,7 @@ def main():
             train_ep(model_mult, train_loader, opt, device)
             ppl = eval_ppl(model_mult, val_loader, device)
             mult_ppls.append(ppl)
-            save_ckpt(model_mult, 'from_scratch_init', 'multiply', seed, ep+1)
+            save_ckpt(model_mult, 'from_scratch_init', 'multiply', seed, ep+1, opt, {'ppl': ppl})
             if (ep+1) % 5 == 0: logger.info(f"  Multiply Ep {ep+1}: PPL={ppl:.2f}")
         seed_results['multiply'] = {'ppls': mult_ppls, 'best': min(mult_ppls)}
         logger.info(f"  Multiply best: {min(mult_ppls):.2f}")
