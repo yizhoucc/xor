@@ -86,9 +86,19 @@ InnerNet wins in 4/5 seeds (-0.19 PPL). This pattern holds across multiple confi
 | GPT d=256 | ~73.1 | ~73.2 | Tied | — | — |
 | **LSTM** | **104.71** | 105.79 | **+1.08** | — | — |
 
-**Shared: 10/11 wins or ties (LSTM only loss). Non-shared PTB: 2× larger margin (-1.95 vs -1.04).**
+**Shared: 10/11 wins or ties (LSTM only loss). Non-shared consistently larger margins.**
 
-Each layer learns a distinct activation function when non-shared (fig11). Parameter overhead negligible (291 extra). Non-shared aligns with biological neuron diversity.
+| Task | Shared Δ | Non-shared Δ |
+|------|---------|-------------|
+| PTB | -1.04 | **-1.95** |
+| MLM | -16.18 | **-3.28** (vs SwiGLU 18.91) |
+| CNN | +2.46% | **+3.12%** |
+
+Each layer learns a distinct activation function when non-shared (fig11). Parameter overhead negligible (291 extra).
+
+### Initialization Does Not Matter
+
+Free-init experiment (Wiki d=128, 3 seeds): 4 initializations (swiglu_fitted, multiply, random, identity) all converge to similar endpoints (~71.9-72.2 PPL vs SwiGLU 77.5). The learned function is determined by the task and network weights, not the InnerNet starting point.
 
 ### Qwen2.5-0.5B Finetune (Real Pretrained Model)
 
