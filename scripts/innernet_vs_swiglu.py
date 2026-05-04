@@ -182,6 +182,7 @@ def main():
             train_one_epoch(swiglu, train_loader, opt_sw, device)
             ppl = evaluate(swiglu, val_loader, device)
             sw_ppl_phase1.append(ppl)
+            save_ckpt(swiglu, 'innernet_vs_swiglu', 'swiglu_phase1', seed, ep+1)
             logger.info(f"  SwiGLU Ep {ep+1}/10: PPL={ppl:.2f}")
 
         # Save state at ep 10 for forking
@@ -195,6 +196,7 @@ def main():
             train_one_epoch(swiglu, train_loader, opt_sw, device)
             ppl = evaluate(swiglu, val_loader, device)
             sw_ppl_phase2.append(ppl)
+            save_ckpt(swiglu, 'innernet_vs_swiglu', 'swiglu_phase2', seed, ep+1)
             logger.info(f"  SwiGLU Ep {ep+11}/20: PPL={ppl:.2f}")
         best_swiglu_20 = min(sw_ppl_phase1 + sw_ppl_phase2)
 
@@ -214,6 +216,7 @@ def main():
             train_one_epoch(innernet_model, train_loader, opt_in, device)
             ppl = evaluate(innernet_model, val_loader, device)
             in_ppl_phase2.append(ppl)
+            save_ckpt(innernet_model, 'innernet_vs_swiglu', 'innernet_phase2', seed, ep+1)
             logger.info(f"  InnerNet Ep {ep+11}/20: PPL={ppl:.2f}")
         best_innernet_20 = min(in_ppl_phase2)
 
@@ -261,6 +264,7 @@ def main():
             train_one_epoch(frozen_model, train_loader, opt_frozen, device)
             ppl = evaluate(frozen_model, val_loader, device)
             frozen_ppl.append(ppl)
+            save_ckpt(frozen_model, 'innernet_vs_swiglu', 'frozen_innernet', seed, ep+1)
             if ppl < best_frozen:
                 best_frozen = ppl
                 no_improve = 0

@@ -166,6 +166,7 @@ def main():
             train_epoch(sw_model, train_loader, opt_sw, device)
             ppl = evaluate(sw_model, val_loader, device)
             sw_ppl.append(ppl)
+            save_ckpt(sw_model, 'warmstart_lstm', 'swiglu_phase1', seed, ep+1)
             logger.info(f"  SwiGLU Ep {ep+1}: PPL={ppl:.2f}")
 
         swiglu_state = copy.deepcopy(sw_model.state_dict())
@@ -176,6 +177,7 @@ def main():
             train_epoch(sw_model, train_loader, opt_sw, device)
             ppl = evaluate(sw_model, val_loader, device)
             sw_ppl2.append(ppl)
+            save_ckpt(sw_model, 'warmstart_lstm', 'swiglu_phase2', seed, ep+1)
             logger.info(f"  SwiGLU Ep {args.fork_epoch+ep+1}: PPL={ppl:.2f}")
         best_sw = min(sw_ppl + sw_ppl2)
 
@@ -199,6 +201,7 @@ def main():
             train_epoch(in_model, train_loader, opt_in, device)
             ppl = evaluate(in_model, val_loader, device)
             in_ppl.append(ppl)
+            save_ckpt(in_model, 'warmstart_lstm', 'innernet', seed, ep+1)
             logger.info(f"  InnerNet Ep {args.fork_epoch+ep+1}: PPL={ppl:.2f}")
         best_in = min(in_ppl)
 

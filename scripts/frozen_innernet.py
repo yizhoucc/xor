@@ -120,7 +120,7 @@ def make_innernet_from_swiglu(swiglu_state, vocab_size, d_model, n_heads, d_ff,
     return model
 
 
-def run_frozen(model, train_loader, val_loader, device, max_epochs=50, patience=10, lr=5e-4):
+def run_frozen(model, train_loader, val_loader, device, max_epochs=50, patience=10, lr=5e-4, cond='frozen', seed=0):
     """Freeze network, train only InnerNet until convergence."""
     # Freeze everything except inner_net
     for name, param in model.named_parameters():
@@ -140,6 +140,7 @@ def run_frozen(model, train_loader, val_loader, device, max_epochs=50, patience=
         train_one_epoch(model, train_loader, optimizer, device)
         ppl = evaluate(model, val_loader, device)
         ppl_history.append(ppl)
+        save_ckpt(model, 'frozen_innernet', cond, seed, epoch+1)
 
         if ppl < best_ppl:
             best_ppl = ppl
@@ -214,6 +215,7 @@ def main():
             train_one_epoch(swiglu, train_loader, opt, device)
             ppl = evaluate(swiglu, val_loader, device)
             swiglu_ppl.append(ppl)
+            save_ckpt(swiglu, 'frozen_innernet', 'swiglu', seed, ep+1)
             logger.info(f"  SwiGLU Ep {ep+1}/{args.swiglu_epochs}: PPL={ppl:.2f}")
         best_swiglu = min(swiglu_ppl)
         swiglu_state = swiglu.state_dict()
@@ -227,7 +229,8 @@ def main():
         logger.info(f"  After swap: PPL={ppl_swap:.2f}")
         shared_history, best_shared = run_frozen(
             model_shared, train_loader, val_loader, device,
-            args.max_frozen_epochs, args.patience, args.frozen_lr)
+            args.max_frozen_epochs, args.patience, args.frozen_lr,
+            cond='frozen_shared', seed=seed)
 
         # Non-shared frozen
         logger.info("--- Frozen NON-SHARED InnerNet ---")
@@ -236,7 +239,8 @@ def main():
             args.n_layers, args.context_size, fitted_weights, device, shared=False)
         nonshared_history, best_nonshared = run_frozen(
             model_nonshared, train_loader, val_loader, device,
-            args.max_frozen_epochs, args.patience, args.frozen_lr)
+            args.max_frozen_epochs, args.patience, args.frozen_lr,
+            cond='frozen_nonshared', seed=seed)
 
         logger.info(f"  SwiGLU: {best_swiglu:.2f} | Shared: {best_shared:.2f} | Non-shared: {best_nonshared:.2f}")
 

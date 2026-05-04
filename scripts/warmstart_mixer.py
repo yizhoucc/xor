@@ -159,6 +159,7 @@ def main():
             train_epoch(sw_model, train_loader, opt_sw, device)
             acc = evaluate(sw_model, test_loader, device)
             sw_acc.append(acc)
+            save_ckpt(sw_model, 'warmstart_mixer', 'swiglu_phase1', seed, ep+1)
             if (ep+1) % 10 == 0: logger.info(f"  SwiGLU Ep {ep+1}: {acc*100:.2f}%")
         swiglu_state = copy.deepcopy(sw_model.state_dict())
 
@@ -167,6 +168,7 @@ def main():
             train_epoch(sw_model, train_loader, opt_sw, device)
             acc = evaluate(sw_model, test_loader, device)
             sw_acc2.append(acc)
+            save_ckpt(sw_model, 'warmstart_mixer', 'swiglu_phase2', seed, ep+1)
             if (ep+1) % 10 == 0: logger.info(f"  SwiGLU Ep {args.fork_epoch+ep+1}: {acc*100:.2f}%")
         best_sw = max(sw_acc + sw_acc2)
 
@@ -186,6 +188,7 @@ def main():
             train_epoch(in_model, train_loader, opt_in, device)
             acc = evaluate(in_model, test_loader, device)
             in_acc.append(acc)
+            save_ckpt(in_model, 'warmstart_mixer', 'innernet', seed, ep+1)
             if (ep+1) % 10 == 0: logger.info(f"  InnerNet Ep {args.fork_epoch+ep+1}: {acc*100:.2f}%")
         best_in = max(in_acc)
 

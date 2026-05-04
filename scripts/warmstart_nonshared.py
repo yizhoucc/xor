@@ -122,6 +122,7 @@ def run_transformer_task(dataset_name, d_model, n_heads, d_ff, n_layers,
         for ep in range(10):
             train_ep(sw, opt_sw)
             ppl = evaluate_ppl(sw)
+            save_ckpt(sw, 'warmstart_nonshared', f'swiglu_phase1_{dataset_name}', seed, ep+1)
             if (ep+1) % 5 == 0: logger.info(f"  SwiGLU Ep {ep+1}: PPL={ppl:.2f}")
         sw_state = copy.deepcopy(sw.state_dict())
 
@@ -131,6 +132,7 @@ def run_transformer_task(dataset_name, d_model, n_heads, d_ff, n_layers,
             train_ep(sw, opt_sw)
             ppl = evaluate_ppl(sw)
             sw_ppl.append(ppl)
+            save_ckpt(sw, 'warmstart_nonshared', f'swiglu_phase2_{dataset_name}', seed, ep+1)
             if (ep+1) % 5 == 0: logger.info(f"  SwiGLU Ep {ep+11}: PPL={ppl:.2f}")
         best_sw = min(sw_ppl)
 
@@ -144,6 +146,7 @@ def run_transformer_task(dataset_name, d_model, n_heads, d_ff, n_layers,
             train_ep(in_model, opt_in)
             ppl = evaluate_ppl(in_model)
             in_ppl.append(ppl)
+            save_ckpt(in_model, 'warmstart_nonshared', f'nonshared_{dataset_name}', seed, ep+1)
             if (ep+1) % 5 == 0: logger.info(f"  NonShared Ep {ep+11}: PPL={ppl:.2f}")
         best_in = min(in_ppl)
 
@@ -215,6 +218,7 @@ def run_mlm_task(fitted_weights, device, args):
         for ep in range(10):
             train_mlm(sw_model, opt_sw)
             ppl = eval_mlm(sw_model)
+            save_ckpt(sw_model, 'warmstart_nonshared', 'swiglu_phase1_mlm', seed, ep+1)
             if (ep+1) % 5 == 0: logger.info(f"  SwiGLU Ep {ep+1}: PPL={ppl:.2f}")
         sw_state = sw_base.state_dict()
 
@@ -223,6 +227,7 @@ def run_mlm_task(fitted_weights, device, args):
             train_mlm(sw_model, opt_sw)
             ppl = eval_mlm(sw_model)
             sw_ppl2.append(ppl)
+            save_ckpt(sw_model, 'warmstart_nonshared', 'swiglu_phase2_mlm', seed, ep+1)
             if (ep+1) % 5 == 0: logger.info(f"  SwiGLU Ep {ep+11}: PPL={ppl:.2f}")
         best_sw = min(sw_ppl2)
 
@@ -235,6 +240,7 @@ def run_mlm_task(fitted_weights, device, args):
             train_mlm(in_model, opt_in)
             ppl = eval_mlm(in_model)
             in_ppl.append(ppl)
+            save_ckpt(in_model, 'warmstart_nonshared', 'nonshared_mlm', seed, ep+1)
             if (ep+1) % 5 == 0: logger.info(f"  NonShared Ep {ep+11}: PPL={ppl:.2f}")
         best_in = min(in_ppl)
 

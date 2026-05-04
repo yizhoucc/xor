@@ -96,7 +96,7 @@ def train_ep(model, train_loader, optimizer, device):
 
 def run_lm_experiment(dataset_name, swiglu_state, vocab_size, init_weights_dict,
                        d_model, n_heads, d_ff, n_layers, context_size,
-                       train_loader, val_loader, device, epochs=10, lr=5e-4):
+                       train_loader, val_loader, device, seed=0, epochs=10, lr=5e-4):
     """Run one seed with multiple InnerNet initializations."""
     results = {}
     for init_name, inner_state in init_weights_dict.items():
@@ -116,6 +116,7 @@ def run_lm_experiment(dataset_name, swiglu_state, vocab_size, init_weights_dict,
             train_ep(model, train_loader, opt, device)
             ppl = evaluate_ppl(model, val_loader, device)
             ppls.append(ppl)
+            save_ckpt(model, 'free_init', f'{init_name}_{dataset_name}', seed, ep+1)
             if (ep+1) % 5 == 0:
                 logger.info(f"    {init_name} Ep {ep+1}: PPL={ppl:.2f}")
 
@@ -203,6 +204,7 @@ def main():
             train_ep(sw, train_loader, opt_sw, device)
             ppl = evaluate_ppl(sw, val_loader, device)
             sw_ppls.append(ppl)
+            save_ckpt(sw, 'free_init', 'swiglu_wiki', seed, ep+1)
             if (ep+1) % 5 == 0: logger.info(f"  SwiGLU Ep {ep+11}: PPL={ppl:.2f}")
         best_sw = min(sw_ppls)
         logger.info(f"  SwiGLU best: {best_sw:.2f}")
@@ -210,7 +212,7 @@ def main():
         # Run all InnerNet inits
         res = run_lm_experiment(
             'wiki', sw_state, vocab_size, init_weights,
-            128, 4, 512, 4, 64, train_loader, val_loader, device)
+            128, 4, 512, 4, 64, train_loader, val_loader, device, seed=seed)
         res['swiglu_best'] = best_sw
         all_wiki.append(res)
 
@@ -276,6 +278,7 @@ def main():
             train_mlm_ep(sw_model, opt_sw)
             ppl = eval_mlm(sw_model)
             sw_ppls.append(ppl)
+            save_ckpt(sw_model, 'free_init', 'swiglu_mlm', seed, ep+1)
             if (ep+1) % 5 == 0: logger.info(f"  SwiGLU Ep {ep+11}: PPL={ppl:.2f}")
         best_sw = min(sw_ppls)
 
@@ -294,6 +297,7 @@ def main():
                 train_mlm_ep(in_model, opt_in)
                 ppl = eval_mlm(in_model)
                 ppls.append(ppl)
+                save_ckpt(in_model, 'free_init', f'{init_name}_mlm', seed, ep+1)
                 if (ep+1) % 5 == 0: logger.info(f"    {init_name} Ep {ep+11}: PPL={ppl:.2f}")
             best = min(ppls)
             mlm_results[init_name] = {'best': best, 'ppls': ppls}
