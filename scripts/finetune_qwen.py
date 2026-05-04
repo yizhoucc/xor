@@ -73,6 +73,18 @@ def replace_swiglu_with_innernet(model, inner_net):
     return model
 
 
+def evaluate(model, loader, device):
+    model.eval()
+    correct = total = 0
+    with torch.no_grad():
+        for ids, mask, labels in loader:
+            ids, mask, labels = ids.to(device), mask.to(device), labels.to(device)
+            logits = model(ids, attention_mask=mask).logits
+            correct += (logits.argmax(1) == labels).sum().item()
+            total += labels.size(0)
+    return correct / total
+
+
 def eval_ppl(model, tokenizer, device, text_data, max_length=512, stride=256):
     """Evaluate perplexity on text data."""
     model.eval()
