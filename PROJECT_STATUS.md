@@ -1,12 +1,15 @@
-# 项目状态 — 2026-04-22
+# 项目状态 — 2026-05-07
 
 ## 核心结论
 
 - InnerNet 在没 skip 保护的位置有效（CNN, AE, TF FFN, ResNet internal）
-- Warm-start 后 InnerNet 在 6/6 任务上赢或持平 SwiGLU，从头训打不过是优化问题
-- 模型越大 InnerNet 优势越小——大模型架构本身够复杂，单个激活函数边际贡献小
-- 适合场景：小模型 / on-device, finetune 阶段, 架构搜索
+- Warm-start 后 InnerNet 在 **10/11** 任务上赢或持平 SwiGLU，从头训打不过是优化问题
+- **容量上限 ≥ SwiGLU**（ivs_d128 实证：替换后 77.47 追平 SwiGLU 77.50），从头训的劣势是优化难度
+- 模型越大 InnerNet 优势越小：d=64 赢 3.3%, d=128 赢 1.6%, d=256 从头训反转为输（GPT d=256: ~76.4 vs GELU ~72.6）
+- **大模型 finetune 替换不可行**：Qwen 2.5-0.5B 替换后 acc 从 89% 掉到 80%
+- 适合场景：小模型 / on-device, warm-start finetune（非直接替换）, 架构搜索
 - Non-shared（每层不同 InnerNet）比 shared 效果更好（PTB -1.95 vs -1.04），参数差可以忽略
+- Multiply 初始化在 MLM 上 4/4 seeds 大幅赢 SwiGLU（15.6~16.1 vs 18.7~19.3）
 
 ## 论文 Story 思路
 
@@ -25,16 +28,15 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 
 - **U20 param sharing bug**：之前 Transformer/ResNet/WRN 的 InnerNet 每层各一个没共享。已修复，重跑。修复后结果和之前差不多（d=64: 112.66→112.83），说明影响不大，但 sharing 是论文基本设计。CNN/MLP/AE/VGG/LSTM/PPO 不受影响。
 
-## 集群运行中
+## 集群运行中（5 jobs, 2026-05-07）
 
-**优先级：Transformer > ResNet > LSTM**
-
-| 类别 | 实验 | 状态 |
-|------|------|------|
-| U20 | GPT InnerNet v4 | running |
-| U19 | ResNet C10/C100 internal ×6 | pending |
-| U14 | LSTM Wiki-103 ×15 | running |
-| U14 | ~~LSTM CNN/DM~~ | 暂停（占太多 GPU，以后再跑） |
+| Job ID | 实验 | 节点 | 已运行 | 进度 | 最新 |
+|--------|------|------|--------|------|------|
+| 404305 | GPT InnerNet v4 (d=256) | mind-1-29 | 7d | Seed 44 Ep 13/20 (3/5 seeds) | PPL=79.95。Seed 42 best=77.20, Seed 43 best=75.69 |
+| 440993 | ivs_d128 (warm-start 替换) | mind-1-24 | 2.5d | Frozen 阶段 Ep 23 | best=77.47 追平 SwiGLU 77.50 |
+| 440992 | scratch_init (从头训对比) | mind-1-24 | 2.5d | Seed 43, random init Ep 5 | Seed 42: SwiGLU 76.93/Random 77.99/Gaussian 78.27 |
+| 428882 | free_init_v2 (4 种初始化) | mind-1-7 | 7d | Seed 43, swiglu_fitted Ep 15 | Seed 42: random 15.86, multiply 16.04, swiglu_fitted 16.05 |
+| 429077 | mult_init (MLM multiply init) | mind-1-7 | 7d | Seed 46 (5/5, 最后) | 前 4 seeds MultInit 全赢: 15.59~16.11 vs SwiGLU 18.72~19.34 |
 
 ---
 
@@ -67,7 +69,7 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 | U10 | LSTM PTB vs WikiText 结论不一致 | TODO | WikiText: classic>semantic。PTB: semantic>classic。需要解释或更多数据集验证 |
 | U11 | VGG-16 SwiGLU | ❌ lr=0.01+grad_clip 仍 1% 准确率。SwiGLU 与 VGG 深层 conv+SGD 不兼容，记为负面结果 |
 | U12 | GPT Transformer 2arg 卡死 | ⏳ 已取消重启 |
-| U13 | Transformer 全规模 SwiGLU 对比 | ⏳ d=64/128/192/PTB ✅。d=256 pending。GPT(d=256): GELU 72.54 > SwiGLU 75.30，大模型趋势不同 |
+| U13 | Transformer 全规模 SwiGLU 对比 | ⏳ d=64/128/192/PTB ✅。GPT d=256: GELU ~72.6 > SwiGLU ~74.5 > InnerNet ~76.4（2/5 seeds）。大模型从头训 InnerNet 反转为劣势 |
 | U14 | LSTM 2×2 消融多数据集 | ⏳ PTB ✅。Wiki-103 在跑(单 seed 并行)。CNN/DM 暂停(占太多 GPU，Transformer 优先) |
 | U15 | RL 加 seeds + 只报 PPO | ✅ LunarLander 30s: InnerNet 187.6 > ReLU 158.8 > SwiGLU -249.7。InnerNet 赢（10 seeds 时输，30 seeds 翻了） |
 | U16 | Masked LM（类 BERT） | ⏳ SwiGLU 93.83, GELU 101.39 完成。InnerNet 在跑 |
@@ -87,11 +89,11 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 | U31 | 训练曲线 | TODO | warm-start 两条分支 PPL 随 epoch 变化 |
 | U32 | 参数量和推理速度 | TODO | InnerNet 加了多少参数，推理慢多少 |
 | U33 | 提炼 InnerNet 为简单公式 | ✅ d=128 | f(a,b)≈0.12·a·b+0.11-0.06·b+0.03·a²·b。和 SwiGLU 完全不同，变成缩小版乘法交互 |
-| U34 | Qwen2.5-0.5B finetune | ⏳ v3 在跑 | v1 没学(lr太低), v2 crash(缺函数), v3 已修 |
+| U34 | Qwen2.5-0.5B finetune | ✅ **负面结果** | 3 seeds: InnerNet ~80% vs SwiGLU ~89%。替换瞬间崩到 52-66%，恢复不回来。大模型直接替换不可行 |
 | U35 | InnerNet hidden dim 消融 | TODO | hidden=8/16/32/64 对比，InnerNet 需要多大才够 |
 | U36 | Non-shared warm-start | ⏳ PTB ✅ MLM ✅ | PTB 5/5 赢, CNN +3.12%, **MLM non-shared 15.63 vs SwiGLU 18.91 (-3.28)**。Wiki d=128 在跑 |
-| U37 | Free-init (不同初始化) | ⏳ 3 seeds | **4 种初始化收敛到同一个解 (71.7~72.6)**。初始化不重要，network 权重才关键 |
-| U38 | Multiply-init 多任务 | ⏳ | d=64 持平, d=128 -0.24。PTB/MLM 在跑 |
+| U37 | Free-init (不同初始化) | ⏳ 2/3 seeds | Seed 42 完成: random 15.86, multiply 16.04, swiglu_fitted 16.05, identity 在跑。4 种初始化收敛到差不多 |
+| U38 | Multiply-init 多任务 | ⏳ 4/5 seeds | MLM: MultInit **全赢** SwiGLU (15.59~16.11 vs 18.72~19.34)。d=64 持平, d=128 -0.24 |
 | **U20** | **修复 InnerNet parameter sharing** | ✅ TF 全完成 | d=64 112.83, d=128 95.23, d=192 88.42, **d=256 84.62**, PTB 207.91。全部赢 GELU。ResNet full 持平, internal +1.5%。MLM 124.82 差 |
 
 ### 🟡 Major
@@ -136,7 +138,7 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 | d=192 | **88.14** | 89.11 | -1.1% |
 | d=256 | **85.40** | 86.05 | -0.8% |
 | PTB d=128 | **207.81** | 212.28 | -2.1% |
-| GPT d=256 | ⏳ | 72.54 | — |
+| GPT d=256 | **~76.4** (2/5 seeds) | 72.54 (GELU) | **+5.2% 输** |
 
 ### LSTM 消融 (WikiText-2) ✅
 | 变体 | Best PPL | Last PPL |

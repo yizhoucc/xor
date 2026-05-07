@@ -6,8 +6,10 @@
 
 把 ReLU 换成一个小 MLP（两个输入一个输出），让每个神经元能看到隔壁特征。没有 skip connection 的网络有效果，参数还少 40%。
 
-确认有效的：CNN、AE、Transformer FFN（部分出来了）、LSTM WikiText-2、PPO。
-不好用的：ResNet（skip connection）、LSTM PTB。
+确认有效的：CNN、AE、Transformer FFN（d=64~256 全赢 GELU）、LSTM WikiText-2、PPO、ResNet internal-only。
+不好用的：ResNet 全换（skip connection 冗余）、LSTM PTB、大模型从头训（GPT d=256 反转）、大模型直接替换（Qwen -9%）。
+
+**关键新发现**：InnerNet 容量上限 ≥ SwiGLU（warm-start 10/11 赢或持平，ivs_d128 追平），从头训大模型输是优化问题。模型越大差距越大（d=64 赢 3.3%, d=256 输 5.2%）。适合小模型和 warm-start finetune，不适合大模型从头训或直接替换。
 
 ---
 
@@ -43,11 +45,16 @@ Configs: `config/experiments/ae_mnist_2arg.yaml`，exp: `exp/ae_mnist_2arg_*`
 |------|------|--------|----------|---------|
 | Wiki d=64 | 116.63 | 112.31 | **112.83** | **-3.3%** |
 | Wiki d=128 | 96.82 | 92.98 | **95.23** | **-1.6%** |
-| Wiki d=192 | 89.11 | 85.43 | ⏳ | — |
+| Wiki d=192 | 89.11 | 85.43 | **88.42** | **-0.8%** |
 | Wiki d=256 | 86.05 | ⏳ | **84.62** | **-1.7%** |
 | PTB d=128 | 212.28 | 205.82 | **207.91** | **-2.1%** |
+| **GPT d=256** | **~72.6** | ~74.5 | **~76.4** (2/5) | **+5.2% 输** |
 
-InnerNet 一直赢 GELU。InnerNet 一直赢 GELU。模型越大优势越小（-3.3% → -1.6% → -0.8%）。d=64 时 InnerNet 和 SwiGLU 差不多。SwiGLU 一直比 InnerNet 好，尤其是大模型。
+d=64 到 d=256 InnerNet 一直赢 GELU（-3.3% → -1.7%）。但 GPT d=256（更大规模）**反转为输** +5.2%。
+
+Scaling 趋势：d=64 赢 3.3% → d=128 赢 1.6% → d=192 赢 0.8% → d=256 赢 1.7% → **GPT d=256 输 5.2%**。
+
+GPT 训练曲线显示 InnerNet 在 epoch 20 时还没收敛（仍在下降），GELU 每 epoch 28 分钟而 InnerNet 3 小时。同样 20 epochs，InnerNet 优化负担更重。但 warm-start 实验已证明容量足够（ivs_d128: 77.47 追平 SwiGLU 77.50）。
 
 SwiGLU 是 InnerNet 的子集。从头训 InnerNet 打不过 SwiGLU，做了两个对比实验：
 
@@ -91,6 +98,8 @@ Non-shared PTB 赢的幅度是 shared 的 2 倍（-1.95 vs -1.04）。每层学�
 
 Non-shared 更符合生物学（不同区域的神经元激活特性不同）。参数差 291 个，可以忽略。
 
+**ivs_d128 容量验证**：SwiGLU 训 20 epochs → best 77.50 → 替换为 InnerNet → PPL 跳到 102.96 → 继续训练 → **恢复到 77.47，追平 SwiGLU**。证明 InnerNet 容量 ≥ SwiGLU。
+
 ### InnerNet 初始化不重要
 
 Free-init 实验（Wiki d=128，3 seeds）：同一个 SwiGLU network，4 种 InnerNet 初始化：
@@ -111,9 +120,30 @@ CNN 和 MLM 效果最大。MLM 从头训 InnerNet 124.82 完全不行，warm-sta
 
 模型越大差距越小（d=64 赢 0.15, d=128 赢 0.19, d=256 差不多）。因为大模型架构本身足够复杂，单个激活函数的边际贡献小。InnerNet 更适合小模型 / on-device 场景和 finetune 阶段。
 
-### Qwen2.5-0.5B finetune（真实预训练模型）
+### Qwen2.5-0.5B finetune（真实预训练模型）— 负面结果
 
-⏳ 在跑。Qwen 用 SwiGLU（gate_proj + up_proj + down_proj），和我们的结构完全对应，权重直接复制。SST-2 + WikiText PPL，3 seeds。
+✅ 3 seeds 完成。大模型直接替换 SwiGLU 为 InnerNet **不可行**：
+
+| Seed | SwiGLU (原始) | InnerNet 替换后 best | 替换瞬间 acc |
+|------|---------------|---------------------|-------------|
+| 42 | **89.3%** | 79.2% | 65.7% |
+| 43 | **88.6%** | 80.0% | 51.7% |
+| 44 | **88.5%** | 79.4% | 51.7% |
+
+替换瞬间 acc 崩到 52-66%，finetune 后恢复到 ~80% 但远不及原始 89%。和 ivs_d128 不同——Qwen 0.5B 太大，InnerNet 优化跟不上。
+
+### Multiply 初始化 — MLM 大幅赢
+
+⏳ 4/5 seeds 完成。在 MLM 上 multiply 初始化的 InnerNet 全面碾压 SwiGLU：
+
+| Seed | MultInit | SwiGLU | 差 |
+|------|----------|--------|-----|
+| 42 | **16.10** | 18.95 | -2.85 |
+| 43 | **15.78** | 18.99 | -3.21 |
+| 44 | **16.11** | 19.34 | -3.23 |
+| 45 | **15.59** | 18.72 | -3.13 |
+
+均值 MultInit **15.90** vs SwiGLU **18.99**，差 **-3.09 PPL（-16%）**。
 
 ### 提炼 InnerNet 为简单公式（d=128）
 
@@ -145,13 +175,15 @@ Config: `scripts/innernet_vs_swiglu.py`, `warmstart_cnn.py`, `warmstart_ae.py`, 
 
 从头训 InnerNet 不行。但 warm-start 后 InnerNet **37-39** 大幅赢 SwiGLU **52-57**（2/5 seeds 完成）。从头训不动是优化问题。
 
-### GPT (d=256)
+### GPT (d=256) — 大模型反转
 
-| 模型 | PPL |
-|------|-----|
-| GELU | **72.54** |
-| SwiGLU | 75.30 |
-| InnerNet | ⏳ |
+| 模型 | Seeds | Best PPL |
+|------|-------|----------|
+| **GELU** | 4/5 | **72.05, 72.73, 72.82, 72.85 → ~72.6** |
+| SwiGLU | 2/5 | 73.82, 75.14 → ~74.5 |
+| InnerNet | 2/5 | 75.69, 77.20 → **~76.4 输** |
+
+InnerNet 在 GPT d=256 从头训落后 GELU 约 3.8 PPL（+5.2%）。但 epoch 20 时 InnerNet 还在下降（seed 43: ep19=75.69, ep20=76.14），而 GELU 每 epoch 28min vs InnerNet 3h——同样 epochs InnerNet 优化负担更重。
 
 Configs: `config/experiments/transformer_wikitext_*.yaml`
 
@@ -239,22 +271,27 @@ Configs: `config/experiments/resnet_cifar_internal_2arg.yaml`
 | LSTM PTB | Standard 赢 |
 | CNN ×0.25 | 太小了 |
 
-## 在跑的
+## 在跑的（2026-05-07）
 
-- TF d=256 在跑
-- ResNet C10 internal 3 seed OOM 重提交了
-- GPT InnerNet 在跑
-- LSTM Wiki-103/CNN-DM 拆成单 seed 并行跑了
-- U21 SwiGLU warm-start InnerNet (d=128) 在跑
+| 实验 | 进度 | 预计完成 |
+|------|------|---------|
+| GPT InnerNet v4 (d=256) | Seed 44 Ep 13/20, 3/5 seeds | ~6 天 |
+| mult_init (MLM) | Seed 46 (5/5, 最后) | ~13h |
+| free_init_v2 (4 种初始化) | Seed 43 | 数天 |
+| ivs_d128 (warm-start 替换) | Frozen Ep 23, best=77.47 | 数天 |
+| scratch_init (从头训对比) | Seed 43, random init | 数天 |
 
 ## 总结
 
-有效的：**CNN (+0.4~4.6%)，AE (-43%)，TF FFN (-0.8~3.3% 全 4 个规模)，LSTM WikiText-2 (-6.2%)，ResNet internal-only (+1.5%)，参数省 55%，PPO LunarLander (+18%)**。
+有效的：**CNN (+0.4~4.6%)，AE (-43%)，TF FFN (-0.8~3.3% d=64~256)，LSTM WikiText-2 (-6.2%)，ResNet internal-only (+1.5%)，参数省 55%，PPO LunarLander (+18%)，Warm-start 10/11 赢或持平，Multiply-init MLM -16%**。
 
-没用的：ResNet 全换（持平），MLM InnerNet（差），LSTM PTB（差）。
+没用的：ResNet 全换（持平），MLM 从头训（差），LSTM PTB（差），GPT d=256 从头训（输 5.2%），Qwen 0.5B 直接替换（-9%）。
 
 关键发现：
 - InnerNet 放在没 skip 保护的位置有效果
-- Warm-start 后 InnerNet 在 6/6 任务上赢或持平 SwiGLU，从头训打不过是优化问题
-- 模型越大 InnerNet 优势越小——大模型架构本身够复杂，单个激活函数边际贡献小
-- InnerNet 适合：(1) 小模型 / on-device (2) finetune 阶段替换 SwiGLU (3) 架构搜索工具
+- **容量上限 ≥ SwiGLU**（warm-start 10/11 赢或持平，ivs_d128 追平）
+- 从头训打不过是**优化问题**，不是容量问题
+- Scaling: d=64 赢 3.3% → d=256 赢 1.7% → GPT d=256 输 5.2%。模型越大优化负担越重
+- 大模型直接替换不可行（Qwen -9%），但 warm-start + 继续训可以（ivs_d128 追平）
+- InnerNet 适合：(1) 小模型 / on-device (2) warm-start finetune (3) 架构搜索工具
+- 不适合：大模型从头训、大模型直接替换
