@@ -20,6 +20,8 @@ from utils.corpus import Corpus
 
 logger = get_logger('exp_logger')
 
+CKPT_DIR = '/user_data/yizhouc3/xor_checkpoints' if os.path.isdir('/user_data/yizhouc3') else None
+
 __all__ = ['ExperimentRunner']
 
 
@@ -225,6 +227,10 @@ class ExperimentRunner:
                         snapshot(model_to_save, optimizer, self.config,
                                  epoch + 1, tag='best_phase1')
 
+                self.save_ckpt(model, 'phase1', epoch + 1, optimizer,
+                               {'val_loss': avg_val_loss, 'val_acc': acc,
+                                'best_val_loss': best_val_loss, 'best_val_acc': best_val_acc})
+
                 if early_stop.tick([avg_val_loss]):
                     logger.info("Early stopping triggered.")
                     break
@@ -315,6 +321,9 @@ class ExperimentRunner:
                     else:
                         snapshot(model_to_save, optimizer, self.config,
                                  epoch + 1, tag='best_phase1')
+
+                self.save_ckpt(model, 'phase1', epoch + 1, optimizer,
+                               {'val_loss': avg_val_loss, 'best_val_loss': best_val_loss})
 
                 if early_stop.tick([avg_val_loss]):
                     logger.info("Early stopping triggered.")
@@ -446,6 +455,10 @@ class ExperimentRunner:
                     snapshot(model_to_save, optimizer, self.config,
                              epoch + 1, tag='best_phase2')
 
+                self.save_ckpt(model, 'phase2', epoch + 1, optimizer,
+                               {'val_loss': avg_val_loss, 'val_acc': acc,
+                                'best_val_loss': best_val_loss, 'best_val_acc': best_val_acc})
+
                 if early_stop.tick([avg_val_loss]):
                     logger.info("Early stopping triggered.")
                     break
@@ -529,6 +542,9 @@ class ExperimentRunner:
                     model_to_save = self._unwrap_model(model)
                     snapshot(model_to_save, optimizer, self.config,
                              epoch + 1, tag='best_phase2')
+
+                self.save_ckpt(model, 'phase2', epoch + 1, optimizer,
+                               {'val_loss': avg_val_loss, 'best_val_loss': best_val_loss})
 
                 if early_stop.tick([avg_val_loss]):
                     logger.info("Early stopping triggered.")
@@ -906,6 +922,21 @@ class ExperimentRunner:
         if hasattr(model, 'inner_net'):
             for param in model.inner_net.parameters():
                 param.requires_grad = False
+
+    def save_ckpt(self, model, phase, epoch, optimizer=None, metrics=None):
+        """Save full checkpoint to user_data for later analysis."""
+        if CKPT_DIR is None:
+            return
+        exp_name = os.path.basename(self.save_dir)
+        d = os.path.join(CKPT_DIR, exp_name, f'{phase}_seed{self.seed}')
+        os.makedirs(d, exist_ok=True)
+        m = self._unwrap_model(model)
+        state = {'model_state_dict': m.state_dict(), 'epoch': epoch}
+        if optimizer is not None:
+            state['optimizer_state_dict'] = optimizer.state_dict()
+        if metrics is not None:
+            state['metrics'] = metrics
+        torch.save(state, os.path.join(d, f'ep{epoch:03d}.pth'))
 
     def _mark_stage(self, stage_name):
         """Write a stage marker file for checkpoint resumption."""
