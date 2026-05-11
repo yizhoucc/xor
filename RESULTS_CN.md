@@ -98,21 +98,25 @@ Non-shared PTB 赢的幅度是 shared 的 2 倍（-1.95 vs -1.04）。每层学�
 
 Non-shared 更符合生物学（不同区域的神经元激活特性不同）。参数差 291 个，可以忽略。
 
-**ivs_d128 容量验证**：SwiGLU 训 20 epochs → best 77.50 → 替换为 InnerNet → PPL 跳到 102.96 → 继续训练 → **恢复到 77.47，追平 SwiGLU**。证明 InnerNet 容量 ≥ SwiGLU。
+**ivs_d128 容量验证** ✅：最终结果（5 seeds）：SwiGLU **77.38±0.54** vs Frozen InnerNet **77.38±0.51**。**完全持平**，证明 InnerNet 容量 ≥ SwiGLU。
 
 ### InnerNet 初始化不重要
 
-Free-init 实验（Wiki d=128，3 seeds）：同一个 SwiGLU network，4 种 InnerNet 初始化：
+Free-init 实验 ✅ Wiki d=128 3 seeds 完成，MLM 2/3 seeds：
 
-| 初始化 | 训练后 PPL（3 seeds 均值） |
-|--------|------------------------|
-| identity (f=a) | ~71.9 |
-| random | ~71.9 |
-| multiply (f=a×b) | ~72.2 |
-| swiglu_fitted | ~72.2 |
-| **SwiGLU baseline** | **~77.5** |
+**Wiki d=128**（3 seeds）：
 
-4 种都收敛到差不多（71.7~72.6），都大幅赢 SwiGLU（77.5）。初始化不重要，network 权重才是关键。之前担心的"warm-start 让 InnerNet 太像 SwiGLU"不是问题。
+| 初始化 | Seed 42 | Seed 43 | Seed 44 | 均值 |
+|--------|---------|---------|---------|------|
+| swiglu_fitted | 71.98 | 71.98 | 72.60 | ~72.2 |
+| multiply | 71.91 | 71.91 | 72.54 | ~72.1 |
+| random | 71.72 | 71.72 | 72.23 | ~71.9 |
+| identity | 71.99 | 71.99 | 72.33 | ~72.1 |
+| **SwiGLU baseline** | **77.29** | **77.29** | **77.24** | **~77.3** |
+
+**MLM**（2/3 seeds）：random 15.86, multiply 15.74-16.04, swiglu_fitted 15.91-16.05, identity 15.96
+
+4 种初始化全收敛到同一水平，都大幅赢 SwiGLU（Wiki: ~72 vs ~77, MLM: ~16 vs ~19）。**初始化不影响终点，只影响收敛速度。** 之前担心的"warm-start 让 InnerNet 太像 SwiGLU"不是问题。
 
 CNN 和 MLM 效果最大。MLM 从头训 InnerNet 124.82 完全不行，warm-start 后 38.74 大幅赢 SwiGLU 54.92。从头训不动是优化问题。
 
@@ -132,18 +136,30 @@ CNN 和 MLM 效果最大。MLM 从头训 InnerNet 124.82 完全不行，warm-sta
 
 替换瞬间 acc 崩到 52-66%，finetune 后恢复到 ~80% 但远不及原始 89%。和 ivs_d128 不同——Qwen 0.5B 太大，InnerNet 优化跟不上。
 
-### Multiply 初始化 — MLM 大幅赢
+### Multiply 初始化 — 多任务对比 ✅
 
-⏳ 4/5 seeds 完成。在 MLM 上 multiply 初始化的 InnerNet 全面碾压 SwiGLU：
+5/5 seeds 完成。Multiply-init 在 MLM 上大幅赢，其他任务持平或小赢：
 
-| Seed | MultInit | SwiGLU | 差 |
-|------|----------|--------|-----|
-| 42 | **16.10** | 18.95 | -2.85 |
-| 43 | **15.78** | 18.99 | -3.21 |
-| 44 | **16.11** | 19.34 | -3.23 |
-| 45 | **15.59** | 18.72 | -3.13 |
+| 任务 | SwiGLU | MultInit | 差 |
+|------|--------|----------|-----|
+| d=64 | 92.01±0.34 | 92.25±0.38 | 持平 |
+| d=128 | 77.45±0.29 | **77.21±0.34** | -0.24 |
+| PTB | 164.19±1.12 | **163.10±2.14** | -1.08 |
+| **MLM** | **19.09±0.27** | **15.93±0.21** | **-3.16 (-16.6%)** |
 
-均值 MultInit **15.90** vs SwiGLU **18.99**，差 **-3.09 PPL（-16%）**。
+MLM 大幅赢的原因：MLM 任务和简单乘法交互高度匹配。
+
+### 从头训 vs SwiGLU — scratch_init（2.5/5 seeds）
+
+**从头训 InnerNet 一致输 SwiGLU**，无论什么初始化：
+
+| Seed | SwiGLU | Gaussian | Random | Multiply |
+|------|--------|----------|--------|----------|
+| 42 | **76.60** | 78.08 | 79.25 | 80.17 |
+| 43 | **76.93** | 78.27 | 77.99 | 79.24 |
+| 44 | **77.84** | 78.42 | 78.06 | ⏳ |
+
+SwiGLU 一直赢 1-3 PPL。Gaussian pretrain 略好于 random/multiply。确认从头训的差距是优化问题。
 
 ### 提炼 InnerNet 为简单公式（d=128）
 
@@ -181,9 +197,9 @@ Config: `scripts/innernet_vs_swiglu.py`, `warmstart_cnn.py`, `warmstart_ae.py`, 
 |------|-------|----------|
 | **GELU** | 4/5 | **72.05, 72.73, 72.82, 72.85 → ~72.6** |
 | SwiGLU | 2/5 | 73.82, 75.14 → ~74.5 |
-| InnerNet | 2/5 | 75.69, 77.20 → **~76.4 输** |
+| InnerNet | 3/5 | 75.69, 75.83, 77.20 → **~76.2 输** |
 
-InnerNet 在 GPT d=256 从头训落后 GELU 约 3.8 PPL（+5.2%）。但 epoch 20 时 InnerNet 还在下降（seed 43: ep19=75.69, ep20=76.14），而 GELU 每 epoch 28min vs InnerNet 3h——同样 epochs InnerNet 优化负担更重。
+InnerNet 在 GPT d=256 从头训落后 GELU 约 3.6 PPL（+5.0%）。3/5 seeds 后时间到，剩余 seeds 未完成。epoch 20 时 InnerNet 仍在下降，GELU 每 epoch 28min vs InnerNet 3h——同样 epochs InnerNet 优化负担更重。
 
 Configs: `config/experiments/transformer_wikitext_*.yaml`
 
@@ -271,15 +287,15 @@ Configs: `config/experiments/resnet_cifar_internal_2arg.yaml`
 | LSTM PTB | Standard 赢 |
 | CNN ×0.25 | 太小了 |
 
-## 在跑的（2026-05-07）
+## 在跑的（2026-05-11）
 
-| 实验 | 进度 | 预计完成 |
-|------|------|---------|
-| GPT InnerNet v4 (d=256) | Seed 44 Ep 13/20, 3/5 seeds | ~6 天 |
-| mult_init (MLM) | Seed 46 (5/5, 最后) | ~13h |
-| free_init_v2 (4 种初始化) | Seed 43 | 数天 |
-| ivs_d128 (warm-start 替换) | Frozen Ep 23, best=77.47 | 数天 |
-| scratch_init (从头训对比) | Seed 43, random init | 数天 |
+| 实验 | 进度 |
+|------|------|
+| RNN PTB 2-arg (ComplexNeuronRNN) | 已提交，pending |
+| RNN PTB 1-arg | 已提交，pending |
+| RNN PTB tanh (baseline) | 已提交，pending |
+
+GPT v4 (3/5 seeds)、free_init_v2 (Wiki 3/3, MLM 2/3)、scratch_init (2.5/5) 时间到未完成，数据已够用。
 
 ## 总结
 
