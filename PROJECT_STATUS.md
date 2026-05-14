@@ -30,23 +30,31 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 
 - **U20 param sharing bug**：之前 Transformer/ResNet/WRN 的 InnerNet 每层各一个没共享。已修复，重跑。修复后结果和之前差不多（d=64: 112.66→112.83），说明影响不大，但 sharing 是论文基本设计。CNN/MLP/AE/VGG/LSTM/PPO 不受影响。
 
-## 集群运行中（2026-05-13）
+## 集群运行中（2026-05-14）
 
 | Job ID | 实验 | 状态 |
 |--------|------|------|
-| 470140 | Sequential MNIST — SeqRNN (tanh baseline) | RUNNING |
-| 470141 | Sequential MNIST — SeqLSTM (上界) | RUNNING |
-| 470142 | Sequential MNIST — SeqGRU | RUNNING |
-| 470143 | Sequential MNIST — SeqInnerNetRNN (Plan A: 1 InnerNet) | RUNNING |
-| 470144 | Sequential MNIST — SeqGatedRNN (Plan B: 2 InnerNets + cell state) | RUNNING |
+| 470143 | Sequential MNIST — SeqInnerNetRNN (Plan A) | RUNNING — 卡在 11%，没学到 gate |
+| 470144 | Sequential MNIST — SeqGatedRNN (Plan B) | RUNNING — seed 43 ep 13, **acc 94%** 还在涨！|
 
-### 最近完成的集群任务
+### Sequential MNIST 结果（部分）
+
+| 模型 | Best Acc | Seeds | 状态 |
+|------|----------|-------|------|
+| **SeqRNN (tanh)** | **11.36% ± 0.02%** | 5/5 ✅ | 随机水平，完全记不住 |
+| **SeqLSTM** | **77.03% ± 15.66%** | 5/5 ✅ | 不稳定（49%~94%） |
+| **SeqGRU** | **98.72% ± 0.14%** | 5/5 ✅ | 最强，非常稳定 |
+| SeqInnerNetRNN (Plan A) | 11.35% | ⏳ | 失败，和 RNN 一样 |
+| **SeqGatedRNN (Plan B)** | **97.94% (seed42), 94.14%↑ (seed43)** | ⏳ 2/5 | **成功！接近 GRU** |
+
+**关键发现**：Plan A（单 InnerNet 替换 tanh）完全失败。Plan B（2 InnerNet + cell state）成功——**给一个加法记忆通道，InnerNet 就能自主发现 gate 机制**。
+
+### 其他最近完成
 
 | 实验 | 结果 |
 |------|------|
-| **RNN PTB 2-arg** ✅ | Test Loss=5.130 (PPL≈169)。**输 tanh baseline 很多** |
-| **RNN PTB 1-arg** ✅ | Test Loss=5.186 (PPL≈179)。**输 tanh baseline 很多** |
-| **RNN PTB tanh** ✅ | Test Loss=4.943 (PPL≈140)。Baseline 赢 |
+| **RNN PTB 2-arg** ✅ | Test PPL≈169，输 tanh baseline (PPL≈140) |
+| **RNN PTB 1-arg** ✅ | Test PPL≈179，输 tanh baseline |
 | **ivs_d128** ✅ | SwiGLU 77.38±0.54 vs Frozen InnerNet **77.38±0.51** — 完全持平，容量验证 |
 | **mult_init** ✅ | d=64 持平, d=128 -0.24, PTB -1.08, **MLM -3.16**（5 seeds） |
 | **GPT v4** ⏳ | 3/5 seeds 完成（77.20, 75.69, 75.83 → 均值 ~76.2），时间到 |
@@ -111,7 +119,7 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 | U38 | Multiply-init 多任务 | ✅ 5/5 seeds | d=64 持平, d=128 -0.24, PTB -1.08, **MLM MultInit 15.93±0.21 vs SwiGLU 19.09±0.27 (-16.6%)** |
 | U39 | Scratch-init (从头训对比) | ⏳ 2.5/5 seeds | SwiGLU 一致赢所有 InnerNet 初始化。Seed 42: SwiGLU 76.6 > Gaussian 78.1 > Random 79.3 > Multiply 80.2 |
 | U40 | RNN PTB 重跑 | ✅ | 2arg Test PPL≈169, 1arg PPL≈179, tanh PPL≈140。**InnerNet 输 tanh baseline 20-28%**。PTB 上 InnerNet 不好用 |
-| U41 | Sequential MNIST (InnerNet 发现 gate) | ⏳ 5 jobs 在跑 | RNN vs LSTM vs GRU vs InnerNetRNN(Plan A) vs GatedRNN(Plan B)。784 步逐像素，50ep×5seeds。验证 InnerNet 能否自主学出 gate 机制 |
+| U41 | Sequential MNIST (InnerNet 发现 gate) | ⏳ **Plan B 成功!** | RNN 11% / LSTM 77% / GRU 99% / Plan A 11%(失败) / **Plan B 98%(成功)**。给 cell state 脚手架 InnerNet 就能学出 gate |
 | **U20** | **修复 InnerNet parameter sharing** | ✅ TF 全完成 | d=64 112.83, d=128 95.23, d=192 88.42, **d=256 84.62**, PTB 207.91。全部赢 GELU。ResNet full 持平, internal +1.5%。MLM 124.82 差 |
 
 ### 🟡 Major
