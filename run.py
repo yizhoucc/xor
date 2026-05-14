@@ -108,6 +108,14 @@ def _validate_config(config, logger):
         out = model(x)
         out.sum().backward()
 
+    elif task_type == 'seq_mnist':
+        from runner.seq_mnist_runner import SeqMNISTRunner
+        runner = SeqMNISTRunner(config)
+        model = runner._make_model().to(device)
+        x = torch.randn(2, 784, 1).to(device)
+        out = model(x)
+        out.sum().backward()
+
     elif task_type == 'mlm':
         from runner.mlm_runner import MLMRunner
         runner = MLMRunner(config)
@@ -260,6 +268,13 @@ def main():
     elif task_type == 'mlm':
         from runner.mlm_runner import MLMRunner
         runner = MLMRunner(config)
+        if args.test:
+            runner.test()
+        else:
+            runner.train()
+    elif task_type == 'seq_mnist':
+        from runner.seq_mnist_runner import SeqMNISTRunner
+        runner = SeqMNISTRunner(config)
         if args.test:
             runner.test()
         else:

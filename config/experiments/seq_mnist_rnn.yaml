@@ -1,0 +1,18 @@
+exp_name: seq_mnist_rnn
+exp_dir: ./exp
+use_gpu: true
+gpus: [0]
+seed: 42
+task_type: seq_mnist
+data_path: ./data
+model:
+  name: SeqRNN
+seq_mnist:
+  hidden_size: 128
+  batch_size: 128
+  epochs: 50
+  lr: 1.0e-3
+  grad_clip: 1.0
+  num_seeds: 5
+  num_workers: 4
+  inner_hidden: 32

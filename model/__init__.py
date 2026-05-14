@@ -8,3 +8,4 @@ from model.resnet import *
 from model.autoencoder import *
 from model.vgg import *
 from model.swiglu_cnn import *
+from model.seq_rnn import *
