@@ -236,6 +236,43 @@ WikiText-2 上好用，PTB 上不好用。在用更多数据集研究。
 
 Configs: `lstm_wikitext_classic.yaml`, `lstm_ptb_classic.yaml`, `lstm_wikitext103_*.yaml`, `lstm_cnndm_*.yaml`
 
+## 4b. RNN PTB（ComplexNeuronRNN）— 负面结果
+
+论文原始的 RNN 实验，3-phase 训练。
+
+| 模型 | Test Loss | Test PPL |
+|------|-----------|----------|
+| **tanh baseline** | **4.943** | **≈140** |
+| 2-arg InnerNet | 5.130 | ≈169 |
+| 1-arg InnerNet | 5.186 | ≈179 |
+
+InnerNet 两个变体都**输 tanh 约 20-28%**。PTB 上 InnerNet 一致不好用（RNN 和 LSTM 都输）。
+
+Configs: `config/experiments/rnn_ptb_*.yaml`
+
+## 4c. Sequential MNIST — InnerNet 能发现 gate 吗？⏳
+
+**核心想法**：LSTM 比 RNN 强是因为 gate。InnerNet 是双输入激活函数，天然能学出 σ(a)·b 这种 gate 模式。如果 RNN+InnerNet 在需要长记忆的任务上接近 LSTM → InnerNet 自主发现了 gate 机制。
+
+Sequential MNIST：逐像素读 MNIST（784 步），最后分类。RNN 记不住，LSTM 轻松。
+
+5 个模型，50 epochs × 5 seeds，在跑：
+
+| 模型 | 参数 | 设计 |
+|------|------|------|
+| SeqRNN (tanh) | 18K | 下界 baseline |
+| SeqLSTM | 68K | 上界（手工 gate） |
+| SeqGRU | 52K | 上界参照 |
+| **SeqInnerNetRNN** (Plan A) | 19K | 1 个 InnerNet，h 和 x 分开输入 |
+| **SeqGatedRNN** (Plan B) | 37K | 2 个 InnerNet + cell state，可学 input/output gate |
+
+Plan A：`h_t = InnerNet(W_h@h_{t-1}, W_x@x_t)`，最简洁。
+Plan B：InnerNet1 在 cell state 更新之前（学 input gate），InnerNet2 在之后（学 output gate）。给了 cell state 这个"脚手架"但 gate 是学出来的。
+
+如果成功 → 论文最强证据：**InnerNet 作为架构发现工具，从简单 RNN 自主发现了 LSTM 的 gate 机制。**
+
+Configs: `config/experiments/seq_mnist_*.yaml`
+
 ## 5. 训练阶段消融
 
 | 任务 | 3-phase | End-to-end | 差异 |

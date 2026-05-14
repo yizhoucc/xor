@@ -154,6 +154,24 @@ Classic InnerNet achieves **-6.2% PPL** vs standard LSTM. Adjacent-dimension pai
 
 Config: `config/experiments/lstm_wikitext_classic.yaml`, exp: `exp/lstm_wikitext_classic_*`
 
+## 4b. Sequential MNIST — Can InnerNet Discover Gates? (pending)
+
+**Hypothesis**: LSTM outperforms RNN because of learned gates. InnerNet naturally supports gating patterns like σ(a)·b. If RNN+InnerNet approaches LSTM on a task requiring long-term memory, it demonstrates autonomous discovery of gate mechanisms.
+
+Sequential MNIST reads each 28×28 image pixel-by-pixel (784 timesteps), then classifies. Standard RNN fails (~10-20%) while LSTM succeeds (~95-98%).
+
+| Model | Params | Design |
+|-------|--------|--------|
+| SeqRNN (tanh) | 18K | Lower bound |
+| SeqLSTM | 68K | Upper bound (hand-designed gates) |
+| SeqGRU | 52K | Upper bound reference |
+| **SeqInnerNetRNN** (Plan A) | 19K | 1 InnerNet: f(W_h@h, W_x@x) — separate projections |
+| **SeqGatedRNN** (Plan B) | 37K | 2 InnerNets + cell state — can learn input/output gates |
+
+Plan A keeps h and x as separate InnerNet inputs, enabling gate-like σ(a)·b patterns. Plan B adds a cell state (additive memory) with InnerNet1 before update (input gate position) and InnerNet2 after (output gate position).
+
+Config: `config/experiments/seq_mnist_*.yaml`
+
 ## 5. Parameter Efficiency — MLP CIFAR-10 (5 seeds)
 
 | Width | InnerNet (Params) | ReLU (Params) | Gain |
