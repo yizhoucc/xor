@@ -48,11 +48,11 @@ Configs: `config/experiments/ae_mnist_2arg.yaml`，exp: `exp/ae_mnist_2arg_*`
 | Wiki d=192 | 89.11 | 85.43 | **88.42** | **-0.8%** |
 | Wiki d=256 | 86.05 | ⏳ | **84.62** | **-1.7%** |
 | PTB d=128 | 212.28 | 205.82 | **207.91** | **-2.1%** |
-| **GPT d=256** | **~72.6** | ~74.5 | **~76.4** (2/5) | **+5.2% 输** |
+| **GPT d=256** | **~72.6** | ~74.5 | **~76.2** (3/5) | **+5.0% 输** |
 
-d=64 到 d=256 InnerNet 一直赢 GELU（-3.3% → -1.7%）。但 GPT d=256（更大规模）**反转为输** +5.2%。
+d=64 到 d=256 InnerNet 一直赢 GELU（-3.3% → -1.7%）。但 GPT d=256（更大规模）**反转为输** +5.0%。
 
-Scaling 趋势：d=64 赢 3.3% → d=128 赢 1.6% → d=192 赢 0.8% → d=256 赢 1.7% → **GPT d=256 输 5.2%**。
+Scaling 趋势：d=64 赢 3.3% → d=128 赢 1.6% → d=192 赢 0.8% → d=256 赢 1.7% → **GPT d=256 输 5.0%**。
 
 GPT 训练曲线显示 InnerNet 在 epoch 20 时还没收敛（仍在下降），GELU 每 epoch 28 分钟而 InnerNet 3 小时。同样 20 epochs，InnerNet 优化负担更重。但 warm-start 实验已证明容量足够（ivs_d128: 77.47 追平 SwiGLU 77.50）。
 
@@ -175,11 +175,9 @@ SwiGLU 一直赢 1-3 PPL。Gaussian pretrain 略好于 random/multiply。确认�
 
 **偏离越大效果越好。** 不同任务需要不同的激活函数——这就是可学习激活函数的价值。
 
-Config: `scripts/finetune_qwen.py`, `scripts/innernet_vs_swiglu.py`
+Configs: `scripts/innernet_vs_swiglu.py`, `warmstart_cnn.py`, `warmstart_ae.py`, `warmstart_lstm.py`, `finetune_qwen.py`
 
 ---
-
-Config: `scripts/innernet_vs_swiglu.py`, `warmstart_cnn.py`, `warmstart_ae.py`, `warmstart_lstm.py`
 
 ### MLM 掩码预测（BERT 式）
 
@@ -221,18 +219,7 @@ Configs: `config/experiments/transformer_wikitext_*.yaml`
 | Classic | 186.54 |
 | Semantic | 187.52 |
 
-### WikiText-103（部分）
-
-| 变体 | Best PPL |
-|------|---------|
-| Standard | **63.82** |
-| Classic | ⏳ |
-| 2arg | ⏳ |
-
-### CNN/DailyMail
-⏳ 在跑
-
-WikiText-2 上好用，PTB 上不好用。在用更多数据集研究。
+WikiText-2 上好用，PTB 上不好用。WikiText-103 和 CNN/DailyMail 开跑但时间到未完成，搁置。
 
 Configs: `lstm_wikitext_classic.yaml`, `lstm_ptb_classic.yaml`, `lstm_wikitext103_*.yaml`, `lstm_cnndm_*.yaml`
 
@@ -320,31 +307,35 @@ Configs: `config/experiments/resnet_cifar_internal_2arg.yaml`
 | 实验 | 情况 |
 |------|------|
 | ResNet 全换 | skip connection 下没用（但 internal-only 有效果） |
-| MLM InnerNet | 比 GELU 差（124.82 vs 101.39） |
-| LSTM PTB | Standard 赢 |
+| MLM InnerNet 从头训 | 比 GELU 差（124.82 vs 101.39），但 warm-start 大幅赢 |
+| LSTM PTB | Standard 赢（WikiText-2 上反过来） |
+| RNN PTB | InnerNet PPL≈169/179 vs tanh PPL≈140，输 20-28% |
 | CNN ×0.25 | 太小了 |
+| GPT d=256 从头训 | InnerNet ~76.2 vs GELU ~72.6，输 5% |
+| Qwen 0.5B 直接替换 | InnerNet ~80% vs SwiGLU ~89%，大模型替换不可行 |
+| 从头训 vs SwiGLU | scratch_init 2.5 seeds 全输（SwiGLU 赢 1-3 PPL） |
 
-## 在跑的（2026-05-11）
+## 在跑的（2026-05-13）
 
 | 实验 | 进度 |
 |------|------|
-| RNN PTB 2-arg (ComplexNeuronRNN) | 已提交，pending |
-| RNN PTB 1-arg | 已提交，pending |
-| RNN PTB tanh (baseline) | 已提交，pending |
+| Sequential MNIST — RNN/LSTM/GRU/InnerNetRNN/GatedRNN | 5 jobs 在跑，50ep×5seeds |
 
 GPT v4 (3/5 seeds)、free_init_v2 (Wiki 3/3, MLM 2/3)、scratch_init (2.5/5) 时间到未完成，数据已够用。
 
 ## 总结
 
-有效的：**CNN (+0.4~4.6%)，AE (-43%)，TF FFN (-0.8~3.3% d=64~256)，LSTM WikiText-2 (-6.2%)，ResNet internal-only (+1.5%)，参数省 55%，PPO LunarLander (+18%)，Warm-start 10/11 赢或持平，Multiply-init MLM -16%**。
+有效的：**CNN (+0.4~4.6%)，AE (-43%)，TF FFN (-0.8~3.3% d=64~256)，LSTM WikiText-2 (-6.2%)，ResNet internal-only (+1.5%)，参数省 55%，PPO LunarLander (+18%)，Warm-start 10/11 赢或持平，Multiply-init MLM -16.6%**。
 
-没用的：ResNet 全换（持平），MLM 从头训（差），LSTM PTB（差），GPT d=256 从头训（输 5.2%），Qwen 0.5B 直接替换（-9%）。
+没用的：ResNet 全换（持平），MLM 从头训（差），LSTM/RNN PTB（差），GPT d=256 从头训（输 5%），Qwen 0.5B 直接替换（-9%），从头训一致输 SwiGLU。
 
 关键发现：
 - InnerNet 放在没 skip 保护的位置有效果
-- **容量上限 ≥ SwiGLU**（warm-start 10/11 赢或持平，ivs_d128 追平）
-- 从头训打不过是**优化问题**，不是容量问题
-- Scaling: d=64 赢 3.3% → d=256 赢 1.7% → GPT d=256 输 5.2%。模型越大优化负担越重
+- **容量上限 ≥ SwiGLU**（warm-start 10/11 赢或持平，ivs_d128: 77.38=77.38 完全持平）
+- 从头训打不过是**优化问题**，不是容量问题（scratch_init 证实）
+- **初始化不影响终点**：4 种初始化都收敛到同一水平（free_init 证实）
+- Scaling: d=64 赢 3.3% → d=256 赢 1.7% → GPT d=256 输 5%。模型越大优化负担越重
 - 大模型直接替换不可行（Qwen -9%），但 warm-start + 继续训可以（ivs_d128 追平）
 - InnerNet 适合：(1) 小模型 / on-device (2) warm-start finetune (3) 架构搜索工具
 - 不适合：大模型从头训、大模型直接替换
+- **下一步**：Sequential MNIST 验证 InnerNet 能否自主发现 gate 机制（⏳ 在跑）

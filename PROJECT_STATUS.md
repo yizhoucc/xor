@@ -1,4 +1,4 @@
-# 项目状态 — 2026-05-11
+# 项目状态 — 2026-05-13
 
 ## 核心结论
 
@@ -61,10 +61,10 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 
 | # | 项目 | 状态 |
 |---|------|------|
-| C1 | 补齐 5 seeds | ⏳ SVHN 2arg/FMNIST 1arg/CIFAR 2arg 最后几个在跑 |
+| C1 | 补齐 5 seeds | ⏳ SVHN 2arg/FMNIST 1arg 在集群上失败（OOM/时间到），需重提交 |
 | C2 | CNN 参数公平对比 | ✅ ReLU matched 70.67% vs InnerNet 78.29% (同 127K) |
 | C3 | AE 参数匹配 | ✅ ReLU matched 0.0059 vs InnerNet 0.0039 (同 ~660K) |
-| C4 | 1-arg 系统对比 | ⏳ SVHN 1arg 5/5 ✅, FMNIST 1arg 在跑 |
+| C4 | 1-arg 系统对比 | ⏳ SVHN 1arg 5/5 ✅, FMNIST 1arg 失败需重提交 |
 | C5 | ReLU+LN ablation | ✅ 4 数据集完成 |
 | M1 | 训练曲线 | ⏳ 数据已有，需出图 |
 
@@ -72,7 +72,7 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 
 | # | 项目 | 状态 |
 |---|------|------|
-| U1 | CNN 60% params representation 分析 | ⏳ 脚本在跑 |
+| U1 | CNN 60% params representation 分析 | 搁置 |
 | U2 | 主流 CNN (aug fix 后重跑) | ✅ ResNet 73.51%, VGG 68.69%, WRN 74.80% — 合理 baseline。ResNet InnerNet 71.72% (n=4, 1 outlier) |
 | U3 | SwiGLU CNN 图像 | ✅ CIFAR-10: SwiGLU 79.79% > InnerNet 78.57%. CIFAR-100: InnerNet 53.74% > SwiGLU 46.48% |
 | U4 | LSTM 消融 (2×2) | ✅ 全部完成: Classic unbnd **99.33** > Classic bnd 101.76 > Semantic unbnd 103.41 > Standard 104.38 > Semantic bnd 105.59 |
@@ -83,11 +83,11 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 | U9 | Small CNN CIFAR-100 参数不公平 | TODO | SwiGLU 46.48% 远超 InnerNet 34.65%/ReLU 29.70%。SwiGLU 训练 400ep 不分阶段 vs InnerNet 3-phase。需要公平对比（同 epoch 或 end-to-end InnerNet） |
 | U10 | LSTM PTB vs WikiText 结论不一致 | TODO | WikiText: classic>semantic。PTB: semantic>classic。需要解释或更多数据集验证 |
 | U11 | VGG-16 SwiGLU | ❌ lr=0.01+grad_clip 仍 1% 准确率。SwiGLU 与 VGG 深层 conv+SGD 不兼容，记为负面结果 |
-| U12 | GPT Transformer 2arg 卡死 | ⏳ 已取消重启 |
+| U12 | GPT Transformer 2arg 卡死 | ✅ 被 U13/GPT v4 取代 |
 | U13 | Transformer 全规模 SwiGLU 对比 | ⏳ d=64/128/192/PTB ✅。GPT d=256: GELU ~72.6 > SwiGLU ~74.5 > InnerNet ~76.2（3/5 seeds, 时间到）。大模型从头训 InnerNet 反转为劣势 |
-| U14 | LSTM 2×2 消融多数据集 | ⏳ PTB ✅。Wiki-103 在跑(单 seed 并行)。CNN/DM 暂停(占太多 GPU，Transformer 优先) |
+| U14 | LSTM 2×2 消融多数据集 | ⏳ PTB ✅。Wiki-103/CNN-DM 时间到未完成，搁置 |
 | U15 | RL 加 seeds + 只报 PPO | ✅ LunarLander 30s: InnerNet 187.6 > ReLU 158.8 > SwiGLU -249.7。InnerNet 赢（10 seeds 时输，30 seeds 翻了） |
-| U16 | Masked LM（类 BERT） | ⏳ SwiGLU 93.83, GELU 101.39 完成。InnerNet 在跑 |
+| U16 | Masked LM（类 BERT） | ✅ SwiGLU 93.83, GELU 101.39, InnerNet 124.82（差）。warm-start 大幅赢 |
 | U17 | Transformer Classic InnerNet FFN | ✅ Wiki 95.49 ≈ Semantic 95.26, PTB 208.81 ≈ Semantic 207.81。TF 上 Classic ≈ Semantic |
 | U18 | d=64 InnerNet 学到了什么 | TODO | d=64 时 InnerNet ≈ SwiGLU，可视化看是不是真的像 SwiGLU |
 | U19 | ResNet/WRN 只换内部 ReLU | ✅ **有效果** | C100+aug **74.97%** vs ReLU 73.51% (+1.5%), C10 **87.7%** vs 86.33% (+1.4%, 2/5 done) |
@@ -95,7 +95,7 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 | U22 | AE warm-start | ✅ | 持平 (0.01206 vs 0.01211) |
 | U23 | CNN warm-start | ✅ | **InnerNet +2.46%** |
 | U24 | LSTM warm-start | ✅ **InnerNet 输** | SwiGLU 104.71 vs InnerNet 105.79。LSTM 唯一 warm-start InnerNet 输的 |
-| U25 | TF d=192 warm-start | ⏳ 在跑 | 3/5 InnerNet 3/3 赢 |
+| U25 | TF d=192 warm-start | ⏳ 3/3 赢（未完成 5 seeds），搁置 |
 | U26 | GPT warm-start | ✅ | 持平 (2赢2输1差不多，~73.1 vs ~73.2) |
 | U27 | ViT warm-start | ✅ | 持平 (77.54 vs 77.59) |
 | U28 | Mixer warm-start | ✅ | InnerNet 略好 (81.25 vs 81.13) |
@@ -143,7 +143,7 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 | Dataset | 2-arg | 1-arg | ReLU | ReLU+LN | ReLU matched | Gain |
 |---------|-------|-------|------|---------|-------------|------|
 | MNIST | 99.41±0.04 | 99.42±0.06 | 99.02±0.03 | 99.18±0.02 | — | +0.39 |
-| CIFAR-10 | 78.29±0.54 | 81.02±1.02 | 73.99±0.49 | 75.14±0.34 | 70.67±0.43 | +4.30 |
+| CIFAR-10 | 78.57±0.74 | 81.02±1.02 | 73.99±0.49 | 75.14±0.34 | 70.67±0.43 | +4.58 |
 | FashionMNIST | 90.91±0.29 | ⏳ | 89.34±0.13 | 89.34±0.16 | — | +1.57 |
 | SVHN | ⏳(1 seed) | 95.16±0.23 | 92.55±0.19 | 92.82±0.09 | — | +2.46 |
 | CIFAR-100 big | 53.74±0.88 | — | 50.00±0.83 | — | — | +3.74 |

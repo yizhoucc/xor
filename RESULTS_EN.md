@@ -9,7 +9,7 @@ InnerNet replaces scalar activations (ReLU) with a small learned MLP that takes 
 **Core claims:**
 
 1. **InnerNet improves at positions without skip-connection bypass** — CNN (+0.4–4.6%), AE (-43% MSE), Transformer FFN (-0.8–3.3% PPL across 4 scales), ResNet internal-only (+1.5%), with 40% fewer parameters
-2. **InnerNet's capacity ceiling ≥ SwiGLU** — warm-start comparison across 11 tasks: InnerNet wins or ties in 10/11 (LSTM only loss). Verified by ivs_d128: InnerNet replaces SwiGLU mid-training, recovers to 77.47 matching SwiGLU 77.50. The from-scratch gap is optimization difficulty, not capacity
+2. **InnerNet's capacity ceiling ≥ SwiGLU** — warm-start comparison across 11 tasks: InnerNet wins or ties in 10/11 (LSTM only loss). Verified by ivs_d128 (5 seeds): Frozen InnerNet 77.38±0.51 = SwiGLU 77.38±0.54. The from-scratch gap is optimization difficulty, not capacity
 3. **Scaling insight** — InnerNet advantage decreases with model size (d=64: -3.3%, d=128: -1.6%, d=256: -1.7%). At very large scale (GPT d=256), from-scratch InnerNet underperforms GELU, but warm-start still matches
 4. **Simplicity wins** — simple adjacent pairing > deliberate semantic pairing (LSTM); no pretrain needed (end-to-end ≈ 3-phase)
 
@@ -204,7 +204,17 @@ Replacing ALL activations (including post-skip) shows no benefit. But replacing 
 
 Config: `config/experiments/resnet_cifar_internal_2arg.yaml`, `resnet_cifar100_aug_internal_2arg.yaml`
 
-## 8. Where InnerNet Does Not Help
+## 8. PPO Reinforcement Learning (30 seeds)
+
+| Environment | InnerNet | ReLU | SwiGLU |
+|-------------|----------|------|--------|
+| CartPole | 499.9 | 500.0 | 500.0 |
+| Acrobot | **-75.3** | -79.8 | -81.7 |
+| LunarLander | **187.6** | 158.8 | -249.7 |
+
+InnerNet wins LunarLander (+18% vs ReLU) with 30 seeds. SwiGLU fails entirely on LunarLander (-249.7).
+
+## 9. Where InnerNet Does Not Help
 
 | Experiment | Result | Interpretation |
 |------------|--------|---------------|
