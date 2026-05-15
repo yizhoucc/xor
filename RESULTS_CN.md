@@ -250,11 +250,13 @@ Sequential MNIST：逐像素读 MNIST（784 步），最后分类。RNN 完全�
 | SeqRNN (tanh) | 18K | **11.36% ± 0.02%** | 5/5 ✅ | 随机水平，完全记不住 |
 | SeqLSTM | 68K | **77.03% ± 15.66%** | 5/5 ✅ | 不稳定（49%~94%） |
 | SeqGRU | 52K | **98.72% ± 0.14%** | 5/5 ✅ | 最强，非常稳定 |
-| SeqInnerNetRNN (Plan A) | 19K | 11.35% | ⏳ | **失败**，和 RNN 一样 |
-| **SeqGatedRNN (Plan B)** | 37K | **97.94%** (seed42) | ⏳ 2/5 | **成功！接近 GRU** |
+| SeqInnerNetRNN (Plan A) | 19K | **11.04% ± 0.62%** | 5/5 ✅ | **失败**，和 RNN 一样 |
+| **SeqGatedRNN (Plan B)** | 37K | **97.94%, 97.79%** (seed44 NaN) | ⏳ 2/5 | **成功！接近 GRU** |
 
 LSTM 每个 seed：87.6%, 71.2%, 49.4%, 83.1%, 93.8%——方差极大。
 GRU 每个 seed：98.8%, 98.9%, 98.5%, 98.7%, 98.7%——非常稳定。
+Plan A 每个 seed：11.4%, 9.8%, 11.4%, 11.4%, 11.4%——一致失败。
+Plan B 已完成 seed：97.9%, 97.8%（seed 44 NaN 训炸了，有不稳定性）。
 
 ### 分析
 
@@ -266,7 +268,7 @@ GRU 每个 seed：98.8%, 98.9%, 98.5%, 98.7%, 98.7%——非常稳定。
 
 **这是 Architecture Discovery 的最强证据**：只给"加法记忆通道"这个最小脚手架，InnerNet 就自动发现了 LSTM 的 gate 结构。而且 Plan B（37K 参数）比 LSTM（68K）参数少 46%，性能却更好更稳定。
 
-另外 LSTM 训练不稳定（方差 15.66%）但 GRU 和 Plan B 都很稳定，说明标准 LSTM 在这个超参下训练困难，InnerNet 学到的 gate 可能比手工设计的更适合这个任务。
+LSTM 训练不稳定（方差 15.66%），Plan B 成功的 seeds 非常强（97.8-97.9%）但 seed 44 训炸了（NaN），说明 Plan B 也有训练不稳定性。GRU 是唯一既强又稳定的（98.7% ± 0.14%）。后续可以考虑加 gradient clipping 或 lr warmup 改善 Plan B 稳定性。
 
 Configs: `config/experiments/seq_mnist_*.yaml`
 

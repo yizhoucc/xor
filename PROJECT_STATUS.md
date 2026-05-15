@@ -34,20 +34,19 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 
 | Job ID | 实验 | 状态 |
 |--------|------|------|
-| 470143 | Sequential MNIST — SeqInnerNetRNN (Plan A) | RUNNING — 卡在 11%，没学到 gate |
-| 470144 | Sequential MNIST — SeqGatedRNN (Plan B) | RUNNING — seed 43 ep 13, **acc 94%** 还在涨！|
+| 470144 | Sequential MNIST — SeqGatedRNN (Plan B) | RUNNING — seed 44 NaN，seed 45/46 待跑 |
 
-### Sequential MNIST 结果（部分）
+### Sequential MNIST 结果
 
-| 模型 | Best Acc | Seeds | 状态 |
-|------|----------|-------|------|
-| **SeqRNN (tanh)** | **11.36% ± 0.02%** | 5/5 ✅ | 随机水平，完全记不住 |
-| **SeqLSTM** | **77.03% ± 15.66%** | 5/5 ✅ | 不稳定（49%~94%） |
-| **SeqGRU** | **98.72% ± 0.14%** | 5/5 ✅ | 最强，非常稳定 |
-| SeqInnerNetRNN (Plan A) | 11.35% | ⏳ | 失败，和 RNN 一样 |
-| **SeqGatedRNN (Plan B)** | **97.94% (seed42), 94.14%↑ (seed43)** | ⏳ 2/5 | **成功！接近 GRU** |
+| 模型 | 参数 | Best Acc | Seeds | 说明 |
+|------|------|----------|-------|------|
+| SeqRNN (tanh) | 18K | **11.36% ± 0.02%** | 5/5 ✅ | 随机水平 |
+| SeqLSTM | 68K | **77.03% ± 15.66%** | 5/5 ✅ | 不稳定（49%~94%） |
+| SeqGRU | 52K | **98.72% ± 0.14%** | 5/5 ✅ | 最强最稳 |
+| SeqInnerNetRNN (Plan A) | 19K | **11.04% ± 0.62%** | 5/5 ✅ | 失败，和 RNN 一样 |
+| **SeqGatedRNN (Plan B)** | 37K | **97.94%, 97.79%** | ⏳ 2/5 (seed44 NaN) | **成功！接近 GRU，参数少 46%** |
 
-**关键发现**：Plan A（单 InnerNet 替换 tanh）完全失败。Plan B（2 InnerNet + cell state）成功——**给一个加法记忆通道，InnerNet 就能自主发现 gate 机制**。
+**关键发现**：Plan A（单 InnerNet 替换 tanh）完全失败。Plan B（2 InnerNet + cell state）成功——给一个加法记忆通道，InnerNet 就能自主发现 gate 机制。但有训练不稳定问题（seed 44 NaN）。
 
 ### 其他最近完成
 
@@ -119,7 +118,7 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 | U38 | Multiply-init 多任务 | ✅ 5/5 seeds | d=64 持平, d=128 -0.24, PTB -1.08, **MLM MultInit 15.93±0.21 vs SwiGLU 19.09±0.27 (-16.6%)** |
 | U39 | Scratch-init (从头训对比) | ⏳ 2.5/5 seeds | SwiGLU 一致赢所有 InnerNet 初始化。Seed 42: SwiGLU 76.6 > Gaussian 78.1 > Random 79.3 > Multiply 80.2 |
 | U40 | RNN PTB 重跑 | ✅ | 2arg Test PPL≈169, 1arg PPL≈179, tanh PPL≈140。**InnerNet 输 tanh baseline 20-28%**。PTB 上 InnerNet 不好用 |
-| U41 | Sequential MNIST (InnerNet 发现 gate) | ⏳ **Plan B 成功!** | RNN 11% / LSTM 77% / GRU 99% / Plan A 11%(失败) / **Plan B 98%(成功)**。给 cell state 脚手架 InnerNet 就能学出 gate |
+| U41 | Sequential MNIST (InnerNet 发现 gate) | ⏳ **Plan B 成功!** | Plan A 11.04%(失败) / **Plan B 97.9%(2/5 成功, 1 NaN)**。Plan B 接近 GRU 98.7%，参数少 46%。有训练不稳定问题 |
 | **U20** | **修复 InnerNet parameter sharing** | ✅ TF 全完成 | d=64 112.83, d=128 95.23, d=192 88.42, **d=256 84.62**, PTB 207.91。全部赢 GELU。ResNet full 持平, internal +1.5%。MLM 124.82 差 |
 
 ### 🟡 Major
