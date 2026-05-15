@@ -109,6 +109,8 @@ class SeqMNISTRunner:
 
             model = self._make_model().to(self.device)
             optimizer = optim.Adam(model.parameters(), lr=self.lr)
+            scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+                optimizer, mode='max', factor=0.5, patience=10, min_lr=1e-5)
             criterion = nn.CrossEntropyLoss()
 
             params = sum(p.numel() for p in model.parameters())
@@ -156,11 +158,17 @@ class SeqMNISTRunner:
                     torch.save(model.state_dict(),
                                os.path.join(self.save_dir, f'best_model_seed{seed}.pth'))
 
+                scheduler.step(acc)
+
                 logger.info(f"  Seed {seed} Ep {epoch}/{self.epochs}: "
                             f"Loss={avg_loss:.4f} Acc={acc:.4f} (best={best_acc:.4f})")
 
                 save_ckpt(model, exp_name, self.model_name, seed, epoch,
                           optimizer, {'loss': avg_loss, 'acc': acc, 'best_acc': best_acc})
+
+                if math.isnan(avg_loss):
+                    logger.info(f"  Seed {seed} NaN detected, stopping this seed.")
+                    break
 
             logger.info(f"[Seed {seed}] Done. Best Acc: {best_acc:.4f}")
             all_results.append({
