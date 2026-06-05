@@ -30,11 +30,15 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 
 - **U20 param sharing bug**：之前 Transformer/ResNet/WRN 的 InnerNet 每层各一个没共享。已修复，重跑。修复后结果和之前差不多（d=64: 112.66→112.83），说明影响不大，但 sharing 是论文基本设计。CNN/MLP/AE/VGG/LSTM/PPO 不受影响。
 
-## 集群运行中（2026-05-14）
+## 集群运行中（2026-05-18）
 
-| Job ID | 实验 | 状态 |
-|--------|------|------|
-| 470144 | Sequential MNIST — SeqGatedRNN (Plan B) | RUNNING — seed 44 NaN，seed 45/46 待跑 |
+| Job ID | 实验 | 改动 | 状态 |
+|--------|------|------|------|
+| 510929 | Plan B 稳定性 — clip | lr 5e-4 + grad_clip 0.25 | PENDING |
+| 510930 | Plan B 稳定性 — tanh | cell update 加 tanh 约束 | PENDING |
+| 510931 | Plan B 稳定性 — all | tanh + lr 5e-4 + clip 0.25 | PENDING |
+
+目标：解决 Plan B 训练 NaN（5 seeds 里 2 个炸）。假设 NaN 来自加法 cell `c_t=c_prev+update` 在 784 步无界增长。全部 150 epochs × 5 seeds。
 
 ### Sequential MNIST 结果
 
@@ -44,9 +48,10 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 | SeqLSTM | 68K | **77.03% ± 15.66%** | 5/5 ✅ | 不稳定（49%~94%） |
 | SeqGRU | 52K | **98.72% ± 0.14%** | 5/5 ✅ | 最强最稳 |
 | SeqInnerNetRNN (Plan A) | 19K | **11.04% ± 0.62%** | 5/5 ✅ | 失败，和 RNN 一样 |
-| **SeqGatedRNN (Plan B)** | 37K | **97.94%, 97.79%** | ⏳ 2/5 (seed44 NaN) | **成功！接近 GRU，参数少 46%** |
+| Plan B (50ep) | 37K | 成功 seeds ~97.75% | 3/5 ✅, 2 NaN | 接近 GRU，参数少 46% |
+| **Plan B (150ep)** | 37K | **成功 seeds ~98.36%**（98.42/98.15/98.51） | 3/5 ✅, 2 NaN | **逼近 GRU 98.72%**，但仍 2 NaN |
 
-**关键发现**：Plan A（单 InnerNet 替换 tanh）完全失败。Plan B（2 InnerNet + cell state）成功——给一个加法记忆通道，InnerNet 就能自主发现 gate 机制。但有训练不稳定问题（seed 44 NaN）。
+**关键发现**：Plan A（单 InnerNet 替换 tanh）完全失败。Plan B（2 InnerNet + cell state）成功——给一个加法记忆通道，InnerNet 就能自主发现 gate 机制。长训（150ep）成功 seeds 提升到 98.36%，逼近 GRU。**待解决：训练不稳定（5 seeds 里 2 个 NaN），正在试 3 种修复。**
 
 ### 其他最近完成
 
@@ -118,7 +123,8 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 | U38 | Multiply-init 多任务 | ✅ 5/5 seeds | d=64 持平, d=128 -0.24, PTB -1.08, **MLM MultInit 15.93±0.21 vs SwiGLU 19.09±0.27 (-16.6%)** |
 | U39 | Scratch-init (从头训对比) | ⏳ 2.5/5 seeds | SwiGLU 一致赢所有 InnerNet 初始化。Seed 42: SwiGLU 76.6 > Gaussian 78.1 > Random 79.3 > Multiply 80.2 |
 | U40 | RNN PTB 重跑 | ✅ | 2arg Test PPL≈169, 1arg PPL≈179, tanh PPL≈140。**InnerNet 输 tanh baseline 20-28%**。PTB 上 InnerNet 不好用 |
-| U41 | Sequential MNIST (InnerNet 发现 gate) | ⏳ **Plan B 成功!** | Plan A 11.04%(失败) / **Plan B 97.9%(2/5 成功, 1 NaN)**。Plan B 接近 GRU 98.7%，参数少 46%。有训练不稳定问题 |
+| U41 | Sequential MNIST (InnerNet 发现 gate) | ⏳ **Plan B 成功!** | Plan A 11.04%(失败) / **Plan B 150ep 成功 seeds ~98.36%**(逼近 GRU 98.72%)。给 cell state 脚手架 InnerNet 自主学出 gate |
+| U42 | Plan B 训练稳定性 | ⏳ 3 实验在跑 | 解决 5 seeds 里 2 个 NaN。试 tanh-bounded cell / lr 5e-4+clip 0.25 / 全部组合。假设 NaN 来自加法 cell 无界增长 |
 | **U20** | **修复 InnerNet parameter sharing** | ✅ TF 全完成 | d=64 112.83, d=128 95.23, d=192 88.42, **d=256 84.62**, PTB 207.91。全部赢 GELU。ResNet full 持平, internal +1.5%。MLM 124.82 差 |
 
 ### 🟡 Major
