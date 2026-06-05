@@ -124,9 +124,10 @@ class GatedInnerNetRNNCell(nn.Module):
     If InnerNet2 learns σ(a)·tanh(c) → output gate
     Then this is effectively an LSTM discovered from scratch.
     """
-    def __init__(self, input_size, hidden_size, inner_hidden=32):
+    def __init__(self, input_size, hidden_size, inner_hidden=32, cell_tanh=False):
         super().__init__()
         self.hidden_size = hidden_size
+        self.cell_tanh = cell_tanh
         self.W_x = nn.Linear(input_size, hidden_size)
         self.W_h = nn.Linear(hidden_size, hidden_size, bias=False)
         self.ln_a = nn.LayerNorm(hidden_size)
@@ -145,6 +146,9 @@ class GatedInnerNetRNNCell(nn.Module):
         # InnerNet1: before cell state — can learn input/forget gate
         pairs1 = torch.stack([a, b], dim=-1)
         cell_update = self.inner_net1(pairs1.view(-1, 2)).view(x_t.size(0), self.hidden_size)
+        # tanh-bounded update prevents unbounded cell state growth over long sequences
+        if self.cell_tanh:
+            cell_update = torch.tanh(cell_update)
         c_t = c_prev + cell_update
 
         # InnerNet2: after cell state — can learn output gate
@@ -157,10 +161,10 @@ class GatedInnerNetRNNCell(nn.Module):
 
 class SeqGatedRNN(nn.Module):
     """Plan B: RNN with cell state + 2 InnerNets (can discover gates)."""
-    def __init__(self, input_size=1, hidden_size=128, num_classes=10, inner_hidden=32):
+    def __init__(self, input_size=1, hidden_size=128, num_classes=10, inner_hidden=32, cell_tanh=False):
         super().__init__()
         self.hidden_size = hidden_size
-        self.cell = GatedInnerNetRNNCell(input_size, hidden_size, inner_hidden)
+        self.cell = GatedInnerNetRNNCell(input_size, hidden_size, inner_hidden, cell_tanh)
         self.fc = nn.Linear(hidden_size, num_classes)
 
     def forward(self, x):

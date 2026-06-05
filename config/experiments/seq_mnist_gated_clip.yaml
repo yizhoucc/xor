@@ -1,0 +1,19 @@
+exp_name: seq_mnist_gated_clip
+exp_dir: ./exp
+use_gpu: true
+gpus: [0]
+seed: 42
+task_type: seq_mnist
+data_path: ./data
+model:
+  name: SeqGatedRNN
+seq_mnist:
+  hidden_size: 128
+  batch_size: 128
+  epochs: 150
+  lr: 5.0e-4
+  grad_clip: 0.25
+  num_seeds: 5
+  num_workers: 4
+  inner_hidden: 32
+  cell_tanh: false

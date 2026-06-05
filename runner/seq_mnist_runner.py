@@ -65,6 +65,7 @@ class SeqMNISTRunner:
         self.num_seeds = sm.get('num_seeds', 5)
         self.num_workers = sm.get('num_workers', 4)
         self.inner_hidden = sm.get('inner_hidden', 32)
+        self.cell_tanh = sm.get('cell_tanh', False)
 
         self.model_name = config.model.name
 
@@ -79,7 +80,7 @@ class SeqMNISTRunner:
         elif self.model_name == 'SeqInnerNetRNN':
             return SeqInnerNetRNN(1, self.hidden_size, 10, self.inner_hidden)
         elif self.model_name == 'SeqGatedRNN':
-            return SeqGatedRNN(1, self.hidden_size, 10, self.inner_hidden)
+            return SeqGatedRNN(1, self.hidden_size, 10, self.inner_hidden, self.cell_tanh)
         else:
             raise ValueError(f"Unknown model: {self.model_name}")
 
