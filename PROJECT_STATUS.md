@@ -39,7 +39,17 @@
 
 ## 集群状态（2026-06-27）
 
-**当前无 job 在跑**（squeue 空）。上一批 3 个 Plan B 稳定性实验（510929/510930/510931）已于 6-06~6-12 全部跑完 5 seeds。
+### 运行中
+
+| Job ID | 实验 | 配置 | 状态 |
+|--------|------|------|------|
+| 547111 | **P1 部署段 — FFN deploy** | `deploy_distilled.py`，4 op (gelu/swiglu/innernet/distilled-poly3)，WikiText-2 d=128 d_ff=512 4层 20ep×5seeds，全部同一 GPU 测吞吐 | 提交于 6-27，PD |
+
+目标：证明 distilled 固定算子（poly3，从 ivs_d128 InnerNet 提炼）≈ InnerNet 质量但 ≈SwiGLU 速度。输出 `exp/deploy_ffn_d128/results.json`（PPL + tok/s）。
+
+### 已完成
+
+上一批 3 个 Plan B 稳定性实验（510929/510930/510931）已于 6-06~6-12 全部跑完 5 seeds（见下方稳定性表，3 修复全失败）。
 
 ### Plan B 稳定性实验结果 — 3 种 NaN 修复全部失败 ❌
 
