@@ -4,12 +4,28 @@
 
 ## 目前的 Story
 
-把 ReLU 换成一个小 MLP（两个输入一个输出），让每个神经元能看到隔壁特征。没有 skip connection 的网络有效果，参数还少 40%。
+### 定位：可微的架构发现工具（NOT "更好的激活函数"）
 
-确认有效的：CNN、AE、Transformer FFN（d=64~256 全赢 GELU）、LSTM WikiText-2、PPO、ResNet internal-only。
+把 ReLU 换成一个小 MLP（两输入一输出），让每个神经元能看到隔壁特征。但**我们不卖"它是更强的激活函数"**——因为从头训在大模型上打不过 SwiGLU、直接替换又慢又掉点（Qwen -9%）。如果按"better activation"写，reviewer 会说"和原论文（IEEE Access 2022）一样、marginal、推理慢、没价值"。
+
+**我们卖的是：用它来发现架构。** 流程：InnerNet 替换激活 → 训练 → 可视化学到的 2D 函数 → 提炼成简单快算子 → 用正常算子部署。证据是它能**独立重新发现两个公认 SOTA 基元**：① Transformer FFN 里自主学出 SwiGLU 式乘法门控；② Sequential MNIST 里只给加法记忆通道就长出 LSTM/GRU gate。这个 framing 下，"从头训打不过 SwiGLU / 推理慢"不是弱点而是论据——发现工具本来就不用来部署。
+
+### 相对原论文（Yoon et al., IEEE Access 2022）的新意
+
+原论文只测 MLP+CNN、只在 MNIST/CIFAR 上、结论温和（简单任务略有提升 + 鲁棒 + 生物动机）。我们超出的：**架构广度**（Transformer/LSTM/RNN/AE/ResNet/ViT/Mixer/PPO/MLM/GPT 10+ 个）+ **概念新发现**（SwiGLU 再发现、gate 再发现、位置决定效果、优化壁垒≠容量上限、scaling 反转、distillation）。
+
+### 实验事实速查
+
+确认有效的：CNN、AE、Transformer FFN（d=64~256 全赢 GELU）、LSTM WikiText-2、PPO、ResNet internal-only、Seq-MNIST gate discovery（~98%）。
 不好用的：ResNet 全换（skip connection 冗余）、LSTM PTB、大模型从头训（GPT d=256 反转）、大模型直接替换（Qwen -9%）。
 
-**关键新发现**：InnerNet 容量上限 ≥ SwiGLU（warm-start 10/11 赢或持平，ivs_d128 追平），从头训大模型输是优化问题。模型越大差距越大（d=64 赢 3.3%, d=256 输 5.2%）。适合小模型和 warm-start finetune，不适合大模型从头训或直接替换。
+**关键发现**：InnerNet 容量上限 ≥ SwiGLU（warm-start 10/11 赢或持平，ivs_d128 追平），从头训大模型输是优化问题。模型越大差距越大（d=64 赢 3.3%, d=256 输 5.2%）。适合"发现 + warm-start finetune"，不适合大模型从头训或直接部署替换。
+
+### 论文主线还缺的 3 件事（在做）
+
+1. **合上"发现→提炼→部署"闭环**：现在能提炼公式（见第 3 节 distillation），但没演完整闭环——要把提炼出的快算子部署到没训过的模型上证明可用且快。
+2. **稳定 gate discovery**：Plan B 仍 2/5 NaN（见 4c），作为论文证据需要稳定。
+3. **统计严谨性**：p-value、scaling-law 图、训练曲线图。
 
 ---
 

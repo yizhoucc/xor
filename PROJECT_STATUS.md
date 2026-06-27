@@ -13,18 +13,25 @@
 - **Multiply-init MLM 大幅赢**：MultInit 15.93±0.21 vs SwiGLU 19.09±0.27（-16.6%，5 seeds）
 - **初始化不影响收敛终点**：4 种初始化都收敛到 ~71.7-72.6（Wiki d=128），都大幅赢 SwiGLU ~77.3
 
-## 论文 Story 思路
+## 论文定位（已定 — 2026-06-27）
 
-### 角度 A: Architecture Discovery Tool
-InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活函数 → 训练 → 可视化学到的 2D 函数 → 提炼新公式 → 部署。类似 NAS 但连续可微。SwiGLU 当年也是搜索出来的，InnerNet 是同类方法。
+### 相对原论文（Yoon/Kim/Orhan/Pitkow, IEEE Access 2022）的新意
 
-### 角度 B: Efficient Finetuning
-现有 LLM 用 SwiGLU。finetune 时替换成 InnerNet，只加 97 个参数。和 LoRA（加在权重上）互补，InnerNet 加在激活函数上。小模型效果更大。
+**原论文范围/结论**：只测 MLP+CNN，只在 MNIST/CIFAR-10 上，结论温和——参数匹配下比 ReLU 学得快一点、略好、更鲁棒 + 生物学动机。本质是一篇"受生物启发的更好激活函数"。
 
-### 角度 C: Understanding Activation Functions
-学术贡献不在"赢 0.19 PPL"，在于理解：固定激活不是最优的、优化比表达能力更关键、位置决定效果、小模型受益更大。这些发现对下一代激活函数设计有指导意义。
+**我们超出的部分**：
+- **架构广度**（原论文完全没碰）：Transformer FFN、LSTM、RNN(Seq-MNIST)、AE、ResNet/VGG/WRN、ViT、MLP-Mixer、PPO、Masked LM、GPT —— 10+ 架构。
+- **概念新发现**：① SwiGLU 再发现（FFN 里自主学出 SwiGLU 式乘法门控）；② Gate 再发现（Seq-MNIST 只给加法记忆通道就长出 LSTM/GRU gate）；③ 位置决定效果（skip connection 抹掉优势）；④ 优化壁垒 ≠ 容量上限（warm-start 10/11 赢，ivs_d128 持平）；⑤ scaling 反转（越大越没优势）；⑥ distillation（学到的函数提炼成闭式算子）。
 
-标题方向：不说"beats SwiGLU"，说"Learnable activation functions reveal optimization barriers" 或 "Two-argument activations as differentiable architecture search"。
+### 定下来的 Story：**可微的架构发现工具**（NOT "a better activation function"）
+
+⚠️ **绝不卖"更强的激活函数"**。理由：我们自己的数据显示 InnerNet 从头训在现代/大模型上普遍打不过 SwiGLU，直接替换又慢又掉点（Qwen -9%）。若按"better activation"写，reviewer 会说"和 IEEE Access 2022 一样、marginal、不 scale、推理慢、没价值"。
+
+✅ **卖"architecture discovery"**：用 InnerNet 替换激活 → 训练 → 可视化学到的 2D 函数 → 提炼成简单算子 → 用正常快算子部署。它能**独立重新发现 SwiGLU 和 gate** 这两个公认 SOTA 基元，就是它作为发现工具有效的证据。这个 framing 下"从头训打不过 SwiGLU / 推理慢"**不是弱点而是论据**——发现工具本来就不用来部署，提炼出的快算子才用来部署。reviewer 买这个账：你用它发现了好架构，再换成近似的快算子，效率高。
+
+标题方向："Two-argument activations as differentiable architecture search" / "Learnable activations rediscover SwiGLU and gating"。
+
+（辅助角度，备用，不作主线）Efficient finetuning（替换 +97 参数，和 LoRA 互补）；Understanding activation functions（优化比表达能力更关键 / 位置决定效果 / 小模型受益更大）。
 
 ## 已修复的问题
 
@@ -75,6 +82,14 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 ---
 
 ## TODO — 按优先级
+
+### 🔴🔴 论文主线缺口（"架构发现工具" framing 必须补的 3 件事 — 2026-06-27 定）
+
+| # | 项目 | 状态 | 说明 |
+|---|------|------|------|
+| **P1** | **合上"发现→提炼→部署"闭环** | 🔜 开始 | 现在 distillation 有了（U33: d=128 提炼出闭式公式），但没演完整闭环。要做：用 InnerNet 发现交互 → 提炼成简单快算子 → 部署到一个它没训过的模型上证明可用且快。这是 framing 的核心卖点，必须做实 |
+| **P2** | **稳定 gate discovery（Plan B NaN）** | 🔜 开始 | 当前 2/5 NaN、3 个修复全失败（初始化敏感，见 U42）。"自主发现 gate"作为论文证据需要稳定，否则被质疑 cherry-pick 3/5 seeds。下一步：lr warmup / 换 init scheme / init scale / 跳坏 seed |
+| **P3** | **统计严谨性** | 🔜 开始 | p-value 显著性检验（见 m5）、scaling-law 图（U30/U31）、训练曲线图（M1/U31）。把"赢"从单点数字升级到带统计检验 + 趋势图 |
 
 ### 🔴 Critical
 
