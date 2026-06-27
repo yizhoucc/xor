@@ -1,4 +1,4 @@
-# 项目状态 — 2026-05-13
+# 项目状态 — 2026-06-27
 
 ## 核心结论
 
@@ -30,15 +30,19 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 
 - **U20 param sharing bug**：之前 Transformer/ResNet/WRN 的 InnerNet 每层各一个没共享。已修复，重跑。修复后结果和之前差不多（d=64: 112.66→112.83），说明影响不大，但 sharing 是论文基本设计。CNN/MLP/AE/VGG/LSTM/PPO 不受影响。
 
-## 集群运行中（2026-05-18）
+## 集群状态（2026-06-27）
 
-| Job ID | 实验 | 改动 | 状态 |
-|--------|------|------|------|
-| 510929 | Plan B 稳定性 — clip | lr 5e-4 + grad_clip 0.25 | PENDING |
-| 510930 | Plan B 稳定性 — tanh | cell update 加 tanh 约束 | PENDING |
-| 510931 | Plan B 稳定性 — all | tanh + lr 5e-4 + clip 0.25 | PENDING |
+**当前无 job 在跑**（squeue 空）。上一批 3 个 Plan B 稳定性实验（510929/510930/510931）已于 6-06~6-12 全部跑完 5 seeds。
 
-目标：解决 Plan B 训练 NaN（5 seeds 里 2 个炸）。假设 NaN 来自加法 cell `c_t=c_prev+update` 在 784 步无界增长。全部 150 epochs × 5 seeds。
+### Plan B 稳定性实验结果 — 3 种 NaN 修复全部失败 ❌
+
+| Job ID | 变体 | 改动 | 成功 seeds | NaN seeds | 结果 |
+|--------|------|------|-----------|-----------|------|
+| 510929 | clip | lr 5e-4 + grad_clip 0.25 | 42/43/45 (~97.6–98.1%) | **44, 46** | 仍 2/5 NaN |
+| 510930 | tanh | cell update 加 tanh 约束 | 42/43/46 (~97.5–98.2%) | **44, 45** | 仍 2/5 NaN |
+| 510931 | all | tanh + lr 5e-4 + clip 0.25 | 42/43/45 (~97.9–98.2%) | **44, 46** | 仍 2/5 NaN |
+
+**关键发现**：三种修复都没解决 NaN，全部稳定 2/5 seeds 炸。⭐ **seed 44 在三个变体里全炸** → NaN 不是来自"加法 cell `c_t=c_prev+update` 在 784 步无界增长"假设（否则 tanh-bounded 应该能救），而更像是**初始化 / 特定 seed 敏感**问题，且第 1 个 epoch 就炸。下一步方向：lr warmup / 重新初始化（换 init scheme 或 init scale）/ 跳过坏 seed。成功 seeds 性能仍 ~98%，逼近 GRU。
 
 ### Sequential MNIST 结果
 
@@ -50,8 +54,11 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 | SeqInnerNetRNN (Plan A) | 19K | **11.04% ± 0.62%** | 5/5 ✅ | 失败，和 RNN 一样 |
 | Plan B (50ep) | 37K | 成功 seeds ~97.75% | 3/5 ✅, 2 NaN | 接近 GRU，参数少 46% |
 | **Plan B (150ep)** | 37K | **成功 seeds ~98.36%**（98.42/98.15/98.51） | 3/5 ✅, 2 NaN | **逼近 GRU 98.72%**，但仍 2 NaN |
+| Plan B + clip | 37K | 成功 seeds ~97.6–98.1% | 3/5 ✅, 2 NaN | NaN 未解决 |
+| Plan B + tanh-bounded | 37K | 成功 seeds ~97.5–98.2% | 3/5 ✅, 2 NaN | NaN 未解决 |
+| Plan B + all | 37K | 成功 seeds ~97.9–98.2% | 3/5 ✅, 2 NaN | NaN 未解决 |
 
-**关键发现**：Plan A（单 InnerNet 替换 tanh）完全失败。Plan B（2 InnerNet + cell state）成功——给一个加法记忆通道，InnerNet 就能自主发现 gate 机制。长训（150ep）成功 seeds 提升到 98.36%，逼近 GRU。**待解决：训练不稳定（5 seeds 里 2 个 NaN），正在试 3 种修复。**
+**关键发现**：Plan A（单 InnerNet 替换 tanh）完全失败。Plan B（2 InnerNet + cell state）成功——给一个加法记忆通道，InnerNet 就能自主发现 gate 机制。长训（150ep）成功 seeds 提升到 98.36%，逼近 GRU。**训练不稳定（5 seeds 里 2 个 NaN）目前未解决：3 种修复（梯度裁剪 / tanh 约束 / 组合）全部无效，且同一 seed 反复炸 → 推断是初始化敏感而非数值增长。**
 
 ### 其他最近完成
 
@@ -124,7 +131,7 @@ InnerNet 不是用来部署的，是用来发现的。用 InnerNet 替换激活�
 | U39 | Scratch-init (从头训对比) | ⏳ 2.5/5 seeds | SwiGLU 一致赢所有 InnerNet 初始化。Seed 42: SwiGLU 76.6 > Gaussian 78.1 > Random 79.3 > Multiply 80.2 |
 | U40 | RNN PTB 重跑 | ✅ | 2arg Test PPL≈169, 1arg PPL≈179, tanh PPL≈140。**InnerNet 输 tanh baseline 20-28%**。PTB 上 InnerNet 不好用 |
 | U41 | Sequential MNIST (InnerNet 发现 gate) | ⏳ **Plan B 成功!** | Plan A 11.04%(失败) / **Plan B 150ep 成功 seeds ~98.36%**(逼近 GRU 98.72%)。给 cell state 脚手架 InnerNet 自主学出 gate |
-| U42 | Plan B 训练稳定性 | ⏳ 3 实验在跑 | 解决 5 seeds 里 2 个 NaN。试 tanh-bounded cell / lr 5e-4+clip 0.25 / 全部组合。假设 NaN 来自加法 cell 无界增长 |
+| U42 | Plan B 训练稳定性 | ❌ 3 修复全失败 | 3 实验已跑完（clip / tanh-bounded / all），全部仍 2/5 NaN。seed 44 在三个变体里全炸、第 1 epoch 就炸 → **NaN 来自初始化敏感而非加法 cell 无界增长**。下一步：lr warmup / 换 init / 跳坏 seed |
 | **U20** | **修复 InnerNet parameter sharing** | ✅ TF 全完成 | d=64 112.83, d=128 95.23, d=192 88.42, **d=256 84.62**, PTB 207.91。全部赢 GELU。ResNet full 持平, internal +1.5%。MLM 124.82 差 |
 
 ### 🟡 Major

@@ -196,7 +196,11 @@ InnerNet 254.1 ± 69.3 vs ReLU 150.6 ± 58.5 (+69%)
 - **`PROJECT_STATUS.md`**: 项目状态 + TODO，统一追踪文档。每次更新任务状态、讨论新任务、或准备新实验时都必须更新。
 - **`RESULTS_CN.md`**（中文，对内）和 **`RESULTS_EN.md`**（英文，对外）: 内容定位不同，见下方规则。
 - **`requirements.txt`** 和 **`condaenv.yml`**: 依赖管理。新增依赖时同步更新。
-- **更新触发**: 每次拿到新结果或 TODO 变动时，必须同步更新 3 个文件（status + 两个 results）。
+- **更新触发（必须遵守，按任务生命周期）**:
+  - **提交/启动任务时** → 立即更新 `PROJECT_STATUS.md`：记下 job id、config、改了什么、状态（PENDING/RUNNING）、想验证什么。集群上有任何 job 在跑，status 里就必须有对应条目。
+  - **任务跑出结果时** → 同步更新 **3 个文件**：`PROJECT_STATUS.md`（把状态从 RUNNING 改成 ✅/❌ 并写结论）+ `RESULTS_CN.md` + `RESULTS_EN.md`（按下方中英文定位规则各自写）。
+  - **任务失败/被取代/归档时** → 同样要在 status 标注，别留"运行中"的僵尸条目。
+  - 原则：**status 必须随时反映集群真实状态**。每次会话开始或做文档相关工作时，先 `squeue` 对一遍，发现 status 和实际不符就先补齐再继续。
 - **实验可追溯性**: 两个 results 文档中提到实验时，都要注明实验 config 路径或 exp folder 名称模式，让人一眼看懂设置，需要细节可去 folder 找。
 
 ### 中英文文档定位规则

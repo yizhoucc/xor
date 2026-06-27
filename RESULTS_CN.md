@@ -251,12 +251,12 @@ Sequential MNIST：逐像素读 MNIST（784 步），最后分类。RNN 完全�
 | SeqLSTM | 68K | **77.03% ± 15.66%** | 5/5 ✅ | 不稳定（49%~94%） |
 | SeqGRU | 52K | **98.72% ± 0.14%** | 5/5 ✅ | 最强，非常稳定 |
 | SeqInnerNetRNN (Plan A) | 19K | **11.04% ± 0.62%** | 5/5 ✅ | **失败**，和 RNN 一样 |
-| **SeqGatedRNN (Plan B)** | 37K | **97.94%, 97.79%** (seed44 NaN) | ⏳ 2/5 | **成功！接近 GRU** |
+| **SeqGatedRNN (Plan B, 150ep)** | 37K | **成功 seeds ~98.36%**（98.42/98.15/98.51） | 3/5 ✅, 2 NaN | **成功！逼近 GRU** |
 
 LSTM 每个 seed：87.6%, 71.2%, 49.4%, 83.1%, 93.8%——方差极大。
 GRU 每个 seed：98.8%, 98.9%, 98.5%, 98.7%, 98.7%——非常稳定。
 Plan A 每个 seed：11.4%, 9.8%, 11.4%, 11.4%, 11.4%——一致失败。
-Plan B 已完成 seed：97.9%, 97.8%（seed 44 NaN 训炸了，有不稳定性）。
+Plan B（150ep）成功 seed：98.42%, 98.15%, 98.51%（seed 44/46 NaN 训炸）。
 
 ### 分析
 
@@ -266,11 +266,21 @@ Plan B 已完成 seed：97.9%, 97.8%（seed 44 NaN 训炸了，有不稳定性�
 - InnerNet1（cell state 之前）：学到了 input gate 的角色——决定什么信息写入记忆
 - InnerNet2（cell state 之后）：学到了 output gate 的角色——决定什么信息输出
 
-**这是 Architecture Discovery 的最强证据**：只给"加法记忆通道"这个最小脚手架，InnerNet 就自动发现了 LSTM 的 gate 结构。而且 Plan B（37K 参数）比 LSTM（68K）参数少 46%，性能却更好更稳定。
+**这是 Architecture Discovery 的最强证据**：只给"加法记忆通道"这个最小脚手架，InnerNet 就自动发现了 LSTM 的 gate 结构。而且 Plan B（37K 参数）比 LSTM（68K）参数少 46%，成功 seeds 性能逼近 GRU。
 
-LSTM 训练不稳定（方差 15.66%），Plan B 成功的 seeds 非常强（97.8-97.9%）但 seed 44 训炸了（NaN），说明 Plan B 也有训练不稳定性。GRU 是唯一既强又稳定的（98.7% ± 0.14%）。后续可以考虑加 gradient clipping 或 lr warmup 改善 Plan B 稳定性。
+### 训练稳定性 — 3 种修复全部失败 ❌（2026-06）
 
-Configs: `config/experiments/seq_mnist_*.yaml`
+Plan B 的痛点是 5 seeds 里 2 个训出 NaN。原假设：NaN 来自加法 cell `c_t = c_prev + update` 在 784 步无界增长。为此试了 3 个修复，各跑满 150ep × 5 seeds：
+
+| 变体 | 改动 | 成功 seeds | NaN seeds |
+|------|------|-----------|-----------|
+| clip | lr 5e-4 + grad_clip 0.25 | 42/43/45 (~97.6–98.1%) | **44, 46** |
+| tanh | cell update 加 tanh 约束 | 42/43/46 (~97.5–98.2%) | **44, 45** |
+| all | tanh + lr 5e-4 + clip 0.25 | 42/43/45 (~97.9–98.2%) | **44, 46** |
+
+三种修复全部仍 2/5 NaN。关键观察：**seed 44 在三个变体里全炸，而且第 1 个 epoch 就炸**。如果 NaN 真来自无界增长，tanh-bounded cell 应该能救——但没救。所以推断 **NaN 是初始化敏感（特定 seed 的初始权重一开始就发散），不是数值随步数累积**。下一步该往 lr warmup / 换初始化方案 / 跳过坏 seed 方向试，梯度裁剪和 tanh 约束这条路走不通。成功 seeds 性能稳定在 ~98%，逼近 GRU。
+
+Configs: `config/experiments/seq_mnist_*.yaml`（稳定性变体：`seq_mnist_gated_clip/tanh/all.yaml`）
 
 ## 5. 训练阶段消融
 

@@ -166,7 +166,7 @@ Sequential MNIST reads each 28×28 image pixel-by-pixel (784 timesteps), then cl
 | SeqLSTM | 68K | 77.03% ± 15.66% | 5/5 |
 | SeqGRU | 52K | **98.72% ± 0.14%** | 5/5 |
 | SeqInnerNetRNN (Plan A) | 19K | 11.04% ± 0.62% | 5/5 |
-| **SeqGatedRNN (Plan B)** | 37K | **97.94%, 97.79%** | ⏳ 2/5 (1 NaN) |
+| **SeqGatedRNN (Plan B)** | 37K | **~98.36%** (98.42 / 98.15 / 98.51) | 3/5 (2 NaN) |
 
 **Plan A** (single InnerNet replacing tanh) fails — identical to vanilla RNN. Without an additive memory channel, InnerNet cannot learn to prevent information decay over 784 steps.
 
@@ -174,7 +174,7 @@ Sequential MNIST reads each 28×28 image pixel-by-pixel (784 timesteps), then cl
 - InnerNet1 (before cell update): learns input gate behavior
 - InnerNet2 (after cell update): learns output gate behavior
 
-This is the strongest evidence for **InnerNet as an architecture discovery tool**: given only an additive memory channel, the learned activation functions independently converge on gate-like mechanisms similar to LSTM/GRU, without any explicit gate design. Plan B achieves GRU-level performance with 46% fewer parameters than LSTM. Training stability remains an open issue (1/3 seeds NaN).
+This is the strongest evidence for **InnerNet as an architecture discovery tool**: given only an additive memory channel, the learned activation functions independently converge on gate-like mechanisms similar to LSTM/GRU, without any explicit gate design. Plan B reaches ~98.4% (approaching GRU's 98.72%) with 46% fewer parameters than LSTM. Training stability on successful seeds is strong; a subset of seeds remain initialization-sensitive (an open issue).
 
 Config: `config/experiments/seq_mnist_*.yaml`
 
