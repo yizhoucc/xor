@@ -44,8 +44,13 @@
 | Job ID | 实验 | 配置 | 状态 |
 |--------|------|------|------|
 | 547111 | **P1 部署段 — FFN deploy（case 1，主打速度）** | `deploy_distilled.py`，4 op (gelu/swiglu/innernet/distilled-poly3)，WikiText-2 d=128 d_ff=512 4层 20ep×5seeds，全部同一 GPU 测吞吐 | RUNNING (6-27) |
-| 547112 | **P1 部署段 — CNN deploy（case 2，主打非-SwiGLU 新算子）** | `deploy_distilled_cnn.py`，4 op (relu/swiglu/innernet/distilled-poly3)，CIFAR-10 100ep×5seeds | RUNNING (6-27) |
-| 547114 | **P2 — Plan B gate 稳定性修复** | `seq_mnist_gated_stable.yaml`：正交初始化 W_h/W_c + InnerNet 输出层小增益(std 0.01) + lr warmup 3ep，150ep×5seeds | RUNNING (6-27) |
+| 547112 | **P1 部署段 — CNN deploy（case 2，主打非-SwiGLU 新算子）** | `deploy_distilled_cnn.py`，4 op (relu/swiglu/innernet/distilled-poly3)，CIFAR-10 100ep×5seeds | RUNNING (6-27)，~十几小时 |
+| 547208 | **P2 — Plan B 稳定性诊断（5ep 快测）** | `seq_mnist_gated_diag.yaml`：全叠加稳定手段（ortho + warmup3 + cell_tanh + clip0.25），只 5ep×5seeds 快看 NaN 模式（NaN 都在 ep1，5ep 足够；warmup_steps 与总 epoch 无关 → 前 5ep 等同完整运行） | RUNNING (6-27)，~7h |
+| 547209 | bark 通知 | afterany 依赖 547111/112/208，cluster 自己 curl Bark | PENDING(Dependency) |
+
+**时间估算**：FFN deploy ~1.5 天（4min/epoch×400，innernet 更慢）；CNN deploy ~十几小时；P2 RNN 极慢（~18min/epoch，784 步 BPTT），诊断 ~7h，若过则全跑 150ep×5seeds ~一周。
+
+**P2 进展**：第 2 轮（ortho+warmup，job 547114 已取消）**回归了**——seed 42（原本最稳）在 ep1 NaN，seed 43 却正常。本地复现确认 **init 时前向不 NaN**（所有 seed max|out|≈0.06-0.2），所以 **NaN 是训练中（ep1 内）的不稳定，不是初始化前向问题，也不是纯梯度爆炸**（warmup lr≈0 仍炸）。第 3 轮：全叠加稳定手段 + 诊断法快速迭代。
 
 目标：
 - 547111（FFN）：distilled 固定算子（poly3，从 ivs_d128 提炼）≈ InnerNet 质量但 ≈SwiGLU 速度。输出 `exp/deploy_ffn_d128/results.json`（PPL + tok/s）。
