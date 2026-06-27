@@ -124,7 +124,8 @@ class GatedInnerNetRNNCell(nn.Module):
     If InnerNet2 learns σ(a)·tanh(c) → output gate
     Then this is effectively an LSTM discovered from scratch.
     """
-    def __init__(self, input_size, hidden_size, inner_hidden=32, cell_tanh=False):
+    def __init__(self, input_size, hidden_size, inner_hidden=32, cell_tanh=False,
+                 ortho_init=False):
         super().__init__()
         self.hidden_size = hidden_size
         self.cell_tanh = cell_tanh
@@ -138,6 +139,18 @@ class GatedInnerNetRNNCell(nn.Module):
         self.inner_net2 = InnerNetActivation(hidden_dim=inner_hidden)
 
         self.W_c = nn.Linear(hidden_size, hidden_size, bias=False)
+
+        if ortho_init:
+            # Orthogonal recurrent matrices keep the spectral radius near 1,
+            # preventing the BPTT gradient explosion over 784 steps that makes
+            # some seeds NaN at epoch 1. Small-gain InnerNet output layers keep
+            # the initial cell_update / h_t tiny so the cell state grows slowly.
+            nn.init.orthogonal_(self.W_h.weight)
+            nn.init.orthogonal_(self.W_c.weight)
+            for net in (self.inner_net1, self.inner_net2):
+                last = net.net[-1]
+                nn.init.normal_(last.weight, std=0.01)
+                nn.init.zeros_(last.bias)
 
     def forward(self, x_t, h_prev, c_prev):
         a = self.ln_a(self.W_h(h_prev))
@@ -161,10 +174,12 @@ class GatedInnerNetRNNCell(nn.Module):
 
 class SeqGatedRNN(nn.Module):
     """Plan B: RNN with cell state + 2 InnerNets (can discover gates)."""
-    def __init__(self, input_size=1, hidden_size=128, num_classes=10, inner_hidden=32, cell_tanh=False):
+    def __init__(self, input_size=1, hidden_size=128, num_classes=10, inner_hidden=32,
+                 cell_tanh=False, ortho_init=False):
         super().__init__()
         self.hidden_size = hidden_size
-        self.cell = GatedInnerNetRNNCell(input_size, hidden_size, inner_hidden, cell_tanh)
+        self.cell = GatedInnerNetRNNCell(input_size, hidden_size, inner_hidden, cell_tanh,
+                                         ortho_init)
         self.fc = nn.Linear(hidden_size, num_classes)
 
     def forward(self, x):

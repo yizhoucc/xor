@@ -66,6 +66,8 @@ class SeqMNISTRunner:
         self.num_workers = sm.get('num_workers', 4)
         self.inner_hidden = sm.get('inner_hidden', 32)
         self.cell_tanh = sm.get('cell_tanh', False)
+        self.ortho_init = sm.get('ortho_init', False)
+        self.warmup_epochs = sm.get('warmup_epochs', 0)
 
         self.model_name = config.model.name
 
@@ -80,7 +82,8 @@ class SeqMNISTRunner:
         elif self.model_name == 'SeqInnerNetRNN':
             return SeqInnerNetRNN(1, self.hidden_size, 10, self.inner_hidden)
         elif self.model_name == 'SeqGatedRNN':
-            return SeqGatedRNN(1, self.hidden_size, 10, self.inner_hidden, self.cell_tanh)
+            return SeqGatedRNN(1, self.hidden_size, 10, self.inner_hidden, self.cell_tanh,
+                               self.ortho_init)
         else:
             raise ValueError(f"Unknown model: {self.model_name}")
 
@@ -121,12 +124,23 @@ class SeqMNISTRunner:
             best_acc = 0.0
             history = {'train_loss': [], 'test_acc': []}
 
+            warmup_steps = self.warmup_epochs * len(train_loader)
+            global_step = 0
+
             for epoch in range(1, self.epochs + 1):
                 # Train
                 model.train()
                 total_loss = 0
                 n_batches = 0
                 for seqs, labels in train_loader:
+                    # Linear LR warmup: ramp 0 -> base_lr over warmup_steps to let
+                    # unstable inits settle before taking large optimizer steps.
+                    if warmup_steps > 0 and global_step < warmup_steps:
+                        warm_lr = self.lr * (global_step + 1) / warmup_steps
+                        for pg in optimizer.param_groups:
+                            pg['lr'] = warm_lr
+                    global_step += 1
+
                     seqs, labels = seqs.to(self.device), labels.to(self.device)
                     optimizer.zero_grad()
                     logits = model(seqs)
