@@ -25,7 +25,7 @@
 
 1. **合上"发现→提炼→部署"闭环**：现在能提炼公式（见第 3 节 distillation），但没演完整闭环——要把提炼出的快算子部署到没训过的模型上证明可用且快。
 2. **稳定 gate discovery**：Plan B 仍 2/5 NaN（见 4c），作为论文证据需要稳定。
-3. **统计严谨性**：p-value、scaling-law 图、训练曲线图。
+3. **统计严谨性**（P3，进行中）：scaling-law 图 ✅（`scripts/plot_scaling_law.py` → `results/figures/fig_scaling_law`，InnerNet 优势 3.4%→1.6%→1.1%→0.8% 单调收缩）；stats 脚本 ✅（`scripts/compute_stats.py`，Welch t-test + Mann-Whitney + Cohen's d）；剩训练曲线 + 对现有实验补 p-value。
 
 ---
 

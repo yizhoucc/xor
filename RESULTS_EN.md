@@ -17,7 +17,7 @@ This reframes scaling behavior as *support*, not weakness: at large scale a from
 
 1. **Capacity ceiling ≥ SwiGLU** — warm-start across 11 tasks: InnerNet wins or ties 10/11. Verified by ivs_d128 (5 seeds): frozen InnerNet 77.38±0.51 = SwiGLU 77.38±0.54. The from-scratch gap is an optimization barrier, not a capacity limit.
 2. **Position determines effect** — InnerNet helps at positions without skip-connection bypass (CNN +0.4–4.6%, AE −43% MSE, Transformer FFN −0.8–3.3% PPL across 4 scales, ResNet internal-only +1.5%), and is redundant where a skip connection already provides a bypass.
-3. **Scaling behavior** — the InnerNet/baseline gap narrows as model size grows (d=64: −3.3%, d=128: −1.6%, d=256: −1.7%), consistent with larger models having enough capacity to learn equivalent interactions through their weights.
+3. **Scaling behavior** — the InnerNet advantage over GELU narrows monotonically as model size grows: 3.4% (d=64) → 1.6% (d=128) → 1.1% (d=192) → 0.8% (d=256), consistent with larger models having enough capacity to learn equivalent interactions through their own weights (figure: `results/figures/fig_scaling_law`).
 4. **Simplicity wins** — simple adjacent pairing > deliberate semantic pairing; no pretraining needed (end-to-end ≈ 3-phase).
 
 **Relation to prior work:** Yoon et al. (IEEE Access 2022) introduced two-argument activations on MLP/CNN classification (MNIST/CIFAR), reporting modest accuracy gains and improved robustness. We extend this to 10+ architectures (Transformer, LSTM, recurrent gating, autoencoders, ResNet/VGG/WRN, ViT, MLP-Mixer, RL, masked/causal LM) and recast the contribution as architecture discovery, evidenced by the independent rediscovery of SwiGLU and gating mechanisms.
