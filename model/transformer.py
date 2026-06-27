@@ -428,6 +428,101 @@ class SwiGLUTransformer(nn.Module):
         return self.head(x[:, -1, :])
 
 
+def _eval_distilled(a, b, coeffs):
+    """Evaluate a fixed closed-form operator g(a, b) from distilled coefficients.
+
+    coeffs maps term names to scalars. Supported terms:
+      '1','a','b','a^2','a*b','b^2','a^3','a^2*b','a*b^2','b^3'  (polynomial)
+      'silu(a)*b','silu(b)*a'                                    (SwiGLU family)
+    Pure elementwise ops — no inner MLP — so inference is ~as cheap as SwiGLU.
+    """
+    out = None
+
+    def add(term, val):
+        nonlocal out
+        c = coeffs.get(term)
+        if c is None or c == 0.0:
+            return
+        contrib = c if val is None else c * val
+        out = contrib if out is None else out + contrib
+
+    add('1', None)
+    add('a', a)
+    add('b', b)
+    add('a^2', a * a)
+    add('a*b', a * b)
+    add('b^2', b * b)
+    add('a^3', a * a * a)
+    add('a^2*b', a * a * b)
+    add('a*b^2', a * b * b)
+    add('b^3', b * b * b)
+    if 'silu(a)*b' in coeffs:
+        add('silu(a)*b', torch.nn.functional.silu(a) * b)
+    if 'silu(b)*a' in coeffs:
+        add('silu(b)*a', torch.nn.functional.silu(b) * a)
+    if out is None:
+        out = torch.zeros_like(a)
+    return out
+
+
+class DistilledFFN(nn.Module):
+    """FFN with a FIXED closed-form operator distilled from a trained InnerNet.
+
+    Same dual-projection structure as InnerNetFFN/SwiGLUFFN, but the learned
+    inner network is replaced by a fixed g(a, b) recovered via least squares
+    (scripts/distill_innernet.py). This is the DEPLOY step of the
+    discover -> distill -> deploy loop: InnerNet's per-element MLP is gone, so
+    the operator runs at SwiGLU-like speed while preserving the discovered
+    interaction.
+    """
+    def __init__(self, d_model, d_ff, coeffs, dropout=0.1):
+        super().__init__()
+        self.w1a = nn.Linear(d_model, d_ff)  # value projection
+        self.w1b = nn.Linear(d_model, d_ff)  # gate projection
+        self.w2 = nn.Linear(d_ff, d_model)
+        self.dropout = nn.Dropout(dropout)
+        self.coeffs = dict(coeffs)
+
+    def forward(self, x):
+        a = self.w1a(x)
+        b = self.w1b(x)
+        activated = _eval_distilled(a, b, self.coeffs)
+        return self.w2(self.dropout(activated))
+
+
+class DistilledTransformer(nn.Module):
+    """Decoder-only Transformer with a fixed distilled FFN operator.
+
+    Drop-in counterpart to InnerNetTransformer / SwiGLUTransformer, used to
+    show that the distilled operator matches InnerNet quality at SwiGLU speed.
+    """
+    def __init__(self, vocab_size, coeffs, d_model=128, n_heads=4, d_ff=512,
+                 n_layers=4, max_len=64, dropout=0.1):
+        super().__init__()
+        self.embedding = nn.Embedding(vocab_size, d_model)
+        self.pos_enc = PositionalEncoding(d_model, max_len, dropout)
+        self.blocks = nn.ModuleList([
+            TransformerBlock(
+                d_model, n_heads,
+                DistilledFFN(d_model, d_ff, coeffs, dropout),
+                dropout
+            ) for _ in range(n_layers)
+        ])
+        self.ln_f = nn.LayerNorm(d_model)
+        self.head = nn.Linear(d_model, vocab_size)
+        self.d_model = d_model
+        self.head.weight = self.embedding.weight
+
+    def forward(self, x):
+        B, S = x.shape
+        mask = torch.tril(torch.ones(S, S, device=x.device)).unsqueeze(0).unsqueeze(0)
+        x = self.pos_enc(self.embedding(x) * math.sqrt(self.d_model))
+        for block in self.blocks:
+            x = block(x, mask)
+        x = self.ln_f(x)
+        return self.head(x[:, -1, :])
+
+
 class InnerNetAttnTransformer(nn.Module):
     """Decoder-only Transformer with InnerNet replacing softmax in attention.
 
