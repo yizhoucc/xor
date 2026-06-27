@@ -44,7 +44,8 @@
 | Job ID | 实验 | 配置 | 状态 |
 |--------|------|------|------|
 | 547111 | **P1 部署段 — FFN deploy（case 1，主打速度）** | `deploy_distilled.py`，4 op (gelu/swiglu/innernet/distilled-poly3)，WikiText-2 d=128 d_ff=512 4层 20ep×5seeds，全部同一 GPU 测吞吐 | RUNNING (6-27) |
-| 547112 | **P1 部署段 — CNN deploy（case 2，主打非-SwiGLU 新算子）** | `deploy_distilled_cnn.py`，4 op (relu/swiglu/innernet/distilled-poly3)，CIFAR-10 100ep×5seeds | PENDING (6-27) |
+| 547112 | **P1 部署段 — CNN deploy（case 2，主打非-SwiGLU 新算子）** | `deploy_distilled_cnn.py`，4 op (relu/swiglu/innernet/distilled-poly3)，CIFAR-10 100ep×5seeds | RUNNING (6-27) |
+| 547114 | **P2 — Plan B gate 稳定性修复** | `seq_mnist_gated_stable.yaml`：正交初始化 W_h/W_c + InnerNet 输出层小增益(std 0.01) + lr warmup 3ep，150ep×5seeds | RUNNING (6-27) |
 
 目标：
 - 547111（FFN）：distilled 固定算子（poly3，从 ivs_d128 提炼）≈ InnerNet 质量但 ≈SwiGLU 速度。输出 `exp/deploy_ffn_d128/results.json`（PPL + tok/s）。
@@ -159,7 +160,7 @@
 | U39 | Scratch-init (从头训对比) | ⏳ 2.5/5 seeds | SwiGLU 一致赢所有 InnerNet 初始化。Seed 42: SwiGLU 76.6 > Gaussian 78.1 > Random 79.3 > Multiply 80.2 |
 | U40 | RNN PTB 重跑 | ✅ | 2arg Test PPL≈169, 1arg PPL≈179, tanh PPL≈140。**InnerNet 输 tanh baseline 20-28%**。PTB 上 InnerNet 不好用 |
 | U41 | Sequential MNIST (InnerNet 发现 gate) | ⏳ **Plan B 成功!** | Plan A 11.04%(失败) / **Plan B 150ep 成功 seeds ~98.36%**(逼近 GRU 98.72%)。给 cell state 脚手架 InnerNet 自主学出 gate |
-| U42 | Plan B 训练稳定性 | ❌ 3 修复全失败 | 3 实验已跑完（clip / tanh-bounded / all），全部仍 2/5 NaN。seed 44 在三个变体里全炸、第 1 epoch 就炸 → **NaN 来自初始化敏感而非加法 cell 无界增长**。下一步：lr warmup / 换 init / 跳坏 seed |
+| U42 | Plan B 训练稳定性 | ⏳ 第 2 轮修复在跑 (547114) | 第 1 轮 3 修复全失败（clip/tanh/all 仍 2/5 NaN，seed 44 必炸、ep1 炸）→ 判定为初始化敏感（W_h 谱半径>1 → 784 步 BPTT 爆炸）。**第 2 轮对症修复 = 正交初始化 W_h/W_c + InnerNet 输出小增益 + lr warmup**（见 P2 / `seq_mnist_gated_stable.yaml`） |
 | **U20** | **修复 InnerNet parameter sharing** | ✅ TF 全完成 | d=64 112.83, d=128 95.23, d=192 88.42, **d=256 84.62**, PTB 207.91。全部赢 GELU。ResNet full 持平, internal +1.5%。MLM 124.82 差 |
 
 ### 🟡 Major
