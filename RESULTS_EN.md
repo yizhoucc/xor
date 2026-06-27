@@ -137,13 +137,19 @@ Multiply-initialized InnerNet (f(a,b)=a·b) across 4 tasks:
 
 MLM shows the largest gain. Simple multiplicative interaction f(a,b)=a·b provides a strong initialization, particularly for tasks where feature interaction dominates.
 
-### Distilled InnerNet Formula (d=128 WikiText-2)
+### Distillation: Quantifying SwiGLU Rediscovery
 
-After warm-start training, InnerNet diverges from SwiGLU entirely. Dominant terms: **f(a,b) ≈ 0.12·a·b + 0.11 - 0.06·b + 0.03·a²·b**. The learned function is a scaled multiplicative interaction, not sigmoid gating. Degree-4 polynomial fits with MSE=0.003.
+The discovery step (training InnerNet) yields a learned 2D surface f(a, b). We distill each trained InnerNet into closed-form operators by least-squares fitting on a [-5, 5]² grid (`scripts/distill_innernet.py`), reporting R² per family:
 
-Visualization across 4 tasks (fig10): d=64 stays close to SwiGLU (performance tied), MLM diverges most (largest gain: -15.7 PPL). Greater divergence from SwiGLU correlates with larger improvement. Different tasks learn different optimal activation functions.
+| Checkpoint | pure mult `a·b` | **SwiGLU `silu(a)·b`** | poly3 | Distilled operator |
+|-----------|:---------------:|:----------------------:|:-----:|--------------------|
+| Transformer FFN (d=128) | 0.658 | **0.942** | 0.997 | **0.24·silu(a)·b** |
+| CNN (CIFAR-10) | 0.674 | **0.908** | 0.974 | 0.35·silu(a)·b |
+| Control (InnerNet fit to SwiGLU) | 0.542 | **0.992** | 0.984 | 0.98·silu(a)·b |
 
-Config: `scripts/finetune_qwen.py`
+The Transformer FFN InnerNet is **94% explained by a single SwiGLU term** `silu(a)·b`, versus only 66% by a pure multiplicative term `a·b` — quantitative evidence that the learned activation converges specifically on SwiGLU-style gating, not generic multiplication. The control row validates the method: an InnerNet explicitly fit to SwiGLU is recovered as 0.98·silu(a)·b (R²=0.992). The distilled operator is a scaled SwiGLU `c·silu(a)·b`, which can be deployed as a fixed fast operator in place of the inner network.
+
+Config: `scripts/distill_innernet.py` (distill), `scripts/innernet_vs_swiglu.py` (discover).
 
 ---
 

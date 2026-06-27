@@ -87,7 +87,7 @@
 
 | # | 项目 | 状态 | 说明 |
 |---|------|------|------|
-| **P1** | **合上"发现→提炼→部署"闭环** | 🔜 开始 | 现在 distillation 有了（U33: d=128 提炼出闭式公式），但没演完整闭环。要做：用 InnerNet 发现交互 → 提炼成简单快算子 → 部署到一个它没训过的模型上证明可用且快。这是 framing 的核心卖点，必须做实 |
+| **P1** | **合上"发现→提炼→部署"闭环** | ⏳ 进行中 | **提炼段 ✅ 已做实**：`scripts/distill_innernet.py` 把 InnerNet checkpoint 拟合到闭式算子并报 R²。FFN 旗舰 = **0.24·silu(a)·b, R²=0.942**（纯 a·b 只 0.66）→ 定量证明 SwiGLU 再发现；CNN R²=0.91；自检（fit-to-SwiGLU）还原 0.98·silu(a)·b R²=0.992。**剩部署段 ❌**：把缩放版 SwiGLU `c·silu(a)·b` 当固定快算子塞回 fresh Transformer，证明 (a) 质量≈InnerNet/SwiGLU (b) 比 InnerNet 快（无 inner-MLP）。需 cluster GPU |
 | **P2** | **稳定 gate discovery（Plan B NaN）** | 🔜 开始 | 当前 2/5 NaN、3 个修复全失败（初始化敏感，见 U42）。"自主发现 gate"作为论文证据需要稳定，否则被质疑 cherry-pick 3/5 seeds。下一步：lr warmup / 换 init scheme / init scale / 跳坏 seed |
 | **P3** | **统计严谨性** | 🔜 开始 | p-value 显著性检验（见 m5）、scaling-law 图（U30/U31）、训练曲线图（M1/U31）。把"赢"从单点数字升级到带统计检验 + 趋势图 |
 

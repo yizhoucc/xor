@@ -177,21 +177,23 @@ MLM 大幅赢的原因：MLM 任务和简单乘法交互高度匹配。
 
 SwiGLU 一直赢 1-3 PPL。Gaussian pretrain 略好于 random/multiply。确认从头训的差距是优化问题。
 
-### 提炼 InnerNet 为简单公式（d=128）
+### 提炼 InnerNet 为简单闭式算子（distill — P1）✅ 定量版
 
-训练后的 InnerNet 和 SwiGLU 完全不同了。SwiGLU 范围 ±14 有 sigmoid 门控，InnerNet 压缩到 ±3.75 变成温和的交互。
+**这是"发现→提炼→部署"闭环的提炼段。** 用 `scripts/distill_innernet.py` 把训练好的 InnerNet checkpoint 在 [-5,5]² 上采样，用最小二乘拟合到几种闭式算子，报 R²：
 
-主要项：**f(a,b) ≈ 0.12·a·b + 0.11 - 0.06·b + 0.03·a²·b**
+| checkpoint | mult `a·b` | **swiglu `silu(a)·b`** | poly3 | 提炼出的算子 |
+|-----------|-----------|----------------------|-------|------------|
+| **ivs_d128（FFN 旗舰）** | 0.658 | **0.942** | 0.997 | **0.24·silu(a)·b**（缩放版 SwiGLU） |
+| CNN CIFAR-10 | 0.674 | **0.908** | 0.974 | 0.35·silu(a)·b |
+| fit-to-SwiGLU（自检）| 0.542 | **0.992** | 0.984 | 0.98·silu(a)·b ✓ |
 
-最大的是简单乘法 `a·b`，不是 sigmoid 门控。4 阶多项式 MSE=0.003 就能近似。4 个任务的 InnerNet 2D 函数对比（fig10）：
-- d=64 几乎没偏离 SwiGLU（效果也持平）
-- d=128 压缩了范围，变成温和交互
-- CNN 保留门控结构但有变化
-- MLM 偏离最大（效果也最好，-15.7 PPL）
+**关键定量证据**：FFN InnerNet 学到的函数 **94% 由单个 SwiGLU 项解释**，而纯乘法 `a·b` 只有 66%——说明它收敛到的不是泛泛的乘法，而是**特定的 silu-gating，即 SwiGLU**。自检行确认方法正确：把一个显式拟合到 SwiGLU 的 InnerNet 喂进去，能还原出 `0.98·silu(a)·b`（R²=0.992）。
 
-**偏离越大效果越好。** 不同任务需要不同的激活函数——这就是可学习激活函数的价值。
+提炼出的算子是**缩放版 SwiGLU** `c·silu(a)·b`（旗舰 c≈0.24，比标准 SwiGLU 的 1.0 温和很多，对应"压缩了范围的乘法交互"）。这个闭式算子就是闭环里要**部署**的快算子（下一步：塞回 fresh 模型，比 InnerNet 快、和 SwiGLU 同档）。
 
-Configs: `scripts/innernet_vs_swiglu.py`, `warmstart_cnn.py`, `warmstart_ae.py`, `warmstart_lstm.py`, `finetune_qwen.py`
+（旧的多项式提炼 `f≈0.12·a·b+...` 来自更早的范围；现统一用上表的 silu 基拟合，对"SwiGLU 再发现"的论证更直接。）
+
+Configs: `scripts/distill_innernet.py`（提炼）, `scripts/innernet_vs_swiglu.py`（发现）。结果 JSON: `results/figures/distill_ivs_d128.json`
 
 ---
 
