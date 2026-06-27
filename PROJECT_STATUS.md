@@ -43,9 +43,12 @@
 
 | Job ID | 实验 | 配置 | 状态 |
 |--------|------|------|------|
-| 547111 | **P1 部署段 — FFN deploy** | `deploy_distilled.py`，4 op (gelu/swiglu/innernet/distilled-poly3)，WikiText-2 d=128 d_ff=512 4层 20ep×5seeds，全部同一 GPU 测吞吐 | 提交于 6-27，PD |
+| 547111 | **P1 部署段 — FFN deploy（case 1，主打速度）** | `deploy_distilled.py`，4 op (gelu/swiglu/innernet/distilled-poly3)，WikiText-2 d=128 d_ff=512 4层 20ep×5seeds，全部同一 GPU 测吞吐 | RUNNING (6-27) |
+| 547112 | **P1 部署段 — CNN deploy（case 2，主打非-SwiGLU 新算子）** | `deploy_distilled_cnn.py`，4 op (relu/swiglu/innernet/distilled-poly3)，CIFAR-10 100ep×5seeds | PENDING (6-27) |
 
-目标：证明 distilled 固定算子（poly3，从 ivs_d128 InnerNet 提炼）≈ InnerNet 质量但 ≈SwiGLU 速度。输出 `exp/deploy_ffn_d128/results.json`（PPL + tok/s）。
+目标：
+- 547111（FFN）：distilled 固定算子（poly3，从 ivs_d128 提炼）≈ InnerNet 质量但 ≈SwiGLU 速度。输出 `exp/deploy_ffn_d128/results.json`（PPL + tok/s）。
+- 547112（CNN）：CNN InnerNet 提炼出的是**真·非-SwiGLU 算子**（poly3 R²=0.974，swiglu 形式只 0.91，带实打实的 b/b² 项）；部署它证明新算子 ≈ InnerNet 且快。输出 `exp/deploy_cnn_cifar10/results.json`（acc + img/s）。
 
 ### 已完成
 
