@@ -300,6 +300,15 @@ Codex 独立复算修正：上一行的 `±1.05` 是 sample SD；`RESULTS_EN.md`
 
 后续处理（已完成）：本地 04-05 的两个 InnerNet 2arg 旧 dir（small/large）是 pre-fix 归档产物（112.66 / 85.40），已 `git mv` 到 `archive/exp/`，从 manifest 移除（raw-verified 375 → 373），避免与 post-fix run 混淆。注意 04-05 的 GELU baseline dir（116.63 / 86.05）**未动**——parameter-sharing 修复只影响 InnerNet，GELU/SwiGLU baseline 不受影响，其值仍是正文 canonical。
 
+### 2026-07-26 (Claude) - 补齐剩余非核心远端文件
+
+将之前列为“仍缺本地原始文件”的三项全部 SSH 拉回，缺失清单清零：
+
+- `exp/deploy_ffn_d128/results.json`、`exp/deploy_cnn_cifar10/results.json`：部署段结果（547111 TIMEOUT、547112 COMPLETED），仅作扩展结果，非投稿前置。
+- job 547208 的 Sequential MNIST 全叠加稳定性诊断：`exp/seq_mnist_gated_diag_20260627_171855_d46bf25c/`（config + results.p + log）。原始 `results.p` 显示全叠加稳定手段（ortho+warmup3+cell_tanh+clip0.25）后**仍 2/5 NaN**：seed 42 在 ep4 NaN（best 0.1126）、seed 46 在 ep1 NaN（0.098）；seed 43/44/45 正常但 5-epoch 快测只到 0.5577 / 0.6492 / 0.6677（未收敛，仅诊断用）。据此 `PROJECT_STATUS.md` 的 P2/U42 从“结果待取”改为收口：gate 可被发现（成功 seed ~98% @150ep），但训练稳定性仍是未解边界，全叠加也没根治。论文按 §投稿前剩余工作 的约定同时报告成功率与失败率。
+
+注：`seq_mnist_gated_diag` 的 `results.p` 结构（list of per-seed dict）不在 `build_result_manifest.py` 当前支持的四种结果文件之内，故不进 manifest；作为原始证据留档即可。
+
 ## 提交记录
 
 | Commit | 分支 | 内容 | 验证 |

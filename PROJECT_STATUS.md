@@ -65,7 +65,7 @@
 
 **时间估算**：FFN deploy ~1.5 天（4min/epoch×400，innernet 更慢）；CNN deploy ~十几小时；P2 RNN 极慢（~18min/epoch，784 步 BPTT），诊断 ~7h，若过则全跑 150ep×5seeds ~一周。
 
-**P2 进展**：第 2 轮（ortho+warmup，job 547114 已取消）**回归了**——seed 42（原本最稳）在 ep1 NaN，seed 43 却正常。本地复现确认 **init 时前向不 NaN**（所有 seed max|out|≈0.06-0.2），所以 **NaN 是训练中（ep1 内）的不稳定，不是初始化前向问题，也不是纯梯度爆炸**（warmup lr≈0 仍炸）。第 3 轮诊断 job 547208 已完成，但结果文件尚未复制到本地；恢复原始结果前不下结论。
+**P2 进展**：第 2 轮（ortho+warmup，job 547114 已取消）**回归了**——seed 42（原本最稳）在 ep1 NaN，seed 43 却正常。本地复现确认 **init 时前向不 NaN**（所有 seed max|out|≈0.06-0.2），所以 **NaN 是训练中（ep1 内）的不稳定，不是初始化前向问题，也不是纯梯度爆炸**（warmup lr≈0 仍炸）。**第 3 轮诊断 547208 结果已拉回本地（`exp/seq_mnist_gated_diag_20260627_171855_d46bf25c/results.p`）：全叠加稳定手段（ortho+warmup3+cell_tanh+clip0.25）后仍 2/5 NaN——seed 42 ep4 炸、seed 46 ep1 炸；43/44/45 正常（5ep 快测只到 0.56/0.65/0.67，未收敛）。结论：稳定性仍是未解问题，全叠加也没根治。**
 
 目标：
 - 547111（FFN）：distilled 固定算子（poly3，从 ivs_d128 提炼）≈ InnerNet 质量但 ≈SwiGLU 速度。输出 `exp/deploy_ffn_d128/results.json`（PPL + tok/s）。
@@ -122,7 +122,7 @@
 | # | 项目 | 状态 | 说明 |
 |---|------|------|------|
 | **P1** | **发现与定量提炼** | ✅ 核心完成 | `scripts/distill_innernet.py` 定量显示 FFN 旗舰函数由 `0.24·silu(a)·b` 解释（R²=0.942；纯 `a·b` 仅 0.66），构成 SwiGLU-like interaction 的发现证据。CNN deploy 已完成、FFN deploy TIMEOUT；部署不是投稿前置，不重跑。 |
-| **P2** | **Gate discovery 稳定性边界** | ⚠️ 结果待取 | Plan B 成功 seeds 约 98.36%，但历史上 2/5 NaN。第 3 轮诊断 job 547208 已 COMPLETED；原始结果尚未复制到本地，恢复后再更新稳定性结论。论文可如实报告成功与失败率，不把完全稳定作为发现成立的前提。 |
+| **P2** | **Gate discovery 稳定性边界** | ✅ 诊断已收口 | Plan B 成功 seeds 约 98.36%（150ep），但稳定性未解：547208 全叠加诊断（本地 `exp/seq_mnist_gated_diag_20260627_171855_d46bf25c`）仍 **2/5 NaN**（seed 42/46）。论文如实报告成功率 + 失败率，不把完全稳定作为发现成立的前提。 |
 | **P3** | **结果审计与统计严谨性** | ⏳ 进行中 | canonical manifest 与 paired/unpaired stats 已完成。旧 `fig_scaling_law` 使用 parameter-sharing 修复前的数据，暂不用于论文；修复后汇总并非单调（3.3%→1.6%→0.8%→1.7%）。四规模 vs GELU paired-t 已复算：p=0.00022/0.05095/0.361/0.173。剩余：自动分组汇总、冲突报告和其余核心结果统计。 |
 
 ### 🔴 Critical
@@ -180,7 +180,7 @@
 | U39 | Scratch-init (从头训对比) | ⏳ 2.5/5 seeds | SwiGLU 一致赢所有 InnerNet 初始化。Seed 42: SwiGLU 76.6 > Gaussian 78.1 > Random 79.3 > Multiply 80.2 |
 | U40 | RNN PTB 重跑 | ✅ | 2arg Test PPL≈169, 1arg PPL≈179, tanh PPL≈140。**InnerNet 输 tanh baseline 20-28%**。PTB 上 InnerNet 不好用 |
 | U41 | Sequential MNIST (InnerNet 发现 gate) | ⏳ **Plan B 成功!** | Plan A 11.04%(失败) / **Plan B 150ep 成功 seeds ~98.36%**(逼近 GRU 98.72%)。给 cell state 脚手架 InnerNet 自主学出 gate |
-| U42 | Plan B 训练稳定性 | ⚠️ 诊断完成，结果待取 | 前 3 个稳定性变体仍各有 2/5 NaN。第 3 轮全叠加诊断 job 547208 已 COMPLETED；需复制结果目录/日志后确认各 seed 是否仍 NaN。 |
+| U42 | Plan B 训练稳定性 | ✅ 诊断收口：全叠加仍 2/5 NaN | 前 3 个稳定性变体各 2/5 NaN。第 3 轮全叠加（ortho+warmup3+cell_tanh+clip0.25）诊断 547208 结果已拉回：seed 42 ep4 NaN、seed 46 ep1 NaN，43/44/45 正常。全叠加未根治，稳定性是已知边界。 |
 | **U20** | **修复 InnerNet parameter sharing** | ✅ TF 全完成 | d=64 112.83, d=128 95.26, d=192 88.42, **d=256 84.62**, PTB 207.91。全部赢 GELU。ResNet full 持平, internal +1.5%。MLM 124.82 差 |
 
 ### 🟡 Major
