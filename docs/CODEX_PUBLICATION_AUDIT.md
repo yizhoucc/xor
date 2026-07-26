@@ -218,3 +218,12 @@
 | `cee495c` | `codex/publication-audit` | 建立审计范围和详细记录 | push 成功，工作区干净 |
 | `485f896` | `codex/publication-audit` | 原论文协议与公平性审计 | push 成功，工作区干净 |
 | `2b35740` | `codex/publication-audit` | 配对/独立样本统计工具与测试 | 8 项中的统计 4 tests 通过，push 成功 |
+| `5a9705a` | `codex/publication-audit` | 本地结果 inventory、canonical manifest 与测试 | 8 tests 通过，452 experiments / 919 metric rows，push 成功 |
+
+## 下一批短任务
+
+1. 在允许 SSH 的环境恢复 Mind Cluster 远端结构化结果，优先寻找 CNN CIFAR-10 2-arg seed 42 和 2026-06-27 后的任务。
+2. 从 `metric_manifest.csv` 自动生成按实验分组的 n / mean / population SD / sample SD / raw seeds，并显式报告 duplicate seeds。
+3. 生成文档冲突报告；只在原始来源足够时修正 `PROJECT_STATUS.md`、`RESULTS_CN.md` 和 `RESULTS_EN.md`。
+
+不在这批任务中启动训练、部署、跨任务迁移或新增模型。
