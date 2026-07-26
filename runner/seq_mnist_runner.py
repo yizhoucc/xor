@@ -106,7 +106,11 @@ class SeqMNISTRunner:
     def train(self):
         train_loader, test_loader = self._get_loaders()
         all_results = []
-        seeds = list(range(42, 42 + self.num_seeds))
+        # Base seed comes from config (CLI --seed overrides it), so a single-seed
+        # run can be fanned out across parallel jobs (--seed 42, 43, ...). Default
+        # 42 keeps existing multi-seed configs (seed:42, num_seeds:5) unchanged.
+        seed_base = int(getattr(self.config, 'seed', 42) or 42)
+        seeds = list(range(seed_base, seed_base + self.num_seeds))
         exp_name = os.path.basename(self.save_dir)
 
         for si, seed in enumerate(seeds):

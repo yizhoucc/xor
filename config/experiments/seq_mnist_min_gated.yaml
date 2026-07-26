@@ -13,7 +13,7 @@ seq_mnist:
   epochs: 150
   lr: 1.0e-3
   grad_clip: 1.0
-  num_seeds: 10
+  num_seeds: 1        # one seed per job; fan out with --seed 42..51 for parallelism
   num_workers: 4
   inner_hidden: 32
   ortho_init: true
