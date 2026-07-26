@@ -4,6 +4,8 @@
 
 - 工作分支：`codex/publication-audit`；开始前快照：`e4d4e9a`（已推送 `main`）。
 - 当前范围：先核对原论文公平性协议，再做结果源审计、canonical manifest 和配对统计；不把部署闭环、长实验或新增任务作为投稿前置条件。
+- 原论文协议已核对：原论文按总参数量调整 baseline 宽度；本项目 MLP/CNN 参数匹配思路一致。Transformer 现有比较是 same-width 而非 total-parameter-matched，这只限制性能增益措辞，不影响 SwiGLU-like interaction 的发现结论。
+- 原论文同样没有部署闭环，只通过函数拟合和结构统计汇报发现；当前不新增部署实验。
 - 详细计划、证据和逐步改动记录：`docs/CODEX_PUBLICATION_AUDIT.md`。
 - 集群实时状态尚未核实；下方 2026-06-27 的 RUNNING/PENDING 条目在重新查询前只视为历史快照。
 

@@ -61,10 +61,10 @@
 | 顺序 | 任务 | 状态 | 产出 |
 |---|---|---|---|
 | 0 | 冻结开始前状态并创建独立分支 | 完成 | `e4d4e9a`，`codex/publication-audit` |
-| 1 | 阅读原论文并核对公平性协议 | 进行中 | 本文中的协议结论与引用位置 |
+| 1 | 阅读原论文并核对公平性协议 | 完成 | 本文中的协议结论与引用位置 |
 | 2 | 盘点本地和集群结果源 | 待开始 | source inventory、缺失清单 |
 | 3 | 建立 canonical manifest | 待开始 | 机器可读结果清单和冲突报告 |
-| 4 | 修正 paired/unpaired 统计工具 | 待开始 | 脚本、测试、示例输出 |
+| 4 | 修正 paired/unpaired 统计工具 | 进行中 | 脚本、测试、示例输出 |
 | 5 | 用 manifest 自动复核核心表格 | 待开始 | 可重复生成的核心结果表 |
 
 ## 暂缓事项
@@ -111,9 +111,38 @@
 - `git push origin main`
 - `git push -u origin codex/publication-audit`
 
+### 2026-07-26 10:25 PDT - 原论文实验协议核对
+
+来源：`docs/2110.06871v2.pdf`，重点阅读 Section 3、4.1、4.2、4.3、4.4、4.5 和 Discussion。
+
+原论文明确事实：
+
+- InnerNet 是跨所有层和节点共享的 canonical activation；MLP InnerNet 为两个 64-unit hidden layers，CNN 使用等价的 1x1 convolutions。
+- ReLU 和 1-arg baseline 保持相同的网络类型与层数，但不是保持相同 hidden width。Section 4.2 / Figure 6 明确通过调整每层 hidden units 或 feature maps，使总 learnable parameter counts comparable。
+- Figure 4d 报告 4 次重复的 mean test accuracy 与 ±1 SD；论文没有对性能曲线报告 hypothesis-test p-value。
+- 论文的发现证据包括二次多项式拟合、curvature 符号和 spectral analysis；其中 curvature 跨 48 trials 使用 binomial null，得到 CNN negative curvature `p=0.007`。
+- 论文没有把提炼函数放入 fresh model 做部署闭环。Discussion 只指出 polynomial approximation 可以降低实际应用的参数和内存需求。因此部署不是沿用原论文 discovery claim 所必需的证据。
+
+本项目协议核对：
+
+- MLP/CNN 复现实验已有 parameter-matched ReLU 配置，其思路与原论文 Section 4.2 一致。
+- 新增 Transformer 在相同 `d_ff=512` 下比较 GELU、SwiGLU、InnerNet，不是原论文意义的 total-parameter matching。本地按 `vocab_size=10000, d_model=128, n_layers=4` 实例化得到：GELU `2,083,344`，SwiGLU `2,347,536`，InnerNet `2,347,665`。
+- 近似参数匹配组合为：GELU `d_ff=768` (`2,346,512`) 对 InnerNet `d_ff=512` (`2,347,665`)；或 GELU `d_ff=512` (`2,083,344`) 对 InnerNet `d_ff=341` (`2,083,641`)。
+
+研究判断：
+
+- 参数差不影响“训练后的 InnerNet surface 接近 SwiGLU-like interaction”这一发现，因为该结论来自所学函数本身。
+- 参数差影响“同等模型规模下优于 GELU”和 scaling 性能增益的严格表述。当前不为此新增长实验；正文应把现有比较标明为 same-width，并避免把它表述成 parameter-matched superiority。
+- “发现 -> 提炼 -> 部署”不再列为投稿前置条件。已有 distillation 结果可以作为发现的定量解释，部署脚本留作扩展工作。
+
+验证命令：
+
+- `pdftotext -layout docs/2110.06871v2.pdf -`
+- 使用 `.venv/bin/python` 实例化三种 Transformer 并统计 `sum(p.numel())`
+
 ## 提交记录
 
 | Commit | 分支 | 内容 | 验证 |
 |---|---|---|---|
 | `e4d4e9a` | `main` | Codex 开始前工作区快照 | push 成功，工作区干净 |
-
+| `cee495c` | `codex/publication-audit` | 建立审计范围和详细记录 | push 成功，工作区干净 |
