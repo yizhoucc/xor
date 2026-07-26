@@ -268,9 +268,9 @@ SSH-3（6/27 后新结果）：仅 3 个结构化文件更新——`deploy_cnn_c
 - `exp/deploy_ffn_d128/results.json`
 - `exp/deploy_cnn_cifar10/results.json`
 - job 547208 对应的 Sequential MNIST 诊断结果目录/日志
-- parameter-sharing 修复后 d=64/d=192/d=256 Transformer per-seed 原始结果（当前正式表格仅有汇总数字）
+- parameter-sharing 修复后 d=64/d=192/d=256 Transformer per-seed 原始结果（已由 `f93986c` 恢复并进入 manifest）
 
-前三项不阻塞发现主线，但在本地文件补齐前，其数值只能视为 SSH-verified，不能进入 canonical manifest。最后一项直接影响 scale 表的 raw traceability，应在正式投稿前恢复。
+前三项不阻塞发现主线，但在本地文件补齐前，其数值只能视为 SSH-verified，不能进入 canonical manifest。最后一项 raw-traceability 缺口已经关闭。
 
 ### 2026-07-26 (Claude) - 复核 Codex 的 scaling 修正并恢复 post-fix 原始数据
 
@@ -284,6 +284,19 @@ SSH-3（6/27 后新结果）：仅 3 个结构化文件更新——`deploy_cnn_c
   - 与正文 U20 / RESULTS 表完全一致，与 GELU 的百分比 3.3% / 0.8% / 1.7% 亦自洽（非单调，Codex 修正成立）。
 - 已将这 6 个 post-fix scale dir 的 `config.yaml` + `lm_results.p` 拉回本地对应路径，manifest 重生成后 raw-verified 由 369 增至 **375**。Codex 之前标记“本地缺 post-sharing d=64/d=192/d=256 per-seed”这一 raw-traceability 缺口现已补齐。
 - 顺带补全 RESULTS 表中 d=256 SwiGLU 的 ⏳ → **81.56±1.05**（来自 `transformer_wikitext_swiglu_large_20260413`）。
+
+Codex 独立复算修正：上一行的 `±1.05` 是 sample SD；`RESULTS_EN.md` 既定约定为 population SD，因此正式表修正为 **81.56±0.94**。同时补齐所有新恢复规模的 population SD：d=64 InnerNet 0.94；d=192 InnerNet/SwiGLU 0.94/0.41；d=256 InnerNet/SwiGLU 1.47/0.94。
+
+四规模 paired statistics（InnerNet - GELU，seeds 42–46）：
+
+| d_model | Mean difference | 95% bootstrap CI | paired-t p | Wilcoxon p | Cohen's dz |
+|---:|---:|---:|---:|---:|---:|
+| 64 | -3.8039 | [-4.3320, -3.2976] | 0.00022 | 0.0625 | -5.702 |
+| 128 | -1.5579 | [-2.4506, -0.4869] | 0.05095 | 0.1250 | -1.233 |
+| 192 | -0.6843 | [-1.6623, 0.6514] | 0.36142 | 0.6250 | -0.460 |
+| 256 | -1.4276 | [-2.9535, 0.0983] | 0.17321 | 0.3125 | -0.740 |
+
+结论：四个均值方向一致，但不能称四个规模都显著；推断证据集中在 d=64，d=128 位于 0.05 边界，d=192/256 的 interval 包含 0。发现主张依赖学到的函数结构，不依赖每个性能点显著。
 
 后续处理（已完成）：本地 04-05 的两个 InnerNet 2arg 旧 dir（small/large）是 pre-fix 归档产物（112.66 / 85.40），已 `git mv` 到 `archive/exp/`，从 manifest 移除（raw-verified 375 → 373），避免与 post-fix run 混淆。注意 04-05 的 GELU baseline dir（116.63 / 86.05）**未动**——parameter-sharing 修复只影响 InnerNet，GELU/SwiGLU baseline 不受影响，其值仍是正文 canonical。
 

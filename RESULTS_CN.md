@@ -70,6 +70,8 @@ Configs: `config/experiments/ae_mnist_2arg.yaml`，exp: `exp/ae_mnist_2arg_*`
 
 d=64 到 d=256 InnerNet 一直赢 GELU（-3.3% → -1.7%）。但 GPT d=256（更大规模）**反转为输** +5.0%。
 
+四个规模都是 same-width 比较，并非参数匹配。相对 GELU 的 paired-t p 值依次为 d=64: 0.00022、d=128: 0.05095、d=192: 0.361、d=256: 0.173；均值方向一致，但统计证据主要集中在最小规模。英文表中的 `±` 统一使用 population SD（ddof=0）。
+
 Scaling 趋势：d=64 赢 3.3% → d=128 赢 1.6% → d=192 赢 0.8% → d=256 赢 1.7% → **GPT d=256 输 5.0%**。
 
 GPT 训练曲线显示 InnerNet 在 epoch 20 时还没收敛（仍在下降），GELU 每 epoch 28 分钟而 InnerNet 3 小时。同样 20 epochs，InnerNet 优化负担更重。但 warm-start 实验已证明容量足够（ivs_d128: 77.47 追平 SwiGLU 77.50）。

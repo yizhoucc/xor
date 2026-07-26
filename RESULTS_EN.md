@@ -63,13 +63,13 @@ Configs: `config/experiments/ae_mnist_2arg.yaml`, exp: `exp/ae_mnist_2arg_*`
 
 | Config | GELU | SwiGLU | InnerNet | vs GELU |
 |--------|------|--------|----------|---------|
-| WikiText-2 d=64 | 116.63±0.84 | **112.31±0.49** | **112.83** | **-3.3%** |
-| WikiText-2 d=128 | 96.82±1.19 | **92.98±1.14** | **95.26** | **-1.6%** |
-| WikiText-2 d=192 | 89.11±0.92 | **85.43** | **88.42** | **-0.8%** |
-| WikiText-2 d=256 | 86.05±0.97 | **81.56±1.05** | **84.62** | **-1.7%** |
+| WikiText-2 d=64 | 116.63±0.84 | **112.31±0.49** | **112.83±0.94** | **-3.3%** |
+| WikiText-2 d=128 | 96.82±1.19 | **92.98±1.14** | **95.26±1.00** | **-1.6%** |
+| WikiText-2 d=192 | 89.11±0.92 | **85.43±0.41** | **88.42±0.94** | **-0.8%** |
+| WikiText-2 d=256 | 86.05±0.97 | **81.56±0.94** | **84.62±1.47** | **-1.7%** |
 | PTB d=128 | 212.28±0.88 | **205.82±0.98** | **207.91** | **-2.1%** |
 
-InnerNet reaches lower PPL than GELU at every scale (-0.8% to -3.3%), and at d=64 it matches the hand-designed SwiGLU gate (112.83 ≈ 112.31) — reached automatically rather than by design. This is the central result: a learnable two-argument activation rediscovers a gated interaction. For the d=128 point, the InnerNet–GELU gap is consistent in direction across all 5 seeds (paired-t p=0.05, 95% CI [0.49, 2.45] PPL, Cohen's dz=1.23); we report it as a same-width comparison (identical d_ff=512), not a parameter-matched one.
+InnerNet reaches lower mean PPL than GELU at every scale (-0.8% to -3.3%), and at d=64 it matches the hand-designed SwiGLU gate (112.83 ≈ 112.31) — reached automatically rather than by design. This is the central result: a learnable two-argument activation rediscovers a gated interaction. Paired tests against GELU give p=0.00022, 0.05095, 0.361, and 0.173 at d=64, 128, 192, and 256, respectively; thus the direction is consistent, while inferential support is strongest at the smallest scale. These are same-width comparisons, not parameter-matched ones.
 
 **Scale boundary**: The same-width advantage remains positive but non-monotonic through d=256 in the standard Transformer sweep. It reverses in the larger GPT-style experiment, while warm-start experiments show that the learned function remains expressive enough in the controlled setting.
 
