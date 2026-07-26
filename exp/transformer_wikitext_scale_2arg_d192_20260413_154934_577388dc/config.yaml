@@ -1,0 +1,25 @@
+exp_dir: exp
+exp_name: transformer_wikitext_scale_2arg_d192
+lm:
+  batch_size: 128
+  context_size: 64
+  embed_dim: 192
+  epochs: 10
+  grad_clip: 1.0
+  lr: 0.0005
+  num_seeds: 5
+  num_workers: 4
+model:
+  d_ff: 768
+  d_model: 192
+  dropout: 0.1
+  inner_hidden: 32
+  n_heads: 4
+  n_layers: 4
+  name: InnerNetTransformer
+param_sharing: true
+run_id: '2902452'
+save_dir: exp/transformer_wikitext_scale_2arg_d192_20260413_154934_577388dc
+seed: 1234
+task_type: language_model
+use_gpu: true

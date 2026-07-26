@@ -1,0 +1,23 @@
+exp_dir: exp
+exp_name: transformer_wikitext_swiglu_small
+lm:
+  batch_size: 128
+  context_size: 64
+  embed_dim: 64
+  epochs: 10
+  grad_clip: 1.0
+  lr: 0.0005
+  num_seeds: 5
+  num_workers: 4
+model:
+  d_ff: 256
+  d_model: 64
+  dropout: 0.1
+  n_heads: 4
+  n_layers: 4
+  name: SwiGLUTransformer
+run_id: '600004'
+save_dir: exp/transformer_wikitext_swiglu_small_20260411_020839_be0f28eb
+seed: 1234
+task_type: language_model
+use_gpu: true

@@ -272,6 +272,21 @@ SSH-3（6/27 后新结果）：仅 3 个结构化文件更新——`deploy_cnn_c
 
 前三项不阻塞发现主线，但在本地文件补齐前，其数值只能视为 SSH-verified，不能进入 canonical manifest。最后一项直接影响 scale 表的 raw traceability，应在正式投稿前恢复。
 
+### 2026-07-26 (Claude) - 复核 Codex 的 scaling 修正并恢复 post-fix 原始数据
+
+触发：核对 Codex 提交 `8252ae1`（scaling 单调性修正 + 状态对账）。初看疑似 Codex 把数字搞反——本地 `lm_results.p` 显示 d=64=112.66、d=256=85.40，恰好匹配它标记为“作废”的 `plot_scaling_law.py`，而非它写进正文的 112.83/84.62。进一步 SSH 核实后确认 **Codex 是对的**：
+
+- 本地 `transformer_wikitext_2arg_small/large_20260405`（d=64/d=256）是 **parameter-sharing 修复前的旧 run**（112.66 / 85.40），与旧 plot 脚本一致。
+- 集群上有更新的 post-fix reruns（04-13/04-14），从其 `lm_results.p` 复算（每 seed 取最低 val PPL，seeds 42–46）：
+  - d=64 InnerNet **112.83**（SwiGLU 112.31）
+  - d=192 InnerNet **88.42**（SwiGLU 85.43）
+  - d=256 InnerNet **84.62**（SwiGLU **81.56**）
+  - 与正文 U20 / RESULTS 表完全一致，与 GELU 的百分比 3.3% / 0.8% / 1.7% 亦自洽（非单调，Codex 修正成立）。
+- 已将这 6 个 post-fix scale dir 的 `config.yaml` + `lm_results.p` 拉回本地对应路径，manifest 重生成后 raw-verified 由 369 增至 **375**。Codex 之前标记“本地缺 post-sharing d=64/d=192/d=256 per-seed”这一 raw-traceability 缺口现已补齐。
+- 顺带补全 RESULTS 表中 d=256 SwiGLU 的 ⏳ → **81.56±1.05**（来自 `transformer_wikitext_swiglu_large_20260413`）。
+
+遗留提示：本地 04-05 的 small/large 旧 dir 仍在 `exp/` 中，会在 manifest 出现 pre-fix 值（112.66 / 85.40）。它们是 pre-fix 归档产物，不用于论文；正式打包前建议移入 `archive/exp/` 以免与 post-fix run 混淆。
+
 ## 提交记录
 
 | Commit | 分支 | 内容 | 验证 |
