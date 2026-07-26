@@ -305,6 +305,8 @@ Plan B（37K 参数）比 LSTM（68K）参数少 46%，成功 seeds 性能逼近
 - inner_net1 门控 R² = **0.29 ± 0.27**（0.004~0.529），inner_net2 = **0.43 ± 0.31**（0.18~0.77）——远不及 SwiGLU 的 0.947±0.010。
 - 跨 seed 极不一致：朝向、符号都在变；seed 43 的 inner_net1 门控 R²≈0（几乎无门控结构）却照样 98.15%；有的 seed 线性基线拟合还更好。
 - **结论**：功能层面 gate-like 行为成立（存在性证明：加法记忆 + 可学交互足以解 Seq-MNIST），但"每个 InnerNet 各自收敛成一个干净的 input/output gate"这个机制性读法**站不住**——网络靠 cell-state 递归 + 线性映射 + InnerNet 的分布式配合解决，不是单个 InnerNet = 单个门。
+- **进一步排除（2026-07-26）**：换 LSTM 精确门形式 σ(a)·tanh(b)、以及在**真实 Seq-MNIST 数据流形**上（跑真实前向抓 InnerNet 实际输入）重测，仍然乱——inner_net1 on-manifold 门控 R²=0.14/0.00/0.00，seed43 的 inner_net1 对任何门形式都 ≈0（full_gate 0.02）却照样 98.15%。**确认是非可辨识性**（gating 被 cell 递归 + W_h/W_x/W_c + LayerNorm + InnerNet 分摊），不是家族/范围选错，也不是 seed 数不够——**加 seed 不会变干净**。
+- **能不能靠跑集群拿到证据？评估：不能可靠拿到。** 唯一有机会的是重新设计"约束 cell"（去掉线性投影/LN，逼 InnerNet 成为唯一能承载门的地方）再从头训——但那是新架构、要 GPU 训几天、结果不确定、且模型已不是论文里那个。不值得赌。
 - **对外写作建议**：gate 只按**功能性存在证明**写（98% vs 11%，逼近 GRU，参数少 46%），**不要**把 SwiGLU 那种"跨 seed 收敛到同一闭式门"的强证据套到 gate 上。SwiGLU 是我们唯一有干净跨 seed 定量证据的再发现。结果留档 `results/figures/gate_crossseed_seqmnist.json`。
 
 ### 训练稳定性 — 3 种修复全部失败 ❌（2026-06）
