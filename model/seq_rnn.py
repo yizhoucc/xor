@@ -192,6 +192,71 @@ class SeqGatedRNN(nn.Module):
 
 
 # ============================================================
+# Plan B (constrained): force the output gate into inner_net2
+# ============================================================
+
+class MinGatedInnerNetRNNCell(nn.Module):
+    """Constrained gated cell for identifiability of the OUTPUT gate.
+
+    Same as GatedInnerNetRNNCell except the learnable ``W_c`` projection before
+    inner_net2 is removed: inner_net2 reads the (LayerNorm-normalised) cell state
+    directly. In the unconstrained cell, W_c can absorb/rotate the cell-to-output
+    mapping, so the gating role need not live in inner_net2 — which is why the
+    learned inner_net2 surface is seed-inconsistent. Removing that linear degree
+    of freedom forces inner_net2 to be the (only) nonlinear map from cell state
+    to hidden output, testing whether it then reproducibly converges on an
+    output-gate shape sigma(a) * f(c). ln_c is kept (non-learnable-mixing) for
+    stability over the 784-step additive cell state.
+    """
+    def __init__(self, input_size, hidden_size, inner_hidden=32, ortho_init=True):
+        super().__init__()
+        self.hidden_size = hidden_size
+        self.W_x = nn.Linear(input_size, hidden_size)
+        self.W_h = nn.Linear(hidden_size, hidden_size, bias=False)
+        self.ln_a = nn.LayerNorm(hidden_size)
+        self.ln_b = nn.LayerNorm(hidden_size)
+        self.ln_c = nn.LayerNorm(hidden_size)
+        self.inner_net1 = InnerNetActivation(hidden_dim=inner_hidden)
+        self.inner_net2 = InnerNetActivation(hidden_dim=inner_hidden)
+        if ortho_init:
+            nn.init.orthogonal_(self.W_h.weight)
+            for net in (self.inner_net1, self.inner_net2):
+                last = net.net[-1]
+                nn.init.normal_(last.weight, std=0.01)
+                nn.init.zeros_(last.bias)
+
+    def forward(self, x_t, h_prev, c_prev):
+        a = self.ln_a(self.W_h(h_prev))
+        b = self.ln_b(self.W_x(x_t))
+        pairs1 = torch.stack([a, b], dim=-1)
+        cell_update = self.inner_net1(pairs1.view(-1, 2)).view(x_t.size(0), self.hidden_size)
+        c_t = c_prev + cell_update
+        # No W_c: inner_net2 reads the normalised cell state directly.
+        c_norm = self.ln_c(c_t)
+        pairs2 = torch.stack([c_norm, a], dim=-1)
+        h_t = self.inner_net2(pairs2.view(-1, 2)).view(x_t.size(0), self.hidden_size)
+        return h_t, c_t
+
+
+class SeqMinGatedRNN(nn.Module):
+    """Constrained Plan B: gated cell with the W_c output projection removed."""
+    def __init__(self, input_size=1, hidden_size=128, num_classes=10, inner_hidden=32,
+                 ortho_init=True):
+        super().__init__()
+        self.hidden_size = hidden_size
+        self.cell = MinGatedInnerNetRNNCell(input_size, hidden_size, inner_hidden, ortho_init)
+        self.fc = nn.Linear(hidden_size, num_classes)
+
+    def forward(self, x):
+        B, S, _ = x.shape
+        h = torch.zeros(B, self.hidden_size, device=x.device)
+        c = torch.zeros(B, self.hidden_size, device=x.device)
+        for t in range(S):
+            h, c = self.cell(x[:, t, :], h, c)
+        return self.fc(h)
+
+
+# ============================================================
 # Standard GRU baseline
 # ============================================================
 

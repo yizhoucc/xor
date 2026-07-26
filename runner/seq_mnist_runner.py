@@ -72,7 +72,8 @@ class SeqMNISTRunner:
         self.model_name = config.model.name
 
     def _make_model(self):
-        from model.seq_rnn import SeqRNN, SeqLSTM, SeqGRU, SeqInnerNetRNN, SeqGatedRNN
+        from model.seq_rnn import (SeqRNN, SeqLSTM, SeqGRU, SeqInnerNetRNN,
+                                    SeqGatedRNN, SeqMinGatedRNN)
         if self.model_name == 'SeqRNN':
             return SeqRNN(1, self.hidden_size, 10)
         elif self.model_name == 'SeqLSTM':
@@ -84,6 +85,9 @@ class SeqMNISTRunner:
         elif self.model_name == 'SeqGatedRNN':
             return SeqGatedRNN(1, self.hidden_size, 10, self.inner_hidden, self.cell_tanh,
                                self.ortho_init)
+        elif self.model_name == 'SeqMinGatedRNN':
+            return SeqMinGatedRNN(1, self.hidden_size, 10, self.inner_hidden,
+                                  self.ortho_init)
         else:
             raise ValueError(f"Unknown model: {self.model_name}")
 
