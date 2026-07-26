@@ -1,5 +1,12 @@
 # 项目状态 — 2026-06-27
 
+## Codex 发表前审计（2026-07-26）
+
+- 工作分支：`codex/publication-audit`；开始前快照：`e4d4e9a`（已推送 `main`）。
+- 当前范围：先核对原论文公平性协议，再做结果源审计、canonical manifest 和配对统计；不把部署闭环、长实验或新增任务作为投稿前置条件。
+- 详细计划、证据和逐步改动记录：`docs/CODEX_PUBLICATION_AUDIT.md`。
+- 集群实时状态尚未核实；下方 2026-06-27 的 RUNNING/PENDING 条目在重新查询前只视为历史快照。
+
 ## 核心结论
 
 - InnerNet 在没 skip 保护的位置有效（CNN, AE, TF FFN, ResNet internal）
