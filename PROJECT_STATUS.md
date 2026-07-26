@@ -60,6 +60,7 @@
 | Job | 实验 | 状态 | 目的 |
 |-----|------|------|------|
 | 613846–613855 | `SeqMinGatedRNN`（去掉 W_c）seeds 42–51 并行，150ep 各一 job | RUNNING (7-26) | 探索去掉 W_c 后 inner_net2 的 gate-family held-out fit 是否提高且跨 seed 更一致。R²>0.7 仅作为预先记录的筛查阈值，不能单独证明 gate 再发现；还需 empirical-manifold、方向一致性和非门控基线比较。~1.5 天出结果（单 seed ~36h，并行）。 |
+| 613857–613859 | `warmstart_bilinear_probe` seeds 42/43/44 并行（`exp/bilinear_probe_s{42,43,44}`） | RUNNING (7-26) | **SwiGLU 吸引子的网络无关性确认**：warm-start 一个 Bilinear-GLU（gate=a·b，非 SwiGLU）网络，塞入 random/multiply InnerNet 共训，distill。若 InnerNet 仍→silu(a)·b，则 SwiGLU 是网络无关吸引子，堵死"外围网络本就是 SwiGLU"的 confound；若停在 a·b 则为"恢复宿主门"。~几小时（WikiText d=128）。 |
 
 ### 已终止（原 2026-06-27 提交的 job，终态已核实）
 
