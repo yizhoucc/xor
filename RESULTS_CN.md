@@ -299,7 +299,13 @@ Plan B（150ep）成功 seed：98.42%, 98.15%, 98.51%（seed 44/46 NaN 训炸）
 - InnerNet1（cell state 之前）：学到了 input gate 的角色——决定什么信息写入记忆
 - InnerNet2（cell state 之后）：学到了 output gate 的角色——决定什么信息输出
 
-**这是 Architecture Discovery 的最强证据**：只给"加法记忆通道"这个最小脚手架，InnerNet 就自动发现了 LSTM 的 gate 结构。而且 Plan B（37K 参数）比 LSTM（68K）参数少 46%，成功 seeds 性能逼近 GRU。
+Plan B（37K 参数）比 LSTM（68K）参数少 46%，成功 seeds 性能逼近 GRU。只给"加法记忆通道"这个最小脚手架，InnerNet+cell state 就能解长记忆任务（vs plain RNN 11%）。
+
+**⚠️ 机制性 claim 的定量核查（2026-07-26，内部）**：用和 SwiGLU 同样的跨 seed distillation 方法（`scripts/gate_crossseed.py`，成功 seed 42/43/46，输入经 LN 故取 [-3,3]² 网格）去测"InnerNet1/2 是不是干净的 sigmoid 门"，**结果不支持**：
+- inner_net1 门控 R² = **0.29 ± 0.27**（0.004~0.529），inner_net2 = **0.43 ± 0.31**（0.18~0.77）——远不及 SwiGLU 的 0.947±0.010。
+- 跨 seed 极不一致：朝向、符号都在变；seed 43 的 inner_net1 门控 R²≈0（几乎无门控结构）却照样 98.15%；有的 seed 线性基线拟合还更好。
+- **结论**：功能层面 gate-like 行为成立（存在性证明：加法记忆 + 可学交互足以解 Seq-MNIST），但"每个 InnerNet 各自收敛成一个干净的 input/output gate"这个机制性读法**站不住**——网络靠 cell-state 递归 + 线性映射 + InnerNet 的分布式配合解决，不是单个 InnerNet = 单个门。
+- **对外写作建议**：gate 只按**功能性存在证明**写（98% vs 11%，逼近 GRU，参数少 46%），**不要**把 SwiGLU 那种"跨 seed 收敛到同一闭式门"的强证据套到 gate 上。SwiGLU 是我们唯一有干净跨 seed 定量证据的再发现。结果留档 `results/figures/gate_crossseed_seqmnist.json`。
 
 ### 训练稳定性 — 3 种修复全部失败 ❌（2026-06）
 
