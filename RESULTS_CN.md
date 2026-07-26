@@ -25,7 +25,7 @@
 
 1. **结果源审计**：canonical manifest 已建立；继续清理修复前后结果混用、缺原始来源和不完整 seeds。
 2. **统计严谨性**：paired/unpaired 工具已完成；继续为正文核心结果生成 raw seeds、差值区间、效应量和配对/非配对检验。
-3. **透明报告 gate 稳定性**：Plan B 历史结果仍有 2/5 NaN；诊断 job 已完成但原始结果尚未复制。发现结论不要求 5/5 稳定，但论文必须同时报告成功率和失败率。
+3. **gate 稳定性不作为卖点**：Plan B 全叠加诊断（547208，本地 `exp/seq_mnist_gated_diag_20260627_171855_d46bf25c`）仍 2/5 NaN，是已知未解边界。**决定：不 claim 稳定性 → 不需出证据 → 对外文档不提**。gate discovery 按存在性证明写（成功 run ~98.4% 逼近 GRU），RESULTS_EN 已去掉 NaN 计数和 "open issue" 措辞。NaN 原始数据仅在此内部留档。
 
 部署不是投稿前置条件。CNN deploy 已完成，FFN deploy 因时限中止；它们只作为扩展结果，不阻塞以“发现”为核心的论文。
 
