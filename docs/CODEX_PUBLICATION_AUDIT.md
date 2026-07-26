@@ -313,11 +313,11 @@ Codex 独立复算修正：上一行的 `±1.05` 是 sample SD；`RESULTS_EN.md`
 
 用户方向：用与原论文一致的"发现证据"思路，为两个核心再发现补跨 seed 定量证据（纯分析已有 checkpoint，不新增长训练）。
 
-**SwiGLU 再发现（成功，已进正文）**：
+**SwiGLU 跨 seed 表面拟合（provenance 复核后降级为 warm-start retention）**：
 
-- `scripts/distill_crossseed.py` 对 5 个独立训练的 InnerNet FFN（`exp/ivs_d128_v2/inner_weights_seed42..46.pth`）逐个提炼。
+- `scripts/distill_crossseed.py` 对 5 个任务训练后的 InnerNet FFN（`exp/ivs_d128_v2/inner_weights_seed42..46.pth`）逐个提炼。
 - 结果：swiglu 拟合 **R²=0.947±0.010**（范围 0.931–0.956），门控系数 **0.238±0.005**（silu(a)·b），纯乘法 mult 每个 seed 只有 0.66。
-- 结论：独立优化的网络可复现地收敛到同一 SwiGLU 门控 → 这是 discovery paper 需要的证据，已写入 `RESULTS_EN/CN`（`results/figures/distill_crossseed_ivs_d128.json`）。
+- Codex 追踪生成脚本后确认：`scripts/innernet_vs_swiglu.py:146-150` 先把一个 InnerNet 显式拟合到 `silu(a)*b`，`205-209` 再把同一份 fitted weights 装入每个 seed，最后保存这些 checkpoint。因此该结果证明 warm-start 后的跨 seed 保留，不证明独立再发现；`RESULTS_EN/CN` 已纠正。
 
 **Gate 再发现（当前证据不足，机制性 claim 撑不住）**：
 
@@ -329,13 +329,21 @@ Codex 独立复算修正：上一行的 `±1.05` 是 sample SD；`RESULTS_EN.md`
 
 **计划中的集群实验（探索性，用户已同意集群免费可跑）**：
 
-- 目的：检验非可辨识性是否可通过"约束 cell"消除，从而拿到干净的 output-gate 再发现证据。
-- 设计：`SeqMinGatedRNN` = 去掉 `W_c` 线性投影与 `ln_c`，让 `inner_net2` 直接读 `c_t`（保留 ortho_init + ln_a/ln_b 以维持可训练性）。若仍达 ~98%，则 inner_net2 被迫承担 output-gate 计算。
-- 预注册成功判据：成功 seed 中 inner_net2 门控 R²>0.7 且多数朝向一致 → 记为干净 output-gate 再发现；否则坐实非可辨识，对外用功能性框架（98% vs 11%、逼近 GRU、参数少 46%），不做机制性 claim。
+- 目的：探索去掉一个线性混合自由度后，inner_net2 的 gate-family 拟合与跨 seed 一致性是否提高。
+- 实际设计：`SeqMinGatedRNN` 去掉 `W_c`，但**保留 `ln_c`**，让 `inner_net2` 直接读归一化后的 `c_t`。这减少一个线性混合自由度，但任意 MLP、`W_h`、LayerNorm 和 classifier 仍可形成分布式非门控解，不能说 inner_net2 被“强迫”为 output gate。
+- 原记录的 inner_net2 R²>0.7 仅保留为筛查阈值，不能单独判定再发现。分析还需 held-out empirical-manifold fit、方向一致性、非门控/灵活基线和多 family 选择说明。
 - 规模：10 seeds × 150ep（成功率历史约 3/5，多跑几个 seed 保证有足够成功样本做一致性分析）。
 - 请 Codex 审查：上述判断链条、成功判据是否合理，以及约束 cell 是否可能引入新的非门控解。
 
-**已提交（2026-07-26）**：`SeqMinGatedRNN`（`model/seq_rnn.py` 新增 `MinGatedInnerNetRNNCell`，去掉 W_c，保留 ln_c）已上集群并行跑 10 seeds（job 613846–613855，seeds 42–51，各 150ep 独立 job）。为并行化，`seq_mnist_runner.py` 改为以 `config.seed` 为 seed 基准（默认 42，向后兼容既有 multi-seed config）。收够约 4 个成功 seed（best_acc 高）后用 `scripts/gate_crossseed.py` 逐 seed 拟合 inner_net2，看是否跨 seed 一致成 output gate。集群改动经 `git checkout origin/codex/publication-audit -- <files>` 落地，未切换/污染集群 main（HEAD 是该分支祖先，diff 仅为本次新增）。
+**已提交（2026-07-26）**：`SeqMinGatedRNN`（`model/seq_rnn.py` 新增 `MinGatedInnerNetRNNCell`，去掉 W_c，保留 ln_c）已上集群并行跑 10 seeds（job 613846–613855，seeds 42–51，各 150ep 独立 job）。为并行化，`seq_mnist_runner.py` 改为以 `config.seed` 为 seed 基准（默认 42，向后兼容既有 multi-seed config）。收够约 4 个成功 seed（best_acc 高）后用 `scripts/gate_crossseed.py` 逐 seed 分析 inner_net2，比较 gate-family fit、empirical-manifold fit、方向一致性和非门控基线。集群改动经 `git checkout origin/codex/publication-audit -- <files>` 落地，未切换/污染集群 main（HEAD 是该分支祖先，diff 仅为本次新增）。
+
+### 2026-07-26 (Codex) - 新增文档与证据链复核
+
+- 逐行核对 `scripts/innernet_vs_swiglu.py` 与 `scripts/distill_crossseed.py`，确认 5 个 ivs_d128_v2 checkpoint 共享显式 SwiGLU-fitted InnerNet 初值。跨 seed R² 数值本身正确，原“独立再发现”解释不成立。
+- 核对 `scripts/gate_crossseed.py` 及内部记录：grid/on-manifold 分析均不支持 InnerNet1/2 分别收敛为标准 gate；英文稿已降级为功能性充分性结论。
+- 恢复 SeqGatedRNN 的完整分母：3/5 成功、2/5 NaN。是否把稳定性作为卖点，不影响报告全部尝试的义务。
+- 审查 `SeqMinGatedRNN`：实现确实去掉 `W_c` 并保留 `ln_c`；实验可用于探索 gate-family fit 是否提高，但不能单凭 R²>0.7 宣称机制被识别。
+- 本地验证：8 个 audit/statistics 单元测试通过；相关 Python 文件 `py_compile` 通过；`python run.py -c config/experiments/seq_mnist_min_gated.yaml --validate` 通过（输出 `[2,10]`，21,068 参数）。
 
 ## 提交记录
 

@@ -1,17 +1,19 @@
-"""Cross-seed SwiGLU-rediscovery consistency (paper core evidence).
+"""Cross-seed InnerNet surface distillation.
 
-For each independently trained InnerNet checkpoint (one per seed), fit the same
+For each task-trained InnerNet checkpoint (one per seed), fit the same
 closed-form operator families to its learned 2D surface f(a, b) and report how
 consistently the seeds converge on the SwiGLU gate `c * silu(a) * b`.
 
-This upgrades the discovery claim from "one InnerNet looks like SwiGLU" to
-"independently trained InnerNets reproducibly converge to SwiGLU", which is the
-evidence a discovery paper needs. It is pure analysis of existing checkpoints —
-no training.
+This script measures surface similarity only. It cannot establish training
+provenance or autonomous rediscovery. In particular, the ivs_d128_v2 checkpoints
+were all initialized from the same InnerNet explicitly fitted to SwiGLU by
+``scripts/innernet_vs_swiglu.py``; their consistency measures retention after
+warm-start, not independent discovery from uninformed initializations.
 
 Usage:
   .venv/bin/python scripts/distill_crossseed.py \
       exp/ivs_d128_v2/inner_weights_seed{42,43,44,45,46}.pth \
+      --provenance "shared explicit SwiGLU fit from innernet_vs_swiglu.py" \
       --out results/figures/distill_crossseed_ivs_d128.json
 
 Reproduce the paper table:
@@ -47,6 +49,11 @@ def main():
     ap.add_argument("ckpts", nargs="+", help="per-seed InnerNet .pth files")
     ap.add_argument("--range", type=float, default=5.0)
     ap.add_argument("--n", type=int, default=200)
+    ap.add_argument(
+        "--provenance",
+        default="unspecified; inspect the checkpoint-generating experiment",
+        help="initialization/training provenance to embed in the output JSON",
+    )
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
 
@@ -66,7 +73,7 @@ def main():
     mult_r2 = col("mult", "r2")
     c1 = col("swiglu", "silu(a)*b")
 
-    print("Cross-seed SwiGLU rediscovery (InnerNet FFN surface)")
+    print("Cross-seed InnerNet surface distillation")
     print(f"{'seed':>5} {'mult R2':>8} {'swiglu R2':>10} "
           f"{'swiglu_sym R2':>13} {'poly3 R2':>9} {'c[silu(a)b]':>12}")
     print("-" * 62)
@@ -97,7 +104,17 @@ def main():
 
     if args.out:
         with open(args.out, "w") as fh:
-            json.dump({"per_seed": per_seed, "summary": summary}, fh, indent=2)
+            json.dump({
+                "provenance": {
+                    "initialization": args.provenance,
+                    "analysis_scope": (
+                        "Surface similarity only; rediscovery claims require "
+                        "independent verification of uninformed initialization."
+                    ),
+                },
+                "per_seed": per_seed,
+                "summary": summary,
+            }, fh, indent=2)
         print(f"\nWrote {args.out}")
 
 

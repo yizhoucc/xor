@@ -14,6 +14,7 @@
   - PTB non-shared 冲突已用原始 `exp/warmstart_nonshared/results.p` 解决：InnerNet 162.49 vs 自身 SwiGLU baseline 164.59（5/5 赢，-2.11，paired-t p=0.037）。旧表的 162.64/-1.95 是混用了 shared 实验的 SwiGLU(162.22) baseline，已更正。
   - 6/27 后集群新结果仅 3 个（两个 deploy json + 一个 tanh test_results，均非核心分类）。
 - 详细计划、证据和逐步改动记录：`docs/CODEX_PUBLICATION_AUDIT.md`。
+- ⚠️ **2026-07-26 发现证据复核**：`exp/ivs_d128_v2/inner_weights_seed42..46.pth` 均由 `scripts/innernet_vs_swiglu.py` 生成；脚本先把同一个 InnerNet 显式拟合到 SwiGLU，再装入每个 seed。因此 R²=0.947±0.010 只能称 **warm-start 后跨 seed 保留**，不能称独立再发现。Seq-MNIST 的表面分析也不支持单个 InnerNet 分别成为 input/output gate；对外只报功能性结果，并公开 3/5 成功、2/5 NaN。
 
 ## 核心结论
 
@@ -36,15 +37,15 @@
 
 **我们超出的部分**：
 - **架构广度**（原论文完全没碰）：Transformer FFN、LSTM、RNN(Seq-MNIST)、AE、ResNet/VGG/WRN、ViT、MLP-Mixer、PPO、Masked LM、GPT —— 10+ 架构。
-- **概念新发现**：① SwiGLU 再发现（FFN 里自主学出 SwiGLU 式乘法门控）；② Gate 再发现（Seq-MNIST 只给加法记忆通道就长出 LSTM/GRU gate）；③ 位置决定效果（skip connection 抹掉优势）；④ 优化壁垒 ≠ 容量上限（warm-start 10/11 赢，ivs_d128 持平）；⑤ scaling 反转（越大越没优势）；⑥ distillation（学到的函数提炼成闭式算子）。
+- **新增结论**：① 显式 SwiGLU warm-start 在任务优化后保持为缩放 SwiGLU；② 加法记忆 + 二元交互在 Seq-MNIST 成功 runs 上达到约 98%，但标准 gate 表面不可辨识；③ 位置决定效果；④ 优化壁垒 ≠ 容量上限；⑤ scaling 反转；⑥ learned-surface distillation。当前证据不支持“从无信息初始化独立再发现 SwiGLU/gate”。
 
-### 定下来的 Story：**可微的架构发现工具**（NOT "a better activation function"）
+### 当前证据支持的 Story：**可微的架构探针**（NOT "a better activation function"）
 
 ⚠️ **绝不卖"更强的激活函数"**。理由：我们自己的数据显示 InnerNet 从头训在现代/大模型上普遍打不过 SwiGLU，直接替换又慢又掉点（Qwen -9%）。若按"better activation"写，reviewer 会说"和 IEEE Access 2022 一样、marginal、不 scale、推理慢、没价值"。
 
-✅ **卖"architecture discovery"**：用 InnerNet 替换激活 → 训练 → 可视化学到的 2D 函数 → 提炼成简单算子 → 用正常快算子部署。它能**独立重新发现 SwiGLU 和 gate** 这两个公认 SOTA 基元，就是它作为发现工具有效的证据。这个 framing 下"从头训打不过 SwiGLU / 推理慢"**不是弱点而是论据**——发现工具本来就不用来部署，提炼出的快算子才用来部署。reviewer 买这个账：你用它发现了好架构，再换成近似的快算子，效率高。
+✅ **现有证据支持“architecture probe / hypothesis generator”**：用 InnerNet 替换激活，训练后分析二维表面和功能边界。要升级成“architecture discovery”，至少需要多 seed、非 SwiGLU 初值的 checkpoint 显示同一闭式算子，并排除 warm-start 先验。部署不是投稿前置，但也不能用 warm-start retention 代替 discovery 证据。
 
-标题方向："Two-argument activations as differentiable architecture search" / "Learnable activations rediscover SwiGLU and gating"。
+标题方向暂改为："Two-argument activations as probes of learned feature interactions"；补足无信息初始化证据后再考虑 "rediscover"。
 
 （辅助角度，备用，不作主线）Efficient finetuning（替换 +97 参数，和 LoRA 互补）；Understanding activation functions（优化比表达能力更关键 / 位置决定效果 / 小模型受益更大）。
 
@@ -58,9 +59,7 @@
 
 | Job | 实验 | 状态 | 目的 |
 |-----|------|------|------|
-| 613846–613855 | `SeqMinGatedRNN`（去掉 W_c）seeds 42–51 并行，150ep 各一 job | RUNNING (7-26) | 检验去掉 W_c 后 inner_net2 是否跨 seed 一致收敛成 output gate。预注册判据：成功 seed 中 gate R²>0.7 且朝向一致→干净再发现；否则坐实非可辨识，gate 用功能性框架。~1.5 天出结果（单 seed ~36h，并行）。收够 ~4 个成功 seed 即可用 `scripts/gate_crossseed.py` 分析。 |
-
-### 已终止（原 2026-06-27 提交的 job，终态已核实）
+| 613846–613855 | `SeqMinGatedRNN`（去掉 W_c）seeds 42–51 并行，150ep 各一 job | RUNNING (7-26) | 探索去掉 W_c 后 inner_net2 的 gate-family held-out fit 是否提高且跨 seed 更一致。R²>0.7 仅作为预先记录的筛查阈值，不能单独证明 gate 再发现；还需 empirical-manifold、方向一致性和非门控基线比较。~1.5 天出结果（单 seed ~36h，并行）。 |
 
 ### 已终止（原 2026-06-27 提交的 job，终态已核实）
 
@@ -107,7 +106,7 @@
 | Plan B + tanh-bounded | 37K | 成功 seeds ~97.5–98.2% | 3/5 ✅, 2 NaN | NaN 未解决 |
 | Plan B + all | 37K | 成功 seeds ~97.9–98.2% | 3/5 ✅, 2 NaN | NaN 未解决 |
 
-**关键发现**：Plan A（单 InnerNet 替换 tanh）完全失败。Plan B（2 InnerNet + cell state）成功——给一个加法记忆通道，InnerNet 就能自主发现 gate 机制。长训（150ep）成功 seeds 提升到 98.36%，逼近 GRU。**训练不稳定（5 seeds 里 2 个 NaN）目前未解决：3 种修复（梯度裁剪 / tanh 约束 / 组合）全部无效，且同一 seed 反复炸 → 推断是初始化敏感而非数值增长。**
+**关键发现**：Plan A（单 InnerNet 替换 tanh）完全失败。Plan B（2 InnerNet + cell state）在 3/5 seeds 达到 98.36%，说明加法记忆 + 可学二元交互在功能上足以解决任务；跨 seed/on-manifold 分析不支持单个 InnerNet 收敛为标准 gate。**训练不稳定（5 seeds 里 2 个 NaN）目前未解决：3 种修复（梯度裁剪 / tanh 约束 / 组合）全部无效。**
 
 ### 其他最近完成
 
@@ -129,8 +128,8 @@
 
 | # | 项目 | 状态 | 说明 |
 |---|------|------|------|
-| **P1** | **发现与定量提炼** | ✅ 核心完成 + 跨seed强化 | `scripts/distill_innernet.py` 定量显示 FFN 旗舰函数由 `0.24·silu(a)·b` 解释（R²=0.942；纯 `a·b` 仅 0.66）。**新增跨 seed 一致性**（`scripts/distill_crossseed.py`，5 seeds）：swiglu R²=0.947±0.010、系数 0.238±0.005，独立 seed 全收敛到同一 SwiGLU 门控 → 发现可复现，非偶然。CNN deploy 已完成、FFN deploy TIMEOUT；部署不是投稿前置，不重跑。 |
-| **P2** | **Gate discovery 稳定性边界** | ✅ 诊断已收口 | Plan B 成功 seeds 约 98.36%（150ep），但稳定性未解：547208 全叠加诊断（本地 `exp/seq_mnist_gated_diag_20260627_171855_d46bf25c`）仍 **2/5 NaN**（seed 42/46）。论文如实报告成功率 + 失败率，不把完全稳定作为发现成立的前提。 |
+| **P1** | **表面定量提炼** | ⚠️ provenance 已纠正 | FFN warm-start checkpoint 可由 `0.24·silu(a)·b` 解释（R²=0.942），5 seeds 为 R²=0.947±0.010。但 5 runs 共享显式 SwiGLU-fitted 初值，只证明训练后保留，不能证明独立再发现。真正 discovery 证据需非 SwiGLU 初值的多 seed checkpoint。 |
+| **P2** | **Seq-MNIST 功能与稳定性边界** | ✅ 诊断已收口；探索实验运行中 | Plan B 3/5 成功 seeds 约 98.36%，2/5 NaN；单个 InnerNet gate 表面跨 seed 不一致。论文如实报告成功率和失败率。约束 cell jobs 613846–855 只探索可辨识性，不预设其能证明 gate。 |
 | **P3** | **结果审计与统计严谨性** | ⏳ 进行中 | canonical manifest 与 paired/unpaired stats 已完成。旧 `fig_scaling_law` 使用 parameter-sharing 修复前的数据，暂不用于论文；修复后汇总并非单调（3.3%→1.6%→0.8%→1.7%）。四规模 vs GELU paired-t 已复算：p=0.00022/0.05095/0.361/0.173。剩余：自动分组汇总、冲突报告和其余核心结果统计。 |
 
 ### 🔴 Critical
@@ -187,7 +186,7 @@
 | U38 | Multiply-init 多任务 | ✅ 5/5 seeds | d=64 持平, d=128 -0.24, PTB -1.08, **MLM MultInit 15.93±0.21 vs SwiGLU 19.09±0.27 (-16.6%)** |
 | U39 | Scratch-init (从头训对比) | ⏳ 2.5/5 seeds | SwiGLU 一致赢所有 InnerNet 初始化。Seed 42: SwiGLU 76.6 > Gaussian 78.1 > Random 79.3 > Multiply 80.2 |
 | U40 | RNN PTB 重跑 | ✅ | 2arg Test PPL≈169, 1arg PPL≈179, tanh PPL≈140。**InnerNet 输 tanh baseline 20-28%**。PTB 上 InnerNet 不好用 |
-| U41 | Sequential MNIST (InnerNet 发现 gate) | ⏳ **Plan B 成功!** | Plan A 11.04%(失败) / **Plan B 150ep 成功 seeds ~98.36%**(逼近 GRU 98.72%)。给 cell state 脚手架 InnerNet 自主学出 gate |
+| U41 | Sequential MNIST（加法记忆 + InnerNet） | ⏳ 约束 cell 探索运行中 | Plan A 11.04%（失败）；Plan B 3/5 成功 seeds ~98.36%，2/5 NaN。功能结果成立，但单个 InnerNet gate 表面不可辨识。 |
 | U42 | Plan B 训练稳定性 | ✅ 诊断收口：全叠加仍 2/5 NaN | 前 3 个稳定性变体各 2/5 NaN。第 3 轮全叠加（ortho+warmup3+cell_tanh+clip0.25）诊断 547208 结果已拉回：seed 42 ep4 NaN、seed 46 ep1 NaN，43/44/45 正常。全叠加未根治，稳定性是已知边界。 |
 | **U20** | **修复 InnerNet parameter sharing** | ✅ TF 全完成 | d=64 112.83, d=128 95.26, d=192 88.42, **d=256 84.62**, PTB 207.91。全部赢 GELU。ResNet full 持平, internal +1.5%。MLM 124.82 差 |
 

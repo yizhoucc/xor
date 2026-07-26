@@ -1,10 +1,10 @@
-"""RNN models for Sequential MNIST — testing whether InnerNet can discover gates.
+"""RNN models for Sequential MNIST bivariate-interaction experiments.
 
 4 models:
   - SeqRNN:          Standard RNN + tanh (baseline)
   - SeqLSTM:         Standard LSTM (upper bound)
   - SeqInnerNetRNN:  Plan A — RNN with 1 InnerNet replacing tanh (h and x separate)
-  - SeqGatedRNN:     Plan B — RNN with 2 InnerNets + cell state (can learn gates)
+  - SeqGatedRNN:     Plan B — RNN with 2 InnerNets + additive cell state
 """
 import math
 import torch
@@ -173,7 +173,7 @@ class GatedInnerNetRNNCell(nn.Module):
 
 
 class SeqGatedRNN(nn.Module):
-    """Plan B: RNN with cell state + 2 InnerNets (can discover gates)."""
+    """Plan B: RNN with an additive cell state and two InnerNets."""
     def __init__(self, input_size=1, hidden_size=128, num_classes=10, inner_hidden=32,
                  cell_tanh=False, ortho_init=False):
         super().__init__()
@@ -192,7 +192,7 @@ class SeqGatedRNN(nn.Module):
 
 
 # ============================================================
-# Plan B (constrained): force the output gate into inner_net2
+# Plan B (constrained): reduce output-path non-identifiability
 # ============================================================
 
 class MinGatedInnerNetRNNCell(nn.Module):
@@ -203,10 +203,11 @@ class MinGatedInnerNetRNNCell(nn.Module):
     directly. In the unconstrained cell, W_c can absorb/rotate the cell-to-output
     mapping, so the gating role need not live in inner_net2 — which is why the
     learned inner_net2 surface is seed-inconsistent. Removing that linear degree
-    of freedom forces inner_net2 to be the (only) nonlinear map from cell state
-    to hidden output, testing whether it then reproducibly converges on an
-    output-gate shape sigma(a) * f(c). ln_c is kept (non-learnable-mixing) for
-    stability over the 784-step additive cell state.
+    of freedom makes inner_net2 the only nonlinear map from cell state to hidden
+    output and tests whether its surface becomes more gate-like. It does not
+    mathematically force a canonical output gate: the MLP, recurrent projection,
+    LayerNorm, and classifier can still implement distributed alternatives.
+    ln_c is kept for stability over the 784-step additive cell state.
     """
     def __init__(self, input_size, hidden_size, inner_hidden=32, ortho_init=True):
         super().__init__()

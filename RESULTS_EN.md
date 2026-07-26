@@ -6,12 +6,12 @@
 
 InnerNet replaces scalar activations (ReLU) with a small learned MLP taking two inputs: `f(a, b) → output`, so each neuron computes a nonlinear interaction between two learned linear projections (analogous to the soft-XOR interactions of cortical neurons).
 
-We position InnerNet not as a drop-in *better activation function*, but as a **differentiable tool for discovering architectural primitives**: replace fixed activations with InnerNet, train, visualize the learned 2D function, and quantify it with simple closed-form operators. The central evidence is that InnerNet **independently rediscovers two established primitives**:
+We position InnerNet not as a drop-in *better activation function*, but as a **differentiable probe for architectural primitives**: replace fixed activations with InnerNet, train, visualize the learned 2D function, and quantify it with simple closed-form operators. The current evidence establishes two functional capabilities, with different evidential strength:
 
-- **SwiGLU rediscovery** — in the Transformer FFN, InnerNet autonomously converges on the multiplicative gating interaction that defines SwiGLU, without being told to.
-- **Gating rediscovery** — in a recurrent network given only an additive memory channel (Sequential MNIST), InnerNet learns LSTM/GRU-style gates from scratch (~98% vs 11% for a plain RNN).
+- **SwiGLU retention after warm-start** — an InnerNet explicitly fitted to SwiGLU remains close to a scaled SwiGLU surface after task training across five seeds.
+- **Functional recurrent gating** — a recurrent network with an additive memory channel and two InnerNets solves Sequential MNIST (~98% vs 11% for a plain RNN), although the individual InnerNet surfaces are not identifiable as canonical LSTM/GRU gates.
 
-This reframes the large-scale result as a boundary rather than a contradiction: a from-scratch InnerNet underperforms the hand-designed SwiGLU it is meant to discover. The scientific claim concerns the learned interaction, not direct deployment of the inner network.
+This reframes the large-scale result as a boundary rather than a contradiction: a from-scratch InnerNet underperforms hand-designed SwiGLU, while the warm-start experiments establish expressivity and adaptation. Autonomous operator rediscovery requires analysis of checkpoints trained without an explicit SwiGLU initialization.
 
 **Supporting findings:**
 
@@ -20,7 +20,7 @@ This reframes the large-scale result as a boundary rather than a contradiction: 
 3. **Scale boundary** — InnerNet remains below same-width GELU across the controlled d=64–256 sweep, but the gains are not monotonic (3.3%, 1.6%, 0.8%, 1.7%) and reverse in the larger GPT-style experiment. We therefore report scale as an empirical boundary, not as a fitted scaling law.
 4. **Simplicity wins** — simple adjacent pairing > deliberate semantic pairing; no pretraining needed (end-to-end ≈ 3-phase).
 
-**Relation to prior work:** Yoon et al. (IEEE Access 2022) introduced two-argument activations on MLP/CNN classification (MNIST/CIFAR), reporting modest accuracy gains and improved robustness. We extend this to 10+ architectures (Transformer, LSTM, recurrent gating, autoencoders, ResNet/VGG/WRN, ViT, MLP-Mixer, RL, masked/causal LM) and recast the contribution as architecture discovery, evidenced by the independent rediscovery of SwiGLU and gating mechanisms.
+**Relation to prior work:** Yoon et al. (IEEE Access 2022) introduced two-argument activations on MLP/CNN classification (MNIST/CIFAR), reporting modest accuracy gains and improved robustness. We extend this to 10+ architectures (Transformer, LSTM, recurrent models, autoencoders, ResNet/VGG/WRN, ViT, MLP-Mixer, RL, masked/causal LM) and study when learned two-argument interactions expose useful architectural structure.
 
 ---
 
@@ -69,7 +69,7 @@ Configs: `config/experiments/ae_mnist_2arg.yaml`, exp: `exp/ae_mnist_2arg_*`
 | WikiText-2 d=256 | 86.05±0.97 | **81.56±0.94** | **84.62±1.47** | **-1.7%** |
 | PTB d=128 | 212.28±0.88 | **205.82±0.98** | **207.91** | **-2.1%** |
 
-InnerNet reaches lower mean PPL than GELU at every scale (-0.8% to -3.3%), and at d=64 it matches the hand-designed SwiGLU gate (112.83 ≈ 112.31) — reached automatically rather than by design. This is the central result: a learnable two-argument activation rediscovers a gated interaction. Paired tests against GELU give p=0.00022, 0.05095, 0.361, and 0.173 at d=64, 128, 192, and 256, respectively; thus the direction is consistent, while inferential support is strongest at the smallest scale. These are same-width comparisons, not parameter-matched ones.
+InnerNet reaches lower mean PPL than GELU at every scale (-0.8% to -3.3%), and at d=64 its PPL matches the hand-designed SwiGLU model (112.83 vs 112.31). Performance parity alone does not identify the learned operator. Paired tests against GELU give p=0.00022, 0.05095, 0.361, and 0.173 at d=64, 128, 192, and 256, respectively; thus the direction is consistent, while inferential support is strongest at the smallest scale. These are same-width comparisons, not parameter-matched ones.
 
 **Scale boundary**: The same-width advantage remains positive but non-monotonic through d=256 in the standard Transformer sweep. It reverses in the larger GPT-style experiment, while warm-start experiments show that the learned function remains expressive enough in the controlled setting.
 
@@ -141,26 +141,26 @@ Multiply-initialized InnerNet (f(a,b)=a·b) across 4 tasks:
 
 MLM shows the largest gain. Simple multiplicative interaction f(a,b)=a·b provides a strong initialization, particularly for tasks where feature interaction dominates.
 
-### Distillation: Quantifying SwiGLU Rediscovery
+### Distillation: Quantifying Warm-start Surface Retention
 
 The discovery step (training InnerNet) yields a learned 2D surface f(a, b). We distill each trained InnerNet into closed-form operators by least-squares fitting on a [-5, 5]² grid (`scripts/distill_innernet.py`), reporting R² per family:
 
 | Checkpoint | pure mult `a·b` | **SwiGLU `silu(a)·b`** | poly3 | Distilled operator |
 |-----------|:---------------:|:----------------------:|:-----:|--------------------|
-| Transformer FFN (d=128) | 0.658 | **0.942** | 0.997 | **0.24·silu(a)·b** |
+| Transformer FFN (d=128, SwiGLU-initialized) | 0.658 | **0.942** | 0.997 | **0.24·silu(a)·b** |
 | CNN (CIFAR-10) | 0.674 | **0.908** | 0.974 | 0.35·silu(a)·b |
 | Control (InnerNet fit to SwiGLU) | 0.542 | **0.992** | 0.984 | 0.98·silu(a)·b |
 
-The Transformer FFN InnerNet is **94% explained by a single SwiGLU term** `silu(a)·b`, versus only 66% by a pure multiplicative term `a·b` — quantitative evidence that the learned activation converges specifically on SwiGLU-style gating, not generic multiplication. The control row validates the method: an InnerNet explicitly fit to SwiGLU is recovered as 0.98·silu(a)·b (R²=0.992). The distilled operator is a scaled SwiGLU `c·silu(a)·b`.
+The Transformer FFN InnerNet is **94% explained by a single SwiGLU term** `silu(a)·b`, versus only 66% by a pure multiplicative term `a·b`. This checkpoint was initialized by explicitly fitting the InnerNet to SwiGLU and copying a trained SwiGLU network (`scripts/innernet_vs_swiglu.py`), so the result shows that a scaled SwiGLU-like surface is retained during subsequent task optimization. It is not evidence of autonomous rediscovery. The control row validates the fitting procedure.
 
-**Reproducibility across seeds.** The rediscovery is not a single-run artifact. Distilling five independently trained InnerNet FFNs (d=128, seeds 42–46) gives a SwiGLU fit of **R² = 0.947 ± 0.010** (range 0.931–0.956) with a tightly clustered gate coefficient of **0.238 ± 0.005** on `silu(a)·b`, while the pure-multiplicative fit stays at 0.66 ± 0.003 for every seed. Independently optimized networks converge on the *same* SwiGLU gate, which is the core discovery claim.
+**Reproducibility across seeds.** Distilling five task-trained InnerNet FFNs (d=128, seeds 42–46) gives a SwiGLU fit of **R² = 0.947 ± 0.010** (range 0.931–0.956) with a tightly clustered coefficient of **0.238 ± 0.005** on `silu(a)·b`, while the pure-multiplicative fit stays at 0.66 ± 0.003. All five runs share the same explicitly SwiGLU-fitted InnerNet initialization; the table therefore measures cross-seed retention after warm-start, not independent convergence from uninformed initializations.
 
 | | SwiGLU R² | `silu(a)·b` coef | mult `a·b` R² |
 |---|:---:|:---:|:---:|
 | per seed (42/43/44/45/46) | 0.942 / 0.931 / 0.956 / 0.949 / 0.955 | 0.238 / 0.231 / 0.241 / 0.243 / 0.237 | 0.658 / 0.662 / 0.660 / 0.665 / 0.658 |
 | **mean ± SD** | **0.947 ± 0.010** | **0.238 ± 0.005** | 0.661 ± 0.003 |
 
-Config: `scripts/distill_innernet.py` (single checkpoint), `scripts/distill_crossseed.py` (cross-seed table → `results/figures/distill_crossseed_ivs_d128.json`), `scripts/innernet_vs_swiglu.py` (discover).
+Config: `scripts/distill_innernet.py` (single checkpoint), `scripts/distill_crossseed.py` (cross-seed table → `results/figures/distill_crossseed_ivs_d128.json`), `scripts/innernet_vs_swiglu.py` (checkpoint generation and warm-start provenance).
 
 ---
 
@@ -178,7 +178,7 @@ Classic InnerNet achieves **-6.2% PPL** vs standard LSTM. Adjacent-dimension pai
 
 Config: `config/experiments/lstm_wikitext_classic.yaml`, exp: `exp/lstm_wikitext_classic_*`
 
-## 4b. Sequential MNIST — InnerNet Discovers Gate Mechanisms
+## 4b. Sequential MNIST — Functional Gating with Additive Memory
 
 **Hypothesis**: LSTM outperforms RNN due to learned gates. InnerNet's dual-input activation naturally supports gating patterns (σ(a)·b). Can RNN+InnerNet approach LSTM on a task requiring long-term memory?
 
@@ -190,15 +190,11 @@ Sequential MNIST reads each 28×28 image pixel-by-pixel (784 timesteps), then cl
 | SeqLSTM | 68K | 77.03% ± 15.66% | 5/5 |
 | SeqGRU | 52K | **98.72% ± 0.14%** | 5/5 |
 | SeqInnerNetRNN (Plan A) | 19K | 11.04% ± 0.62% | 5/5 |
-| **SeqGatedRNN (Plan B)** | 37K | **~98.4%** (98.42 / 98.15 / 98.51) | 3 runs |
+| **SeqGatedRNN (Plan B)** | 37K | **~98.4%** (98.42 / 98.15 / 98.51) | 3/5 successful (2 NaN) |
 
 **Plan A** (single InnerNet replacing tanh) fails — identical to vanilla RNN. Without an additive memory channel, InnerNet cannot learn to prevent information decay over 784 steps.
 
-**Plan B** (2 InnerNets + cell state) succeeds — approaching GRU performance with 46% fewer parameters than LSTM. The cell state provides the minimal architectural scaffold (additive memory), while InnerNet autonomously discovers the gating functions:
-- InnerNet1 (before cell update): learns input gate behavior
-- InnerNet2 (after cell update): learns output gate behavior
-
-This is the strongest evidence for **InnerNet as an architecture discovery tool**: given only an additive memory channel, the learned activation functions independently converge on gate-like mechanisms similar to LSTM/GRU, without any explicit gate design. Plan B reaches ~98.4% (approaching GRU's 98.72%) with 46% fewer parameters than LSTM.
+**Plan B** (2 InnerNets + cell state) reaches ~98.4% on its three successful runs, approaching GRU's 98.72% with 46% fewer parameters than LSTM. This establishes functional sufficiency: an additive memory path plus learned bivariate interactions can solve the long-sequence task. Cross-seed grid and on-manifold fits do **not** show that InnerNet1 and InnerNet2 individually converge to canonical input and output gates; the solution is distributed across the recurrent projections, cell state, normalization, and InnerNets. Two of five runs diverged to NaN, so optimization stability remains a limitation.
 
 Config: `config/experiments/seq_mnist_*.yaml`
 
@@ -262,7 +258,7 @@ InnerNet provides consistent benefits in **feedforward networks without built-in
 - **ResNet internal-only**: +1.5% on CIFAR-100 — position matters
 - **Parameter efficiency**: 55% parameter savings (InnerNet w=128 ≈ ReLU w=256)
 - **Multiply-init MLM**: -16.6% PPL vs SwiGLU (5 seeds)
-- **Gate discovery**: RNN + cell state + InnerNet achieves 98% on Sequential MNIST (784 steps), autonomously discovering gate mechanisms comparable to LSTM/GRU
+- **Functional recurrent interaction**: RNN + additive cell state + InnerNet reaches 98% on 3/5 Sequential MNIST runs; individual gate surfaces are not identifiable and 2/5 runs diverge
 
 **Capacity and optimization**: InnerNet wins or ties SwiGLU in **10/11** warm-start tasks. The ivs_d128 experiment directly verifies capacity ≥ SwiGLU (Frozen InnerNet 77.38±0.51 = SwiGLU 77.38±0.54, 5 seeds). Four different initializations all converge to the same optimum (~71.9 vs SwiGLU ~77.3), confirming the endpoint is task-determined. The from-scratch gap is an optimization issue: InnerNet's per-epoch compute is higher, and the advantage decreases with model size. Most impactful for small/on-device models and warm-start finetuning scenarios.
 

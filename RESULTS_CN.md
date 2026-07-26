@@ -4,19 +4,19 @@
 
 ## 目前的 Story
 
-### 定位：可微的架构发现工具（NOT "更好的激活函数"）
+### 定位：可微的架构探针（NOT "更好的激活函数"）
 
 把 ReLU 换成一个小 MLP（两输入一输出），让每个神经元能看到隔壁特征。但**我们不卖"它是更强的激活函数"**——因为从头训在大模型上打不过 SwiGLU、直接替换又慢又掉点（Qwen -9%）。如果按"better activation"写，reviewer 会说"和原论文（IEEE Access 2022）一样、marginal、推理慢、没价值"。
 
-**我们卖的是：用它来发现架构。** 流程：InnerNet 替换激活 → 训练 → 可视化学到的 2D 函数 → 提炼成简单快算子 → 用正常算子部署。证据是它能**独立重新发现两个公认 SOTA 基元**：① Transformer FFN 里自主学出 SwiGLU 式乘法门控；② Sequential MNIST 里只给加法记忆通道就长出 LSTM/GRU gate。这个 framing 下，"从头训打不过 SwiGLU / 推理慢"不是弱点而是论据——发现工具本来就不用来部署。
+**当前最稳妥的定位是：用它探测架构基元。** 流程：InnerNet 替换激活 → 训练 → 可视化学到的 2D 函数 → 提炼成简单算子。现有证据分两级：① Transformer FFN 的显式 SwiGLU warm-start 在后续任务训练中保持为缩放版 SwiGLU；② Sequential MNIST 中，加法记忆通道 + 两个 InnerNet 在成功 runs 上达到约 98%，但单个 InnerNet 并未跨 seed 收敛成标准 gate。真正的“从无信息初始化独立再发现 SwiGLU”仍缺对应 checkpoint 证据。
 
 ### 相对原论文（Yoon et al., IEEE Access 2022）的新意
 
-原论文只测 MLP+CNN、只在 MNIST/CIFAR 上、结论温和（简单任务略有提升 + 鲁棒 + 生物动机）。我们超出的：**架构广度**（Transformer/LSTM/RNN/AE/ResNet/ViT/Mixer/PPO/MLM/GPT 10+ 个）+ **概念新发现**（SwiGLU 再发现、gate 再发现、位置决定效果、优化壁垒≠容量上限、scaling 反转、distillation）。
+原论文只测 MLP+CNN、只在 MNIST/CIFAR 上、结论温和（简单任务略有提升 + 鲁棒 + 生物动机）。我们超出的：**架构广度**（Transformer/LSTM/RNN/AE/ResNet/ViT/Mixer/PPO/MLM/GPT 10+ 个）+ **系统性边界**（位置效应、优化壁垒≠容量上限、scaling 反转、可解释表面提炼，以及加法记忆 + 二元交互的功能性结果）。
 
 ### 实验事实速查
 
-确认有效的：CNN、AE、Transformer FFN（d=64~256 全赢 GELU）、LSTM WikiText-2、PPO、ResNet internal-only、Seq-MNIST gate discovery（~98%）。
+确认有效的：CNN、AE、Transformer FFN（d=64~256 全赢 GELU）、LSTM WikiText-2、PPO、ResNet internal-only、Seq-MNIST 加法记忆 + InnerNet（成功 runs ~98%）。
 不好用的：ResNet 全换（skip connection 冗余）、LSTM PTB、大模型从头训（GPT d=256 反转）、大模型直接替换（Qwen -9%）。
 
 **关键发现**：InnerNet 容量上限 ≥ SwiGLU（warm-start 10/11 赢或持平，ivs_d128 追平），从头训大模型输是优化问题。模型越大差距越大（d=64 赢 3.3%, d=256 输 5.2%）。适合"发现 + warm-start finetune"，不适合大模型从头训或直接部署替换。
@@ -25,7 +25,7 @@
 
 1. **结果源审计**：canonical manifest 已建立；继续清理修复前后结果混用、缺原始来源和不完整 seeds。
 2. **统计严谨性**：paired/unpaired 工具已完成；继续为正文核心结果生成 raw seeds、差值区间、效应量和配对/非配对检验。
-3. **gate 稳定性不作为卖点**：Plan B 全叠加诊断（547208，本地 `exp/seq_mnist_gated_diag_20260627_171855_d46bf25c`）仍 2/5 NaN，是已知未解边界。**决定：不 claim 稳定性 → 不需出证据 → 对外文档不提**。gate discovery 按存在性证明写（成功 run ~98.4% 逼近 GRU），RESULTS_EN 已去掉 NaN 计数和 "open issue" 措辞。NaN 原始数据仅在此内部留档。
+3. **gate 稳定性必须透明报告**：Plan B 全叠加诊断（547208，本地 `exp/seq_mnist_gated_diag_20260627_171855_d46bf25c`）仍 2/5 NaN，是已知未解边界。即使不把稳定性作为贡献，成功结果也是从 5 次尝试中筛出的 3 次，因此对外必须写明 **3/5 successful, 2 NaN**；否则读者无法判断选择机制。
 
 部署不是投稿前置条件。CNN deploy 已完成，FFN deploy 因时限中止；它们只作为扩展结果，不阻塞以“发现”为核心的论文。
 
@@ -185,17 +185,17 @@ SwiGLU 一直赢 1-3 PPL。Gaussian pretrain 略好于 random/multiply。确认�
 
 ### 提炼 InnerNet 为简单闭式算子（distill — P1）✅ 定量版
 
-**这是"发现→提炼→部署"闭环的提炼段。** 用 `scripts/distill_innernet.py` 把训练好的 InnerNet checkpoint 在 [-5,5]² 上采样，用最小二乘拟合到几种闭式算子，报 R²：
+用 `scripts/distill_innernet.py` 把训练好的 InnerNet checkpoint 在 [-5,5]² 上采样，用最小二乘拟合到几种闭式算子，报 R²。注意：下表旗舰 FFN checkpoint 来自显式 SwiGLU 拟合后的 warm-start，不是无信息初始化的发现实验。
 
 | checkpoint | mult `a·b` | **swiglu `silu(a)·b`** | poly3 | 提炼出的算子 |
 |-----------|-----------|----------------------|-------|------------|
-| **ivs_d128（FFN 旗舰）** | 0.658 | **0.942** | 0.997 | **0.24·silu(a)·b**（缩放版 SwiGLU） |
+| **ivs_d128（FFN，SwiGLU warm-start）** | 0.658 | **0.942** | 0.997 | **0.24·silu(a)·b**（缩放版 SwiGLU） |
 | CNN CIFAR-10 | 0.674 | **0.908** | 0.974 | 0.35·silu(a)·b |
 | fit-to-SwiGLU（自检）| 0.542 | **0.992** | 0.984 | 0.98·silu(a)·b ✓ |
 
-**关键定量证据**：FFN InnerNet 学到的函数 **94% 由单个 SwiGLU 项解释**，而纯乘法 `a·b` 只有 66%——说明它收敛到的不是泛泛的乘法，而是**特定的 silu-gating，即 SwiGLU**。自检行确认方法正确：把一个显式拟合到 SwiGLU 的 InnerNet 喂进去，能还原出 `0.98·silu(a)·b`（R²=0.992）。
+**可支持的结论**：FFN InnerNet 任务训练后的函数仍有 **94% 由单个 SwiGLU 项解释**，而纯乘法 `a·b` 只有 66%。由于它在训练前已被显式拟合成 SwiGLU，这证明的是 SwiGLU 形状在后续优化中被保留并缩放，不是自主发现。自检行确认拟合方法能还原已知的 SwiGLU 表面。
 
-**跨 seed 一致性（新，核心证据升级）**：不是单个 run 的巧合。把 5 个独立训练的 InnerNet FFN（d=128, seeds 42–46）逐个提炼，SwiGLU 拟合 **R²=0.947±0.010**（范围 0.931–0.956），门控系数 **0.238±0.005**（silu(a)·b，SD 极小），而纯乘法每个 seed 都只有 0.66。**独立优化的网络收敛到同一个 SwiGLU 门控**——这把"某个 InnerNet 像 SwiGLU"升级成"InnerNet 可复现地再发现 SwiGLU"，是 discovery 论文最需要的证据。
+**跨 seed 一致性（warm-start retention）**：5 个 seeds 的后续任务优化彼此独立，但它们共享同一份显式拟合到 SwiGLU 的 InnerNet 初值。逐个提炼得到 SwiGLU 拟合 **R²=0.947±0.010**（范围 0.931–0.956），系数 **0.238±0.005**，纯乘法约 0.66。这个结果排除了单个 seed 的偶然漂移，但不能升级成“独立再发现”；要支持后者，必须分析从 Gaussian/random 等非 SwiGLU 初值训练并保存的多 seed checkpoint。
 
 | | swiglu R² | silu(a)·b 系数 | mult R² |
 |--|:---:|:---:|:---:|
@@ -204,9 +204,9 @@ SwiGLU 一直赢 1-3 PPL。Gaussian pretrain 略好于 random/multiply。确认�
 
 脚本 `scripts/distill_crossseed.py`，结果 `results/figures/distill_crossseed_ivs_d128.json`。
 
-提炼出的算子是**缩放版 SwiGLU** `c·silu(a)·b`（旗舰 c≈0.24，比标准 SwiGLU 的 1.0 温和很多，对应"压缩了范围的乘法交互"）。这个闭式算子就是闭环里要**部署**的快算子（下一步：塞回 fresh 模型，比 InnerNet 快、和 SwiGLU 同档）。
+提炼出的算子是**缩放版 SwiGLU** `c·silu(a)·b`（旗舰 c≈0.24）。在当前训练来源下，它是 warm-start 后的可压缩表示；若要把它作为新发现部署，须先补足无 SwiGLU 初始化的发现证据。
 
-（旧的多项式提炼 `f≈0.12·a·b+...` 来自更早的范围；现统一用上表的 silu 基拟合，对"SwiGLU 再发现"的论证更直接。）
+（旧的多项式提炼 `f≈0.12·a·b+...` 来自更早的范围；现统一用上表的 silu 基拟合，便于量化 warm-start 后的 SwiGLU 形状保留。）
 
 Configs: `scripts/distill_innernet.py`（提炼）, `scripts/innernet_vs_swiglu.py`（发现）。结果 JSON: `results/figures/distill_ivs_d128.json`
 
@@ -270,9 +270,9 @@ InnerNet 两个变体都**输 tanh 约 20-28%**。PTB 上 InnerNet 一致不好�
 
 Configs: `config/experiments/rnn_ptb_*.yaml`
 
-## 4c. Sequential MNIST — InnerNet 发现 gate ✅
+## 4c. Sequential MNIST — 加法记忆 + InnerNet 的功能性结果
 
-**核心想法**：LSTM 比 RNN 强是因为 gate。InnerNet 是双输入激活函数，天然能学出 σ(a)·b 这种 gate 模式。如果 RNN+InnerNet 在需要长记忆的任务上接近 LSTM → InnerNet 自主发现了 gate 机制。
+**实验问题**：InnerNet 是双输入激活函数，能够表示 σ(a)·b 一类门控形式。给 RNN 加一个加法记忆通道后，二元交互是否足以解决需要长记忆的任务？性能可以回答功能性问题；是否真的学出标准 gate，必须另做表面与机制分析。
 
 Sequential MNIST：逐像素读 MNIST（784 步），最后分类。RNN 完全记不住（11%），LSTM/GRU 轻松。
 
@@ -295,9 +295,7 @@ Plan B（150ep）成功 seed：98.42%, 98.15%, 98.51%（seed 44/46 NaN 训炸）
 
 **Plan A 失败**：单个 InnerNet 替换 tanh 不够。没有 cell state 提供加法记忆通道，InnerNet 无法学到 forget gate——信息在 784 步的传播中衰减殆尽。
 
-**Plan B 成功**：给 InnerNet 一个 cell state（加法连接），它就能自主学出 gate 机制：
-- InnerNet1（cell state 之前）：学到了 input gate 的角色——决定什么信息写入记忆
-- InnerNet2（cell state 之后）：学到了 output gate 的角色——决定什么信息输出
+**Plan B 的功能性结果**：给模型加法 cell state 和两个 InnerNet 后，3 个成功 seed 达到约 98%。这证明该组合足以解决长序列记忆任务，但不证明 InnerNet1/2 分别成为标准 input/output gate。
 
 Plan B（37K 参数）比 LSTM（68K）参数少 46%，成功 seeds 性能逼近 GRU。只给"加法记忆通道"这个最小脚手架，InnerNet+cell state 就能解长记忆任务（vs plain RNN 11%）。
 
@@ -307,7 +305,7 @@ Plan B（37K 参数）比 LSTM（68K）参数少 46%，成功 seeds 性能逼近
 - **结论**：功能层面 gate-like 行为成立（存在性证明：加法记忆 + 可学交互足以解 Seq-MNIST），但"每个 InnerNet 各自收敛成一个干净的 input/output gate"这个机制性读法**站不住**——网络靠 cell-state 递归 + 线性映射 + InnerNet 的分布式配合解决，不是单个 InnerNet = 单个门。
 - **进一步排除（2026-07-26）**：换 LSTM 精确门形式 σ(a)·tanh(b)、以及在**真实 Seq-MNIST 数据流形**上（跑真实前向抓 InnerNet 实际输入）重测，仍然乱——inner_net1 on-manifold 门控 R²=0.14/0.00/0.00，seed43 的 inner_net1 对任何门形式都 ≈0（full_gate 0.02）却照样 98.15%。**确认是非可辨识性**（gating 被 cell 递归 + W_h/W_x/W_c + LayerNorm + InnerNet 分摊），不是家族/范围选错，也不是 seed 数不够——**加 seed 不会变干净**。
 - **能不能靠跑集群拿到证据？评估：不能可靠拿到。** 唯一有机会的是重新设计"约束 cell"（去掉线性投影/LN，逼 InnerNet 成为唯一能承载门的地方）再从头训——但那是新架构、要 GPU 训几天、结果不确定、且模型已不是论文里那个。不值得赌。
-- **对外写作建议**：gate 只按**功能性存在证明**写（98% vs 11%，逼近 GRU，参数少 46%），**不要**把 SwiGLU 那种"跨 seed 收敛到同一闭式门"的强证据套到 gate 上。SwiGLU 是我们唯一有干净跨 seed 定量证据的再发现。结果留档 `results/figures/gate_crossseed_seqmnist.json`。
+- **对外写作建议**：gate 只按**功能性存在证明**写（成功 runs 98% vs 11%，逼近 GRU，参数少 46%），并公开 3/5 成功、2/5 NaN。SwiGLU 的跨 seed 表面也只能称 warm-start retention，不能称无信息初始化的再发现。结果留档 `results/figures/gate_crossseed_seqmnist.json`。
 
 ### 训练稳定性 — 3 种修复全部失败 ❌（2026-06）
 
@@ -401,4 +399,4 @@ GPT v4 (3/5 seeds)、free_init_v2 (Wiki 3/3, MLM 2/3)、scratch_init (2.5/5) 时
 - 大模型直接替换不可行（Qwen -9%），但 warm-start + 继续训可以（ivs_d128 追平）
 - InnerNet 适合：(1) 小模型 / on-device (2) warm-start finetune (3) 架构搜索工具
 - 不适合：大模型从头训、大模型直接替换
-- **Sequential MNIST gate 发现**：Plan B（2 InnerNet + cell state）98% 接近 GRU 99%，自主学出 gate 机制。Plan A（单 InnerNet）失败。给最小脚手架 InnerNet 就能发现架构
+- **Sequential MNIST 功能性结果**：Plan B（2 InnerNet + cell state）在 3/5 runs 达到 98%，接近 GRU 99%；Plan A（单 InnerNet）失败。表面分析不支持单个 InnerNet = 标准 gate，另有 2/5 NaN
