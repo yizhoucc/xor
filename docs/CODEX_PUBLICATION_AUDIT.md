@@ -64,7 +64,7 @@
 | 1 | 阅读原论文并核对公平性协议 | 完成 | 本文中的协议结论与引用位置 |
 | 2 | 盘点本地和集群结果源 | 待开始 | source inventory、缺失清单 |
 | 3 | 建立 canonical manifest | 待开始 | 机器可读结果清单和冲突报告 |
-| 4 | 修正 paired/unpaired 统计工具 | 进行中 | 脚本、测试、示例输出 |
+| 4 | 修正 paired/unpaired 统计工具 | 完成 | 脚本、测试、示例输出 |
 | 5 | 用 manifest 自动复核核心表格 | 待开始 | 可重复生成的核心结果表 |
 
 ## 暂缓事项
@@ -140,9 +140,45 @@
 - `pdftotext -layout docs/2110.06871v2.pdf -`
 - 使用 `.venv/bin/python` 实例化三种 Transformer 并统计 `sum(p.numel())`
 
+### 2026-07-26 10:40 PDT - 配对统计工具
+
+改动：
+
+- 重构 `scripts/compute_stats.py`，保留默认 independent mode，并新增显式 `--paired`。
+- paired mode：paired t-test、Wilcoxon signed-rank、Cohen's dz、within-pair mean difference bootstrap confidence interval。
+- independent mode：Welch t-test、Mann-Whitney U、pooled Cohen's d、independent bootstrap confidence interval。
+- 非有限值不再静默忽略：paired mode 按 pair 删除并报告数量；independent mode 分组删除并分别报告。
+- 新增 confidence level、bootstrap iterations、random seed 和 raw-value display 参数。
+- 新增 `tests/test_compute_stats.py`，覆盖配对差值、NaN/Inf pair、长度错位和独立样本统计。
+
+验证：
+
+- `.venv/bin/python -m unittest tests/test_compute_stats.py -v`：4 tests passed。
+- `.venv/bin/python -m py_compile scripts/compute_stats.py tests/test_compute_stats.py`：通过。
+
+现有 Transformer 5-seed 示例（每个 seed 取其 10 epoch 最低 validation PPL；same-width，不是 total-parameter-matched）：
+
+| Condition | Mean | Sample SD | Per-seed values |
+|---|---:|---:|---|
+| InnerNet | 95.2608 | 1.1130 | 93.8331, 95.5599, 94.5241, 96.7153, 95.6717 |
+| GELU | 96.8187 | 1.3267 | 95.6541, 95.1574, 97.3564, 97.8701, 98.0554 |
+| SwiGLU | 92.9806 | 1.2703 | 92.3048, 91.5118, 93.0462, 94.9354, 93.1047 |
+
+配对结果：
+
+- `GELU - InnerNet = +1.5579 PPL`，95% bootstrap CI `[+0.4869, +2.4506]`，paired-t `p=0.05095`，Wilcoxon `p=0.125`，Cohen's dz `1.23`。
+- `SwiGLU - InnerNet = -2.2803 PPL`，95% bootstrap CI `[-3.2379, -1.5585]`，paired-t `p=0.00917`，Wilcoxon `p=0.0625`，Cohen's dz `-2.11`。
+
+解释约束：
+
+- InnerNet 相对 GELU 的方向和效应量较大，但 n=5 下 paired-t 略高于 0.05，Wilcoxon 也不显著；不能只引用 bootstrap interval 或只引用一个检验。
+- SwiGLU 相对 InnerNet 的方向在 5 个 seeds 上一致。n=5 的双侧 Wilcoxon 最小可达 p-value 受离散性限制，因此同时报告原始 seed 值更重要。
+- 这些数值用于验证统计协议，不改变前述 same-width / parameter-count 限制。
+
 ## 提交记录
 
 | Commit | 分支 | 内容 | 验证 |
 |---|---|---|---|
 | `e4d4e9a` | `main` | Codex 开始前工作区快照 | push 成功，工作区干净 |
 | `cee495c` | `codex/publication-audit` | 建立审计范围和详细记录 | push 成功，工作区干净 |
+| `485f896` | `codex/publication-audit` | 原论文协议与公平性审计 | push 成功，工作区干净 |
