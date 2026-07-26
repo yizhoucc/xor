@@ -220,10 +220,123 @@
 | `2b35740` | `codex/publication-audit` | 配对/独立样本统计工具与测试 | 8 项中的统计 4 tests 通过，push 成功 |
 | `5a9705a` | `codex/publication-audit` | 本地结果 inventory、canonical manifest 与测试 | 8 tests 通过，452 experiments / 919 metric rows，push 成功 |
 
-## 下一批短任务
+## 后续工作分工
 
-1. 在允许 SSH 的环境恢复 Mind Cluster 远端结构化结果，优先寻找 CNN CIFAR-10 2-arg seed 42 和 2026-06-27 后的任务。
-2. 从 `metric_manifest.csv` 自动生成按实验分组的 n / mean / population SD / sample SD / raw seeds，并显式报告 duplicate seeds。
-3. 生成文档冲突报告；只在原始来源足够时修正 `PROJECT_STATUS.md`、`RESULTS_CN.md` 和 `RESULTS_EN.md`。
+### 用户负责：SSH 与远端结果取证
 
-不在这批任务中启动训练、部署、跨任务迁移或新增模型。
+所有操作只查询状态、读取日志或复制结果，不在 Mind 登录节点启动训练、Python 分析或其他计算任务。
+
+#### SSH-1：核对 2026-06-27 记录的任务
+
+查询以下 Slurm jobs 的最终状态、退出码和运行时间：
+
+- `547111`：FFN distilled deployment
+- `547112`：CNN distilled deployment
+- `547208`：Sequential MNIST 5-epoch stability diagnostic
+- `547209`：依赖任务的 Bark notification
+
+建议只读命令：
+
+```bash
+ssh -Y -C -l yizhouc3 mind.cs.cmu.edu
+squeue -u yizhouc3
+sacct -j 547111,547112,547208,547209 --format=JobID,JobName,State,ExitCode,Elapsed,Start,End
+```
+
+需要返回的信息：每个 job 的 `State`、`ExitCode`、`Elapsed`，以及失败任务对应的 `logs/slurm_<jobid>.err` 最后 50 行。
+
+#### SSH-2：恢复结构化结果文件
+
+优先检查并复制回本地相同相对路径：
+
+- `/home/yizhouc3/xor/exp/deploy_ffn_d128/results.json`
+- `/home/yizhouc3/xor/exp/deploy_cnn_cifar10/results.json`
+- job 547208 对应的 Sequential MNIST 结果目录和结果文件
+- `/home/yizhouc3/xor/exp/cnn_cifar_2arg_20260404_172455_9a5b0541/test_results.p`
+
+前两个 deployment 文件只用于补齐项目状态；即使不存在，也不阻塞论文发现主线。
+
+CNN seed 42 是最高优先级。如果远端同名目录没有 `test_results.p`，继续检查旧备份、同步目录或 `/user_data/yizhouc3/xor_checkpoints` 中是否有对应 config hash `9a5b0541` 的记录。只需复制原始文件，不要根据文档数字手工创建 pickle。
+
+#### SSH-3：列出 2026-06-27 之后的新结果
+
+需要列出 `/home/yizhouc3/xor/exp/` 下 2026-06-27 之后更新的结构化结果文件：
+
+```bash
+find /home/yizhouc3/xor/exp -type f \
+  \( -name 'results.json' -o -name 'test_results.p' -o -name 'lm_results.p' \
+     -o -name 'mixer_results.p' -o -name 'rl_results.p' \) \
+  -newermt '2026-06-27' -print
+```
+
+这些文件复制回本地 `exp/` 的同一相对路径即可；`exp/` 已被 Git 忽略，不会污染 Codex 分支提交。
+
+#### SSH 完成标准
+
+- 4 个旧 job 不再留在 `PROJECT_STATUS.md` 的运行中列表。
+- CNN CIFAR-10 2-arg seed 42 被标记为 `raw-verified`，或明确记录为“原始结果已丢失”。
+- 6 月 27 日后的远端结果都有本地副本或一份明确的缺失清单。
+
+### Codex 负责：本地短任务
+
+#### LOCAL-1：自动分组汇总
+
+从 `metric_manifest.csv` 生成 group summary，包含：
+
+- experiment name / model / dataset / metric
+- raw seed values
+- n 和 unique seed count
+- mean
+- population SD（复现现有文档数字）
+- sample SD（正式统计建议）
+- duplicate seed 和 missing seed 标记
+
+遇到同实验、同 seed 的重复目录时不自动选择“最好”或“最新”结果，先输出冲突。
+
+#### LOCAL-2：核心统计表
+
+只计算具有可对齐 seeds 的现有核心比较：
+
+- Transformer WikiText-2：InnerNet / GELU / SwiGLU
+- CNN CIFAR-10：2-arg / 1-arg / ReLU（seed 42 恢复后）
+- 其他已有完整 seed 数据且正文确实使用的比较
+
+每项报告 raw values、配对差值、95% CI、paired-t、Wilcoxon 和 Cohen's dz。没有对齐 seed 的实验改用 independent mode，并明确标注。
+
+#### LOCAL-3：文档冲突报告
+
+逐项比较 `PROJECT_STATUS.md`、`RESULTS_CN.md`、`RESULTS_EN.md` 与 manifest，输出：
+
+- 一致且 raw-verified
+- 数值一致但标准差定义不同
+- doc-derived / 缺原始来源
+- 修复前后结果混用
+- 算术不一致
+- incomplete seeds 被写成完整结论
+
+先生成报告，再修改结果文档；没有原始证据的数字不凭推断覆盖。
+
+#### LOCAL-4：同步正式文档
+
+只有 LOCAL-3 和远端取证完成后才更新三份正式文档：
+
+- `PROJECT_STATUS.md`
+- `RESULTS_CN.md`
+- `RESULTS_EN.md`
+
+所有正式表格注明 n、标准差定义、config 或 exp folder，以及 paired/unpaired protocol。
+
+#### Codex 完成标准
+
+- 所有正文 headline results 都能追溯到 manifest 行或明确标成 doc-only。
+- 三份正式文档不再存在同一实验的不同数字。
+- 表格和统计输出可以由命令重建。
+- 详细审计文档记录每个冲突的处理依据和对应 commit。
+
+## 明确不做
+
+- 不启动新的 Transformer、CNN 或 Sequential MNIST 训练。
+- 不把 fixed-op deployment 设为投稿门槛。
+- 不做 empirical-distribution distillation 或 operator transfer matrix。
+- 不增加数据集、模型或 CUDA 优化。
+- 不在证据审计完成前大规模清理仓库或改写论文 story。

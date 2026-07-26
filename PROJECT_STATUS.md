@@ -9,6 +9,7 @@
 - 配对统计工具已完成：新增 paired t-test、Wilcoxon、Cohen's dz、bootstrap CI 和非有限 pair 报告，并保留独立样本模式。5-seed same-width Transformer 示例中，`GELU-InnerNet=+1.558 PPL`（paired-t p=0.05095），`SwiGLU-InnerNet=-2.280 PPL`（p=0.00917）；正式结果需同时报告 raw seeds 和非参数检验。
 - 本地结果 inventory/manifest 初版已生成：452 个实验、919 行指标；368 raw-verified、83 incomplete、1 completed-no-result。唯一 completed-no-result 是 CNN CIFAR-10 2-arg seed 42；文档汇总隐含 79.68%，但原始 `test_results.p` 缺失，恢复前只算 doc-derived。
 - Mind Cluster SSH 被当前执行沙箱禁止，无法核对 6 月任务或拉回远端结果；远端审计仍阻塞。
+- SSH 取证已交由用户处理；详细清单见 `docs/CODEX_PUBLICATION_AUDIT.md` 的“后续工作分工”。Codex 后续只做自动分组汇总、核心统计、冲突报告和有证据支持的文档同步。
 - 详细计划、证据和逐步改动记录：`docs/CODEX_PUBLICATION_AUDIT.md`。
 - 集群实时状态尚未核实；下方 2026-06-27 的 RUNNING/PENDING 条目在重新查询前只视为历史快照。
 
