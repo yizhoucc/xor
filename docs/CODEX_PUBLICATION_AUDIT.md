@@ -62,8 +62,8 @@
 |---|---|---|---|
 | 0 | 冻结开始前状态并创建独立分支 | 完成 | `e4d4e9a`，`codex/publication-audit` |
 | 1 | 阅读原论文并核对公平性协议 | 完成 | 本文中的协议结论与引用位置 |
-| 2 | 盘点本地和集群结果源 | 待开始 | source inventory、缺失清单 |
-| 3 | 建立 canonical manifest | 待开始 | 机器可读结果清单和冲突报告 |
+| 2 | 盘点本地和集群结果源 | 本地完成；远端阻塞 | source inventory、缺失清单 |
+| 3 | 建立 canonical manifest | 本地初版完成 | 机器可读结果清单和冲突报告 |
 | 4 | 修正 paired/unpaired 统计工具 | 完成 | 脚本、测试、示例输出 |
 | 5 | 用 manifest 自动复核核心表格 | 待开始 | 可重复生成的核心结果表 |
 
@@ -175,6 +175,41 @@
 - SwiGLU 相对 InnerNet 的方向在 5 个 seeds 上一致。n=5 的双侧 Wilcoxon 最小可达 p-value 受离散性限制，因此同时报告原始 seed 值更重要。
 - 这些数值用于验证统计协议，不改变前述 same-width / parameter-count 限制。
 
+### 2026-07-26 11:00 PDT - 本地结果源 inventory 与 manifest
+
+外部状态：
+
+- 尝试通过 `ssh ... mind.cs.cmu.edu squeue ...` 核对集群，连接被当前执行沙箱以 `Operation not permitted` 阻止。不是 SSH key 或账号认证失败。
+- 因此 2026-06-27 的集群任务状态仍不能更新，远端结果也尚未拉回。
+
+实现：
+
+- 新增 `scripts/build_result_manifest.py`。
+- 递归扫描 `exp/**/config.yaml`，解析 config metadata、config hash、阶段标记和已知结构化结果文件。
+- 支持 `test_results.p` scalar metrics，以及 `lm_results.p` / `mixer_results.p` / `rl_results.p` 的多 seed curves。
+- 多 seed curve 同时保存 best 和 final 值、选择规则、selected epoch、总 epochs、seed 和 source file。
+- 不从自由文本日志猜测指标；缺结果与不完整目录单独标记。
+- 新增 4 个 manifest 单元测试，与统计测试合计 8 个 tests 全部通过。
+
+生成结果：
+
+- `results/audit/experiment_inventory.csv`：452 个带 config 的实验目录。
+- `results/audit/metric_manifest.csv`：919 行可追溯指标。
+- `results/audit/audit_summary.json`：368 `raw-verified`、83 `incomplete`、1 `completed-no-result`。
+- 结构化来源计数：329 `test_results.p`、10 `lm_results.p`、9 `mixer_results.p`、20 `rl_results.p`。
+
+核心实验追溯：
+
+- Transformer WikiText-2 InnerNet/GELU/SwiGLU 各 5 seeds，均可直接从 `lm_results.p` 复算。
+- CNN CIFAR-10 1-arg 和 ReLU 各 5 个 test accuracy，均可直接追溯。
+- CNN CIFAR-10 2-arg 只有 seed 1234/43/44/45 四个结构化 test accuracy。seed 42 目录 `exp/cnn_cifar_2arg_20260404_172455_9a5b0541` 虽有 `TEST_DONE` 和 `COMPLETED`，但没有 `test_results.p`；日志停在 `Starting Test`。
+- 文档汇总 `78.57±0.74` 可以由四个 raw values 加 `79.68%` 精确还原，但 `79.68%` 当前只能标为 `doc-derived`，不能标为 raw-verified。需从远端原始结果或旧备份恢复。
+
+验证：
+
+- `.venv/bin/python -m unittest tests/test_build_result_manifest.py tests/test_compute_stats.py -v`：8 tests passed。
+- `.venv/bin/python scripts/build_result_manifest.py`：成功生成三份 audit artifacts。
+
 ## 提交记录
 
 | Commit | 分支 | 内容 | 验证 |
@@ -182,3 +217,4 @@
 | `e4d4e9a` | `main` | Codex 开始前工作区快照 | push 成功，工作区干净 |
 | `cee495c` | `codex/publication-audit` | 建立审计范围和详细记录 | push 成功，工作区干净 |
 | `485f896` | `codex/publication-audit` | 原论文协议与公平性审计 | push 成功，工作区干净 |
+| `2b35740` | `codex/publication-audit` | 配对/独立样本统计工具与测试 | 8 项中的统计 4 tests 通过，push 成功 |

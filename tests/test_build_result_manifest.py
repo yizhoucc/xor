@@ -1,0 +1,86 @@
+import pickle
+import tempfile
+import unittest
+from pathlib import Path
+
+import yaml
+
+from scripts.build_result_manifest import audit_experiment, build_manifest
+
+
+def _write_config(directory, **overrides):
+    config = {
+        "exp_name": "example",
+        "task_type": "classification",
+        "seed": 42,
+        "dataset": {"name": "cifar10"},
+        "model": {"name": "ExampleModel"},
+    }
+    config.update(overrides)
+    with (directory / "config.yaml").open("w") as handle:
+        yaml.safe_dump(config, handle)
+
+
+class BuildResultManifestTest(unittest.TestCase):
+    def test_scalar_test_result_is_raw_verified(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "exp"
+            run = root / "run_a"
+            run.mkdir(parents=True)
+            _write_config(run)
+            (run / "COMPLETED").touch()
+            with (run / "test_results.p").open("wb") as handle:
+                pickle.dump({"test_accuracy": 0.75}, handle)
+
+            inventory, metrics = build_manifest(root)
+            self.assertEqual(inventory[0]["audit_status"], "raw-verified")
+            self.assertEqual(metrics[0]["metric"], "test_accuracy")
+            self.assertEqual(metrics[0]["seed"], 42)
+            self.assertAlmostEqual(metrics[0]["value"], 0.75)
+
+    def test_multiseed_curves_keep_best_and_final_values(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "exp"
+            run = root / "run_lm"
+            run.mkdir(parents=True)
+            _write_config(run, task_type="language_model")
+            with (run / "lm_results.p").open("wb") as handle:
+                pickle.dump(
+                    {"seeds": [42, 43], "all_ppl": [[10.0, 8.0, 9.0], [11.0, 7.0, 6.0]]},
+                    handle,
+                )
+
+            _, metrics = build_manifest(root)
+            self.assertEqual(len(metrics), 4)
+            seed42 = [row for row in metrics if row["seed"] == 42]
+            best = next(row for row in seed42 if row["metric"] == "best_val_ppl")
+            final = next(row for row in seed42 if row["metric"] == "final_val_ppl")
+            self.assertEqual((best["value"], best["selected_epoch"]), (8.0, 2))
+            self.assertEqual((final["value"], final["selected_epoch"]), (9.0, 3))
+
+    def test_completed_directory_without_result_is_flagged(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "exp"
+            run = root / "run_missing"
+            run.mkdir(parents=True)
+            _write_config(run)
+            (run / "COMPLETED").touch()
+
+            inventory, metrics = build_manifest(root)
+            self.assertEqual(inventory[0]["audit_status"], "completed-no-result")
+            self.assertEqual(metrics, [])
+
+    def test_incomplete_directory_is_not_treated_as_verified(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "exp"
+            run = root / "run_incomplete"
+            run.mkdir(parents=True)
+            _write_config(run)
+
+            row, metrics = audit_experiment(run / "config.yaml", root)
+            self.assertEqual(row["audit_status"], "incomplete")
+            self.assertEqual(metrics, [])
+
+
+if __name__ == "__main__":
+    unittest.main()
