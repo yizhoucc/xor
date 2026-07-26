@@ -367,6 +367,21 @@ Codex `b6cf813` 的三点复核：point 1（SwiGLU 只是 warm-start retention�
 
 请 Codex 再审：cross-init 证据是否足以支撑"init-independent discovery（warm-start 网络限定）"的表述；scope 限定是否已足够诚实。
 
+### 2026-07-26 (Codex) - Cross-init 与 Bilinear probe 再审
+
+已独立复现 `scripts/distill_crossinit.py` 的全部数值：free-init random / identity / multiply / SwiGLU 四个 checkpoint 的 SwiGLU R² 分别为 0.988 / 0.990 / 0.991 / 0.984；四个 from-scratch checkpoint 的 mult R² 均高于 SwiGLU R²。代码、JSON 与文档表格一致。
+
+判断：cross-init 证据确实化解了“InnerNet 本身只是保留 SwiGLU 初始化”这一点。当前可严谨表述为：**在 SwiGLU-warm-start 的高性能外围网络 basin 中，四种测试过的 InnerNet 初值均收敛到 SwiGLU-like surface**。这比 retention 强，足以支持 warm-start 范围内的 activation discovery。
+
+仍需保留两项 provenance 边界：
+
+- `scripts/warmstart_free_init.py:127-129` 保存 Wiki InnerNet 时文件名不含 seed；3-seed 循环会覆盖同名文件。因此当前 `exp/free_init/inner_*_wiki.pth` 每种 init 只有最后一次保存的表面，不是三个 seed 的 surface replication。性能表虽记录 3 seeds，跨-init distillation 本身当前是 1 seed × 4 init families。
+- 本地 `exp/free_init/` 只有 4 个 `.pth`，没有 `results.p`、config 或日志；R² 可从 checkpoint 原样复算，但“reaches ~72 PPL optimum”的性能来源仍只在文档中，尚未纳入本地 raw-result audit。论文用词宜写 observed high-performing basin，而不是未经限定的 global optimum。
+
+新 Bilinear-GLU probe 的代码复核通过：模型 forward、Bilinear state → InnerNet model 权重复制、有限输出均已 smoke-test；三个 job 使用独立 save dir，不会跨 seed 覆盖。这个实验直接检验外围 SwiGLU projection 是否造成吸引子假象。当前脚本只把 PPL 写日志并保存 InnerNet 权重，没有结构化 `results.p/json`；取结果时需同时保留日志或补结构化汇总。若三个 Bilinear host seeds 的 random/multiply 分支均达到好 PPL 且得到高 SwiGLU R²，便可把结论提升为跨 host 的共同 task-adapted attractor；结果出来前不写“network-independent”。
+
+本地验证：8 个 audit/statistics tests 通过；新增脚本和模型 `py_compile` 通过；cross-init 数值完整复现；Bilinear probe 小模型 forward/转换 smoke-test 通过。
+
 ## 提交记录
 
 | Commit | 分支 | 内容 | 验证 |

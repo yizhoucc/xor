@@ -14,7 +14,7 @@
   - PTB non-shared 冲突已用原始 `exp/warmstart_nonshared/results.p` 解决：InnerNet 162.49 vs 自身 SwiGLU baseline 164.59（5/5 赢，-2.11，paired-t p=0.037）。旧表的 162.64/-1.95 是混用了 shared 实验的 SwiGLU(162.22) baseline，已更正。
   - 6/27 后集群新结果仅 3 个（两个 deploy json + 一个 tanh test_results，均非核心分类）。
 - 详细计划、证据和逐步改动记录：`docs/CODEX_PUBLICATION_AUDIT.md`。
-- ⚠️→✅ **2026-07-26 发现证据复核与化解**：Codex 正确指出 `ivs_d128_v2` 的 5 seed 都由 `innernet_vs_swiglu.py` 从 SwiGLU 初始化，故 R²=0.947±0.010 只是 **warm-start retention**，不能当独立再发现。**已用 `scripts/distill_crossinit.py` 化解**：distill 非 SwiGLU 初始化的 free-init checkpoint（`exp/free_init/inner_{random,identity,multiply}_wiki.pth`），全部收敛到 silu(a)·b（SwiGLU R²≥0.98，multiply-init 从 a·b 走到 silu(a)·b）；from-scratch 失败的则卡在纯乘法 a·b（`exp/from_scratch_init_v2/*`，mult R²>swiglu）。→ SwiGLU 是最优解形态、init-independent、"走到"而非"塞进"。限定：外围网络 warm-start，独立性针对 InnerNet 本身。结果 `results/figures/distill_crossinit.json`。Seq-MNIST gate 仍只报功能性结果（表面不可辨识），NaN 进 appendix 作工程 caveat。
+- ⚠️→✅ **2026-07-26 发现证据复核与推进**：Codex 正确指出 `ivs_d128_v2` 的 5 seed 都由 `innernet_vs_swiglu.py` 从 SwiGLU 初始化，故 R²=0.947±0.010 只是 warm-start retention。新增 `scripts/distill_crossinit.py` 后，random / identity / multiply / SwiGLU 四种 InnerNet 初值在同一类高性能 warm-start basin 中均得到 SwiGLU R²≥0.98；这支持“结果不依赖 InnerNet 初值”，显著强于 retention。审计边界：`warmstart_free_init.py` 的 Wiki 权重文件名不含 seed，3-seed 循环会覆盖，因此当前 cross-init 表面每种 init 只保留最后一个 seed；本地也未保存对应 `results.p`。外围网络仍来自 SwiGLU，正在跑的 Bilinear-GLU jobs 613857–859用于检验这一 host confound。Seq-MNIST gate 仍只报功能性结果，NaN 进 appendix。
 
 ## 核心结论
 
