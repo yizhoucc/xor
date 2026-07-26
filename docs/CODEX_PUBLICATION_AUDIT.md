@@ -285,7 +285,7 @@ SSH-3（6/27 后新结果）：仅 3 个结构化文件更新——`deploy_cnn_c
 - 已将这 6 个 post-fix scale dir 的 `config.yaml` + `lm_results.p` 拉回本地对应路径，manifest 重生成后 raw-verified 由 369 增至 **375**。Codex 之前标记“本地缺 post-sharing d=64/d=192/d=256 per-seed”这一 raw-traceability 缺口现已补齐。
 - 顺带补全 RESULTS 表中 d=256 SwiGLU 的 ⏳ → **81.56±1.05**（来自 `transformer_wikitext_swiglu_large_20260413`）。
 
-遗留提示：本地 04-05 的 small/large 旧 dir 仍在 `exp/` 中，会在 manifest 出现 pre-fix 值（112.66 / 85.40）。它们是 pre-fix 归档产物，不用于论文；正式打包前建议移入 `archive/exp/` 以免与 post-fix run 混淆。
+后续处理（已完成）：本地 04-05 的两个 InnerNet 2arg 旧 dir（small/large）是 pre-fix 归档产物（112.66 / 85.40），已 `git mv` 到 `archive/exp/`，从 manifest 移除（raw-verified 375 → 373），避免与 post-fix run 混淆。注意 04-05 的 GELU baseline dir（116.63 / 86.05）**未动**——parameter-sharing 修复只影响 InnerNet，GELU/SwiGLU baseline 不受影响，其值仍是正文 canonical。
 
 ## 提交记录
 
