@@ -121,7 +121,7 @@
 
 | # | 项目 | 状态 | 说明 |
 |---|------|------|------|
-| **P1** | **发现与定量提炼** | ✅ 核心完成 | `scripts/distill_innernet.py` 定量显示 FFN 旗舰函数由 `0.24·silu(a)·b` 解释（R²=0.942；纯 `a·b` 仅 0.66），构成 SwiGLU-like interaction 的发现证据。CNN deploy 已完成、FFN deploy TIMEOUT；部署不是投稿前置，不重跑。 |
+| **P1** | **发现与定量提炼** | ✅ 核心完成 + 跨seed强化 | `scripts/distill_innernet.py` 定量显示 FFN 旗舰函数由 `0.24·silu(a)·b` 解释（R²=0.942；纯 `a·b` 仅 0.66）。**新增跨 seed 一致性**（`scripts/distill_crossseed.py`，5 seeds）：swiglu R²=0.947±0.010、系数 0.238±0.005，独立 seed 全收敛到同一 SwiGLU 门控 → 发现可复现，非偶然。CNN deploy 已完成、FFN deploy TIMEOUT；部署不是投稿前置，不重跑。 |
 | **P2** | **Gate discovery 稳定性边界** | ✅ 诊断已收口 | Plan B 成功 seeds 约 98.36%（150ep），但稳定性未解：547208 全叠加诊断（本地 `exp/seq_mnist_gated_diag_20260627_171855_d46bf25c`）仍 **2/5 NaN**（seed 42/46）。论文如实报告成功率 + 失败率，不把完全稳定作为发现成立的前提。 |
 | **P3** | **结果审计与统计严谨性** | ⏳ 进行中 | canonical manifest 与 paired/unpaired stats 已完成。旧 `fig_scaling_law` 使用 parameter-sharing 修复前的数据，暂不用于论文；修复后汇总并非单调（3.3%→1.6%→0.8%→1.7%）。四规模 vs GELU paired-t 已复算：p=0.00022/0.05095/0.361/0.173。剩余：自动分组汇总、冲突报告和其余核心结果统计。 |
 

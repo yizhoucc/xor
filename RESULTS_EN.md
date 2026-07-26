@@ -151,9 +151,16 @@ The discovery step (training InnerNet) yields a learned 2D surface f(a, b). We d
 | CNN (CIFAR-10) | 0.674 | **0.908** | 0.974 | 0.35·silu(a)·b |
 | Control (InnerNet fit to SwiGLU) | 0.542 | **0.992** | 0.984 | 0.98·silu(a)·b |
 
-The Transformer FFN InnerNet is **94% explained by a single SwiGLU term** `silu(a)·b`, versus only 66% by a pure multiplicative term `a·b` — quantitative evidence that the learned activation converges specifically on SwiGLU-style gating, not generic multiplication. The control row validates the method: an InnerNet explicitly fit to SwiGLU is recovered as 0.98·silu(a)·b (R²=0.992). The distilled operator is a scaled SwiGLU `c·silu(a)·b`, which can be deployed as a fixed fast operator in place of the inner network.
+The Transformer FFN InnerNet is **94% explained by a single SwiGLU term** `silu(a)·b`, versus only 66% by a pure multiplicative term `a·b` — quantitative evidence that the learned activation converges specifically on SwiGLU-style gating, not generic multiplication. The control row validates the method: an InnerNet explicitly fit to SwiGLU is recovered as 0.98·silu(a)·b (R²=0.992). The distilled operator is a scaled SwiGLU `c·silu(a)·b`.
 
-Config: `scripts/distill_innernet.py` (distill), `scripts/innernet_vs_swiglu.py` (discover).
+**Reproducibility across seeds.** The rediscovery is not a single-run artifact. Distilling five independently trained InnerNet FFNs (d=128, seeds 42–46) gives a SwiGLU fit of **R² = 0.947 ± 0.010** (range 0.931–0.956) with a tightly clustered gate coefficient of **0.238 ± 0.005** on `silu(a)·b`, while the pure-multiplicative fit stays at 0.66 ± 0.003 for every seed. Independently optimized networks converge on the *same* SwiGLU gate, which is the core discovery claim.
+
+| | SwiGLU R² | `silu(a)·b` coef | mult `a·b` R² |
+|---|:---:|:---:|:---:|
+| per seed (42/43/44/45/46) | 0.942 / 0.931 / 0.956 / 0.949 / 0.955 | 0.238 / 0.231 / 0.241 / 0.243 / 0.237 | 0.658 / 0.662 / 0.660 / 0.665 / 0.658 |
+| **mean ± SD** | **0.947 ± 0.010** | **0.238 ± 0.005** | 0.661 ± 0.003 |
+
+Config: `scripts/distill_innernet.py` (single checkpoint), `scripts/distill_crossseed.py` (cross-seed table → `results/figures/distill_crossseed_ivs_d128.json`), `scripts/innernet_vs_swiglu.py` (discover).
 
 ---
 

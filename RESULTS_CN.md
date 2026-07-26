@@ -195,6 +195,15 @@ SwiGLU 一直赢 1-3 PPL。Gaussian pretrain 略好于 random/multiply。确认�
 
 **关键定量证据**：FFN InnerNet 学到的函数 **94% 由单个 SwiGLU 项解释**，而纯乘法 `a·b` 只有 66%——说明它收敛到的不是泛泛的乘法，而是**特定的 silu-gating，即 SwiGLU**。自检行确认方法正确：把一个显式拟合到 SwiGLU 的 InnerNet 喂进去，能还原出 `0.98·silu(a)·b`（R²=0.992）。
 
+**跨 seed 一致性（新，核心证据升级）**：不是单个 run 的巧合。把 5 个独立训练的 InnerNet FFN（d=128, seeds 42–46）逐个提炼，SwiGLU 拟合 **R²=0.947±0.010**（范围 0.931–0.956），门控系数 **0.238±0.005**（silu(a)·b，SD 极小），而纯乘法每个 seed 都只有 0.66。**独立优化的网络收敛到同一个 SwiGLU 门控**——这把"某个 InnerNet 像 SwiGLU"升级成"InnerNet 可复现地再发现 SwiGLU"，是 discovery 论文最需要的证据。
+
+| | swiglu R² | silu(a)·b 系数 | mult R² |
+|--|:---:|:---:|:---:|
+| 42/43/44/45/46 | 0.942/0.931/0.956/0.949/0.955 | 0.238/0.231/0.241/0.243/0.237 | 0.66 全部 |
+| **均值±SD** | **0.947±0.010** | **0.238±0.005** | 0.661±0.003 |
+
+脚本 `scripts/distill_crossseed.py`，结果 `results/figures/distill_crossseed_ivs_d128.json`。
+
 提炼出的算子是**缩放版 SwiGLU** `c·silu(a)·b`（旗舰 c≈0.24，比标准 SwiGLU 的 1.0 温和很多，对应"压缩了范围的乘法交互"）。这个闭式算子就是闭环里要**部署**的快算子（下一步：塞回 fresh 模型，比 InnerNet 快、和 SwiGLU 同档）。
 
 （旧的多项式提炼 `f≈0.12·a·b+...` 来自更早的范围；现统一用上表的 silu 基拟合，对"SwiGLU 再发现"的论证更直接。）
