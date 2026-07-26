@@ -38,6 +38,8 @@ This reframes scaling behavior as *support*, not weakness: at large scale a from
 
 Configs: `config/experiments/cnn_cifar_2arg.yaml`, exp: `exp/cnn_cifar_2arg_*`
 
+Reported ± values are the population standard deviation (ddof=0) over seeds. For the headline CIFAR-10 2-arg result (n=5, seeds 42–46: 78.68, 79.69, 78.94, 77.93, 77.62) the sample standard deviation (ddof=1) is 0.82.
+
 ## 2. Autoencoder Reconstruction (MSE↓, 3–5 seeds)
 
 | Dataset | InnerNet | ReLU | ReLU matched | Improvement |
@@ -62,12 +64,12 @@ Configs: `config/experiments/ae_mnist_2arg.yaml`, exp: `exp/ae_mnist_2arg_*`
 | Config | GELU | SwiGLU | InnerNet | vs GELU |
 |--------|------|--------|----------|---------|
 | WikiText-2 d=64 | 116.63±0.84 | **112.31±0.49** | **112.83** | **-3.3%** |
-| WikiText-2 d=128 | 96.82±1.19 | **92.98±1.14** | **95.23** | **-1.6%** |
+| WikiText-2 d=128 | 96.82±1.19 | **92.98±1.14** | **95.26** | **-1.6%** |
 | WikiText-2 d=192 | 89.11±0.92 | **85.43** | **88.42** | **-0.8%** |
 | WikiText-2 d=256 | 86.05±0.97 | ⏳ | **84.62** | **-1.7%** |
 | PTB d=128 | 212.28±0.88 | **205.82±0.98** | **207.91** | **-2.1%** |
 
-InnerNet consistently beats GELU across all 4 scales (-0.8% to -3.3%). At d=64, InnerNet (112.83) ≈ SwiGLU (112.31), independently matching the hand-designed gating function.
+InnerNet reaches lower PPL than GELU at every scale (-0.8% to -3.3%), and at d=64 it matches the hand-designed SwiGLU gate (112.83 ≈ 112.31) — reached automatically rather than by design. This is the central result: a learnable two-argument activation rediscovers a gated interaction. For the d=128 point, the InnerNet–GELU gap is consistent in direction across all 5 seeds (paired-t p=0.05, 95% CI [0.49, 2.45] PPL, Cohen's dz=1.23); we report it as a same-width comparison (identical d_ff=512), not a parameter-matched one.
 
 **Scaling trend**: The advantage decreases with model size but remains positive up to d=256 (standard Transformer). At GPT scale (d=256, larger architecture), from-scratch InnerNet requires more training to converge — warm-start experiments confirm capacity is sufficient.
 
@@ -86,7 +88,7 @@ InnerNet wins in 4/5 seeds (-0.19 PPL). This pattern holds across multiple confi
 |--------|--------|-------------|-----|------------------|-----|
 | **CNN CIFAR-10** | 83.33% | **85.79%** | **+2.46%** | — | — |
 | **MLM WikiText-2** | 54.92 | **38.74** | **-16.18** | ⏳ | — |
-| PTB d=128 | 162.22 | **161.18** | -1.04 | **~162.6** | **-1.95** |
+| PTB d=128 | 162.22 | **161.18** | -1.04 | **162.49** | **-2.11**† |
 | TF d=128 | 77.04 | **76.85** | -0.19 | ⏳ | — |
 | TF d=64 | 92.08 | **91.93** | -0.15 | — | — |
 | MLP-Mixer | 81.13% | **81.25%** | +0.12% | — | — |
@@ -100,11 +102,13 @@ InnerNet wins in 4/5 seeds (-0.19 PPL). This pattern holds across multiple confi
 
 | Task | Shared Δ | Non-shared Δ |
 |------|---------|-------------|
-| PTB | -1.04 | **-1.95** |
+| PTB | -1.04 | **-2.11** |
 | MLM | -16.18 | **-3.28** (vs SwiGLU 18.91) |
 | CNN | +2.46% | **+3.12%** |
 
 Each layer learns a distinct activation function when non-shared (fig11). Parameter overhead negligible (291 extra).
+
+†Non-shared PTB is a paired warm-start comparison against its own separately-trained SwiGLU baseline (InnerNet 162.49 vs SwiGLU 164.59, seeds 42–46, InnerNet wins 5/5, paired-t p=0.037, Cohen's dz=-1.38). It is not comparable to the 162.22 SwiGLU value in the shared-experiment column above, which comes from a different run. Source: `exp/warmstart_nonshared/results.p`.
 
 ### Capacity Verification (ivs_d128, 5 seeds)
 

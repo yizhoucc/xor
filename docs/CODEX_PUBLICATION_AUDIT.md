@@ -210,6 +210,43 @@
 - `.venv/bin/python -m unittest tests/test_build_result_manifest.py tests/test_compute_stats.py -v`：8 tests passed。
 - `.venv/bin/python scripts/build_result_manifest.py`：成功生成三份 audit artifacts。
 
+### 2026-07-26 (Claude) - SSH 远端取证与文档冲突修复
+
+背景：Codex 的 SSH 取证被其执行沙箱阻止（`Operation not permitted`）。Claude 环境可正常 SSH 到 Mind Cluster，故由 Claude 完成 SSH-1/2/3 并接手 LOCAL-2/3/4 中已有证据支持的部分。所有远端操作只读/复制，未在登录节点跑训练或计算。
+
+SSH-1（旧 job 终态，`sacct`）：
+
+- `547111` FFN distilled deploy：**TIMEOUT**（2 天上限被砍，batch CANCELLED）。`deploy_ffn_d128/results.json` 中 innernet 仅 4 seed、distilled 为空。部署闭环非投稿前置，不重跑。
+- `547112` CNN distilled deploy：COMPLETED（10h）。
+- `547208` Sequential MNIST 诊断：COMPLETED（6h）。
+- `547209` bark notify：COMPLETED。
+- 当前 `squeue` 队列为空。
+
+SSH-2（结构化结果恢复）：
+
+- **CNN CIFAR-10 2-arg seed 42 恢复成功**。集群目录 `cnn_cifar_2arg_20260404_172455_9a5b0541` 存在 `test_results.p`（本地此前未同步），内容 `{'test_accuracy': 0.7969}`，日志 `Test Accuracy = 0.7969`。已 scp 回本地同相对路径。重跑 manifest 后该 seed 由 `completed-no-result` 变为 `raw-verified`。
+- 修正：文档此前反推的 79.68% 应为 **79.69%**。五个 seed（78.68/79.69/78.94/77.93/77.62）mean=78.57%，population SD=0.74，sample SD=0.82。原 `78.57±0.74` 均值正确，用的是 population SD。
+- PTB non-shared 冲突原始来源定位为 `exp/warmstart_nonshared/results.p`（已 scp 回本地）。这是配对 warm-start 实验：PTB 每 seed InnerNet(non-shared) vs 其自身 SwiGLU baseline。InnerNet mean=162.49（SD 3.44），SwiGLU mean=164.59（SD 4.07），InnerNet 5/5 全赢，paired diff=-2.11，paired-t p=0.037，Wilcoxon p=0.0625，Cohen's dz=-1.38。
+- 冲突根因：结果文档 warm-start 表把 non-shared 的 Δ 写成相对 shared 实验的 SwiGLU baseline（162.22），但实际是相对 non-shared 自身 baseline（164.59）算的。旧值 `162.64 / -1.95` 因此自相矛盾。已按原始 pickle 更正为 `162.49 / -2.11` 并在三份文档加注说明两个 SwiGLU baseline 来自不同 run、不可直接比较。
+
+SSH-3（6/27 后新结果）：仅 3 个结构化文件更新——`deploy_cnn_cifar10/results.json`、`deploy_ffn_d128/results.json`、`rnn_ptb_tanh_.../test_results.p`（后者与本地内容一致，仅 mtime 被 touch）。均非核心分类实验。
+
+文档修复（LOCAL-3/4，仅改有原始证据支持的项）：
+
+- Transformer d=128 InnerNet PPL：`95.23` → `95.26`（`RESULTS_EN.md`、`RESULTS_CN.md`、`PROJECT_STATUS.md`）。原始 `lm_results.p` 每 seed 取最低 val PPL 得 mean=95.2608；`-1.6%` 相对 GELU 96.82 与 95.26 一致。
+- Transformer "consistently beats GELU" 措辞改为 same-width 限定 + 报告 d=128 配对统计（paired-t p=0.05，95% CI [0.49, 2.45]，dz=1.23），核心卖点改述为"自动再发现 SwiGLU 式门控"而非性能碾压。
+- CNN §1 加 SD 约定说明（population SD，headline 2-arg sample SD=0.82）。
+- `PROJECT_STATUS.md`：审计小结更新为 SSH 已完成；集群"运行中"表改为"已终止"并填入四个 job 终态；manifest 计数更新为 369 raw-verified / 83 incomplete / 0 completed-no-result；PTB `-1.95` → `-2.11`。
+
+验证：
+
+- `sacct -j 547111,547112,547208,547209`、`squeue -u yizhouc3`
+- 本地 `test_results.p` 读回确认 `{'test_accuracy': 0.7969}`
+- `scripts/compute_stats.py /tmp/ptb_ns.json --ref swiglu --lower_better --paired` 与 Transformer 5-seed 配对统计
+- `scripts/build_result_manifest.py` 重生成，seed 42 行为 `raw-verified`
+
+遗留：`deploy_ffn_d128`（547111 TIMEOUT）innernet 仅 4 seed、distilled 空——属部署闭环，非投稿前置，按用户范围不重跑。
+
 ## 提交记录
 
 | Commit | 分支 | 内容 | 验证 |

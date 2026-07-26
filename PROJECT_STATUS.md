@@ -7,11 +7,13 @@
 - 原论文协议已核对：原论文按总参数量调整 baseline 宽度；本项目 MLP/CNN 参数匹配思路一致。Transformer 现有比较是 same-width 而非 total-parameter-matched，这只限制性能增益措辞，不影响 SwiGLU-like interaction 的发现结论。
 - 原论文同样没有部署闭环，只通过函数拟合和结构统计汇报发现；当前不新增部署实验。
 - 配对统计工具已完成：新增 paired t-test、Wilcoxon、Cohen's dz、bootstrap CI 和非有限 pair 报告，并保留独立样本模式。5-seed same-width Transformer 示例中，`GELU-InnerNet=+1.558 PPL`（paired-t p=0.05095），`SwiGLU-InnerNet=-2.280 PPL`（p=0.00917）；正式结果需同时报告 raw seeds 和非参数检验。
-- 本地结果 inventory/manifest 初版已生成：452 个实验、919 行指标；368 raw-verified、83 incomplete、1 completed-no-result。唯一 completed-no-result 是 CNN CIFAR-10 2-arg seed 42；文档汇总隐含 79.68%，但原始 `test_results.p` 缺失，恢复前只算 doc-derived。
-- Mind Cluster SSH 被当前执行沙箱禁止，无法核对 6 月任务或拉回远端结果；远端审计仍阻塞。
-- SSH 取证已交由用户处理；详细清单见 `docs/CODEX_PUBLICATION_AUDIT.md` 的“后续工作分工”。Codex 后续只做自动分组汇总、核心统计、冲突报告和有证据支持的文档同步。
+- 本地结果 inventory/manifest 已生成：452 个实验、920 行指标；**369 raw-verified、83 incomplete、0 completed-no-result**。
+- ✅ **SSH 取证已完成（Claude，2026-07-26）**：
+  - CNN CIFAR-10 2-arg seed 42 已从集群拉回，`test_accuracy=0.7969`（**79.69%**，非之前反推的 79.68%），日志确认，现为 **raw-verified**。五个 seed 齐全，mean=78.57%（popSD 0.74 / sampleSD 0.82）。
+  - 4 个旧 job 终态：547111 FFN deploy **TIMEOUT**（未完成，innernet 仅 4 seed、distilled 空）；547112 CNN deploy COMPLETED；547208 Seq-MNIST 诊断 COMPLETED；547209 bark COMPLETED。队列现已空。
+  - PTB non-shared 冲突已用原始 `exp/warmstart_nonshared/results.p` 解决：InnerNet 162.49 vs 自身 SwiGLU baseline 164.59（5/5 赢，-2.11，paired-t p=0.037）。旧表的 162.64/-1.95 是混用了 shared 实验的 SwiGLU(162.22) baseline，已更正。
+  - 6/27 后集群新结果仅 3 个（两个 deploy json + 一个 tanh test_results，均非核心分类）。
 - 详细计划、证据和逐步改动记录：`docs/CODEX_PUBLICATION_AUDIT.md`。
-- 集群实时状态尚未核实；下方 2026-06-27 的 RUNNING/PENDING 条目在重新查询前只视为历史快照。
 
 ## 核心结论
 
@@ -22,7 +24,7 @@
 - **从头训一致输 SwiGLU**：scratch_init 2 seeds 确认 SwiGLU > Gaussian > Random > Multiply
 - **大模型 finetune 替换不可行**：Qwen 2.5-0.5B 替换后 acc 从 89% 掉到 80%
 - 适合场景：小模型 / on-device, warm-start finetune（非直接替换）, 架构搜索
-- Non-shared（每层不同 InnerNet）比 shared 效果更好（PTB -1.95 vs -1.04），参数差可以忽略
+- Non-shared（每层不同 InnerNet）比 shared 效果更好（PTB -2.11 vs -1.04，配对 5/5 赢），参数差可以忽略
 - **Multiply-init MLM 大幅赢**：MultInit 15.93±0.21 vs SwiGLU 19.09±0.27（-16.6%，5 seeds）
 - **初始化不影响收敛终点**：4 种初始化都收敛到 ~71.7-72.6（Wiki d=128），都大幅赢 SwiGLU ~77.3
 
@@ -50,16 +52,16 @@
 
 - **U20 param sharing bug**：之前 Transformer/ResNet/WRN 的 InnerNet 每层各一个没共享。已修复，重跑。修复后结果和之前差不多（d=64: 112.66→112.83），说明影响不大，但 sharing 是论文基本设计。CNN/MLP/AE/VGG/LSTM/PPO 不受影响。
 
-## 集群状态（2026-06-27）
+## 集群状态（2026-07-26 SSH 核对，队列已空）
 
-### 运行中
+### 已终止（原 2026-06-27 提交的 job，终态已核实）
 
-| Job ID | 实验 | 配置 | 状态 |
+| Job ID | 实验 | 配置 | 终态 |
 |--------|------|------|------|
-| 547111 | **P1 部署段 — FFN deploy（case 1，主打速度）** | `deploy_distilled.py`，4 op (gelu/swiglu/innernet/distilled-poly3)，WikiText-2 d=128 d_ff=512 4层 20ep×5seeds，全部同一 GPU 测吞吐 | RUNNING (6-27) |
-| 547112 | **P1 部署段 — CNN deploy（case 2，主打非-SwiGLU 新算子）** | `deploy_distilled_cnn.py`，4 op (relu/swiglu/innernet/distilled-poly3)，CIFAR-10 100ep×5seeds | RUNNING (6-27)，~十几小时 |
-| 547208 | **P2 — Plan B 稳定性诊断（5ep 快测）** | `seq_mnist_gated_diag.yaml`：全叠加稳定手段（ortho + warmup3 + cell_tanh + clip0.25），只 5ep×5seeds 快看 NaN 模式（NaN 都在 ep1，5ep 足够；warmup_steps 与总 epoch 无关 → 前 5ep 等同完整运行） | RUNNING (6-27)，~7h |
-| 547209 | bark 通知 | afterany 依赖 547111/112/208，cluster 自己 curl Bark | PENDING(Dependency) |
+| 547111 | **P1 部署段 — FFN deploy（case 1，主打速度）** | `deploy_distilled.py`，4 op (gelu/swiglu/innernet/distilled-poly3)，WikiText-2 d=128 d_ff=512 4层 20ep×5seeds，全部同一 GPU 测吞吐 | ❌ **TIMEOUT**（跑满 2 天被砍；`deploy_ffn_d128/results.json` innernet 仅 4 seed、distilled 空——部署闭环非投稿前置，不重跑） |
+| 547112 | **P1 部署段 — CNN deploy（case 2，主打非-SwiGLU 新算子）** | `deploy_distilled_cnn.py`，4 op (relu/swiglu/innernet/distilled-poly3)，CIFAR-10 100ep×5seeds | ✅ COMPLETED (10h)；`deploy_cnn_cifar10/results.json`：InnerNet 84.6–85.7% vs ReLU/SwiGLU ~80%，distilled 81% 且快 3× |
+| 547208 | **P2 — Plan B 稳定性诊断（5ep 快测）** | `seq_mnist_gated_diag.yaml`：全叠加稳定手段（ortho + warmup3 + cell_tanh + clip0.25），只 5ep×5seeds 快看 NaN 模式 | ✅ COMPLETED (6h) |
+| 547209 | bark 通知 | afterany 依赖 547111/112/208，cluster 自己 curl Bark | ✅ COMPLETED |
 
 **时间估算**：FFN deploy ~1.5 天（4min/epoch×400，innernet 更慢）；CNN deploy ~十几小时；P2 RNN 极慢（~18min/epoch，784 步 BPTT），诊断 ~7h，若过则全跑 150ep×5seeds ~一周。
 
@@ -179,7 +181,7 @@
 | U40 | RNN PTB 重跑 | ✅ | 2arg Test PPL≈169, 1arg PPL≈179, tanh PPL≈140。**InnerNet 输 tanh baseline 20-28%**。PTB 上 InnerNet 不好用 |
 | U41 | Sequential MNIST (InnerNet 发现 gate) | ⏳ **Plan B 成功!** | Plan A 11.04%(失败) / **Plan B 150ep 成功 seeds ~98.36%**(逼近 GRU 98.72%)。给 cell state 脚手架 InnerNet 自主学出 gate |
 | U42 | Plan B 训练稳定性 | ⏳ 第 2 轮修复在跑 (547114) | 第 1 轮 3 修复全失败（clip/tanh/all 仍 2/5 NaN，seed 44 必炸、ep1 炸）→ 判定为初始化敏感（W_h 谱半径>1 → 784 步 BPTT 爆炸）。**第 2 轮对症修复 = 正交初始化 W_h/W_c + InnerNet 输出小增益 + lr warmup**（见 P2 / `seq_mnist_gated_stable.yaml`） |
-| **U20** | **修复 InnerNet parameter sharing** | ✅ TF 全完成 | d=64 112.83, d=128 95.23, d=192 88.42, **d=256 84.62**, PTB 207.91。全部赢 GELU。ResNet full 持平, internal +1.5%。MLM 124.82 差 |
+| **U20** | **修复 InnerNet parameter sharing** | ✅ TF 全完成 | d=64 112.83, d=128 95.26, d=192 88.42, **d=256 84.62**, PTB 207.91。全部赢 GELU。ResNet full 持平, internal +1.5%。MLM 124.82 差 |
 
 ### 🟡 Major
 
