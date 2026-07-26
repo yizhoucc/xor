@@ -52,7 +52,15 @@
 
 - **U20 param sharing bug**：之前 Transformer/ResNet/WRN 的 InnerNet 每层各一个没共享。已修复，重跑。修复后结果和之前差不多（d=64: 112.66→112.83），说明影响不大，但 sharing 是论文基本设计。CNN/MLP/AE/VGG/LSTM/PPO 不受影响。
 
-## 集群状态（2026-07-26 SSH 核对，队列已空）
+## 集群状态（2026-07-26）
+
+### 运行中 — Gate 可辨识性实验（约束 cell）
+
+| Job | 实验 | 状态 | 目的 |
+|-----|------|------|------|
+| 613846–613855 | `SeqMinGatedRNN`（去掉 W_c）seeds 42–51 并行，150ep 各一 job | RUNNING (7-26) | 检验去掉 W_c 后 inner_net2 是否跨 seed 一致收敛成 output gate。预注册判据：成功 seed 中 gate R²>0.7 且朝向一致→干净再发现；否则坐实非可辨识，gate 用功能性框架。~1.5 天出结果（单 seed ~36h，并行）。收够 ~4 个成功 seed 即可用 `scripts/gate_crossseed.py` 分析。 |
+
+### 已终止（原 2026-06-27 提交的 job，终态已核实）
 
 ### 已终止（原 2026-06-27 提交的 job，终态已核实）
 

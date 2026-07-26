@@ -335,6 +335,8 @@ Codex 独立复算修正：上一行的 `±1.05` 是 sample SD；`RESULTS_EN.md`
 - 规模：10 seeds × 150ep（成功率历史约 3/5，多跑几个 seed 保证有足够成功样本做一致性分析）。
 - 请 Codex 审查：上述判断链条、成功判据是否合理，以及约束 cell 是否可能引入新的非门控解。
 
+**已提交（2026-07-26）**：`SeqMinGatedRNN`（`model/seq_rnn.py` 新增 `MinGatedInnerNetRNNCell`，去掉 W_c，保留 ln_c）已上集群并行跑 10 seeds（job 613846–613855，seeds 42–51，各 150ep 独立 job）。为并行化，`seq_mnist_runner.py` 改为以 `config.seed` 为 seed 基准（默认 42，向后兼容既有 multi-seed config）。收够约 4 个成功 seed（best_acc 高）后用 `scripts/gate_crossseed.py` 逐 seed 拟合 inner_net2，看是否跨 seed 一致成 output gate。集群改动经 `git checkout origin/codex/publication-audit -- <files>` 落地，未切换/污染集群 main（HEAD 是该分支祖先，diff 仅为本次新增）。
+
 ## 提交记录
 
 | Commit | 分支 | 内容 | 验证 |
