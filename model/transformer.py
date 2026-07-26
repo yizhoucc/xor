@@ -147,6 +147,26 @@ class SwiGLUFFN(nn.Module):
         return self.w2(self.dropout(gate * value))
 
 
+class BilinearGLUFFN(nn.Module):
+    """Bilinear GLU FFN: (W1a·x) ⊙ (W1b·x) — pure multiplicative gate, no activation.
+
+    Identical dual-projection structure and parameter names (w1a/w1b/w2) as
+    SwiGLUFFN and InnerNetFFN, but the gate is plain a·b instead of silu(a)·b.
+    Used as a NON-SwiGLU warm-start base: if an InnerNet dropped into a network
+    trained with this a·b gate still converges to silu(a)·b, the SwiGLU form is
+    a network-independent attractor, not an artifact of a SwiGLU-shaped host.
+    """
+    def __init__(self, d_model, d_ff, dropout=0.1):
+        super().__init__()
+        self.w1a = nn.Linear(d_model, d_ff)
+        self.w1b = nn.Linear(d_model, d_ff)
+        self.w2 = nn.Linear(d_ff, d_model)
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, x):
+        return self.w2(self.dropout(self.w1a(x) * self.w1b(x)))
+
+
 class MultiHeadAttention(nn.Module):
     """Standard multi-head self-attention with causal mask."""
     def __init__(self, d_model, n_heads, dropout=0.1):
@@ -416,6 +436,39 @@ class SwiGLUTransformer(nn.Module):
         self.head = nn.Linear(d_model, vocab_size)
         self.d_model = d_model
 
+        self.head.weight = self.embedding.weight
+
+    def forward(self, x):
+        B, S = x.shape
+        mask = torch.tril(torch.ones(S, S, device=x.device)).unsqueeze(0).unsqueeze(0)
+        x = self.pos_enc(self.embedding(x) * math.sqrt(self.d_model))
+        for block in self.blocks:
+            x = block(x, mask)
+        x = self.ln_f(x)
+        return self.head(x[:, -1, :])
+
+
+class BilinearGLUTransformer(nn.Module):
+    """Decoder-only Transformer with a Bilinear GLU FFN (gate = a·b, no activation).
+
+    Same architecture as SwiGLUTransformer; used as a non-SwiGLU warm-start base
+    for the InnerNet init-independence / network-independence probe.
+    """
+    def __init__(self, vocab_size, d_model=128, n_heads=4, d_ff=512,
+                 n_layers=4, max_len=64, dropout=0.1):
+        super().__init__()
+        self.embedding = nn.Embedding(vocab_size, d_model)
+        self.pos_enc = PositionalEncoding(d_model, max_len, dropout)
+        self.blocks = nn.ModuleList([
+            TransformerBlock(
+                d_model, n_heads,
+                BilinearGLUFFN(d_model, d_ff, dropout),
+                dropout
+            ) for _ in range(n_layers)
+        ])
+        self.ln_f = nn.LayerNorm(d_model)
+        self.head = nn.Linear(d_model, vocab_size)
+        self.d_model = d_model
         self.head.weight = self.embedding.weight
 
     def forward(self, x):
