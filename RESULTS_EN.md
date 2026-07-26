@@ -6,18 +6,18 @@
 
 InnerNet replaces scalar activations (ReLU) with a small learned MLP taking two inputs: `f(a, b) → output`, so each neuron computes a nonlinear interaction between two learned linear projections (analogous to the soft-XOR interactions of cortical neurons).
 
-We position InnerNet not as a drop-in *better activation function*, but as a **differentiable tool for discovering architectural primitives**: replace fixed activations with InnerNet → train → visualize the learned 2D function → distill it into a simple closed-form operator → deploy the fast operator. The central evidence is that InnerNet **independently rediscovers two established SOTA primitives**:
+We position InnerNet not as a drop-in *better activation function*, but as a **differentiable tool for discovering architectural primitives**: replace fixed activations with InnerNet, train, visualize the learned 2D function, and quantify it with simple closed-form operators. The central evidence is that InnerNet **independently rediscovers two established primitives**:
 
 - **SwiGLU rediscovery** — in the Transformer FFN, InnerNet autonomously converges on the multiplicative gating interaction that defines SwiGLU, without being told to.
 - **Gating rediscovery** — in a recurrent network given only an additive memory channel (Sequential MNIST), InnerNet learns LSTM/GRU-style gates from scratch (~98% vs 11% for a plain RNN).
 
-This reframes scaling behavior as *support*, not weakness: at large scale a from-scratch InnerNet underperforms the hand-designed SwiGLU it is meant to discover — exactly what one expects of a search tool that converges on the right inductive bias, which is then deployed as a faster distilled operator rather than as InnerNet itself.
+This reframes the large-scale result as a boundary rather than a contradiction: a from-scratch InnerNet underperforms the hand-designed SwiGLU it is meant to discover. The scientific claim concerns the learned interaction, not direct deployment of the inner network.
 
 **Supporting findings:**
 
 1. **Capacity ceiling ≥ SwiGLU** — warm-start across 11 tasks: InnerNet wins or ties 10/11. Verified by ivs_d128 (5 seeds): frozen InnerNet 77.38±0.51 = SwiGLU 77.38±0.54. The from-scratch gap is an optimization barrier, not a capacity limit.
 2. **Position determines effect** — InnerNet helps at positions without skip-connection bypass (CNN +0.4–4.6%, AE −43% MSE, Transformer FFN −0.8–3.3% PPL across 4 scales, ResNet internal-only +1.5%), and is redundant where a skip connection already provides a bypass.
-3. **Scaling behavior** — the InnerNet advantage over GELU narrows monotonically as model size grows: 3.4% (d=64) → 1.6% (d=128) → 1.1% (d=192) → 0.8% (d=256), consistent with larger models having enough capacity to learn equivalent interactions through their own weights (figure: `results/figures/fig_scaling_law`).
+3. **Scale boundary** — InnerNet remains below same-width GELU across the controlled d=64–256 sweep, but the gains are not monotonic (3.3%, 1.6%, 0.8%, 1.7%) and reverse in the larger GPT-style experiment. We therefore report scale as an empirical boundary, not as a fitted scaling law.
 4. **Simplicity wins** — simple adjacent pairing > deliberate semantic pairing; no pretraining needed (end-to-end ≈ 3-phase).
 
 **Relation to prior work:** Yoon et al. (IEEE Access 2022) introduced two-argument activations on MLP/CNN classification (MNIST/CIFAR), reporting modest accuracy gains and improved robustness. We extend this to 10+ architectures (Transformer, LSTM, recurrent gating, autoencoders, ResNet/VGG/WRN, ViT, MLP-Mixer, RL, masked/causal LM) and recast the contribution as architecture discovery, evidenced by the independent rediscovery of SwiGLU and gating mechanisms.
@@ -71,7 +71,7 @@ Configs: `config/experiments/ae_mnist_2arg.yaml`, exp: `exp/ae_mnist_2arg_*`
 
 InnerNet reaches lower PPL than GELU at every scale (-0.8% to -3.3%), and at d=64 it matches the hand-designed SwiGLU gate (112.83 ≈ 112.31) — reached automatically rather than by design. This is the central result: a learnable two-argument activation rediscovers a gated interaction. For the d=128 point, the InnerNet–GELU gap is consistent in direction across all 5 seeds (paired-t p=0.05, 95% CI [0.49, 2.45] PPL, Cohen's dz=1.23); we report it as a same-width comparison (identical d_ff=512), not a parameter-matched one.
 
-**Scaling trend**: The advantage decreases with model size but remains positive up to d=256 (standard Transformer). At GPT scale (d=256, larger architecture), from-scratch InnerNet requires more training to converge — warm-start experiments confirm capacity is sufficient.
+**Scale boundary**: The same-width advantage remains positive but non-monotonic through d=256 in the standard Transformer sweep. It reverses in the larger GPT-style experiment, while warm-start experiments show that the learned function remains expressive enough in the controlled setting.
 
 ### InnerNet vs SwiGLU: Fair Comparison (5 seeds)
 

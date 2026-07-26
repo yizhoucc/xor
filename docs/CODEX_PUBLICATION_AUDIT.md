@@ -247,6 +247,31 @@ SSH-3（6/27 后新结果）：仅 3 个结构化文件更新——`deploy_cnn_c
 
 遗留：`deploy_ffn_d128`（547111 TIMEOUT）innernet 仅 4 seed、distilled 空——属部署闭环，非投稿前置，按用户范围不重跑。
 
+### 2026-07-26 (Codex) - SSH 交付复核
+
+已独立验证：
+
+- 两个新提交 `90542da` / `c0e4115` 均已推送，工作区开始复核时干净。
+- CNN CIFAR-10 2-arg seed 42 pickle 内容为 `{'test_accuracy': 0.7969}`；重跑 manifest 后为 369 raw-verified / 83 incomplete / 0 completed-no-result。
+- `exp/warmstart_nonshared/results.p` 的 PTB 5-seed 原始值可复算 InnerNet 162.49、SwiGLU 164.59、paired difference -2.11；文档修正正确。
+- 8 个 audit/statistics tests 全部通过，重新生成 manifest 后 Git 无差异。
+
+复核发现并已修正的残留冲突：
+
+- `RESULTS_CN.md` / `RESULTS_EN.md` 和 P3 仍声称 scaling improvement 单调缩小，但 parameter-sharing 修复后的表格为 3.3%→1.6%→0.8%→1.7%，并不单调。
+- `PROJECT_STATUS.md` 的 P2/U42 仍写诊断“即将开始/在跑”，与 job 547208 已 COMPLETED 冲突。
+- 论文范围已确认不要求部署，但中英文 story 仍把 deploy 写成投稿前置步骤。
+- `scripts/plot_scaling_law.py` 使用修复前的 112.66/95.26/88.14/85.40；已标为 archived，不再用于论文。
+
+仍缺本地原始文件：
+
+- `exp/deploy_ffn_d128/results.json`
+- `exp/deploy_cnn_cifar10/results.json`
+- job 547208 对应的 Sequential MNIST 诊断结果目录/日志
+- parameter-sharing 修复后 d=64/d=192/d=256 Transformer per-seed 原始结果（当前正式表格仅有汇总数字）
+
+前三项不阻塞发现主线，但在本地文件补齐前，其数值只能视为 SSH-verified，不能进入 canonical manifest。最后一项直接影响 scale 表的 raw traceability，应在正式投稿前恢复。
+
 ## 提交记录
 
 | Commit | 分支 | 内容 | 验证 |

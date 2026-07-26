@@ -1,10 +1,10 @@
-"""Scaling-law figure (PROJECT_STATUS P3 / U30): InnerNet advantage shrinks with size.
+"""Archived pre-parameter-sharing scaling figure.
 
 Transformer FFN on WikiText-2, InnerNet vs GELU baseline (val PPL, lower better).
-Numbers from the d=64/128/192/256 sweep (see RESULTS_*.md, exp/ivs_d* and
-transformer_wikitext_* runs). Shows the InnerNet-over-baseline improvement
-narrowing monotonically as d_model grows — larger models have enough capacity
-to learn equivalent interactions through their own weights.
+The hard-coded values predate the InnerNet parameter-sharing correction. Keep
+this script only to reproduce the existing archived figure; do not use it for
+paper claims. The post-fix summary is non-monotonic and requires its raw remote
+sources to be added to the canonical manifest before regenerating a figure.
 """
 import os
 import matplotlib
@@ -47,5 +47,6 @@ os.makedirs('results/figures', exist_ok=True)
 fig.savefig(out + '.png', dpi=150, bbox_inches='tight')
 fig.savefig(out + '.pdf', bbox_inches='tight')
 print(f"Wrote {out}.png/.pdf")
+print("WARNING: archived pre-parameter-sharing values; not for paper use")
 print("d_model:", ds)
 print("InnerNet improvement %:", [round(p, 2) for p in pct])

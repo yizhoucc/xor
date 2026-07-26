@@ -21,11 +21,13 @@
 
 **关键发现**：InnerNet 容量上限 ≥ SwiGLU（warm-start 10/11 赢或持平，ivs_d128 追平），从头训大模型输是优化问题。模型越大差距越大（d=64 赢 3.3%, d=256 输 5.2%）。适合"发现 + warm-start finetune"，不适合大模型从头训或直接部署替换。
 
-### 论文主线还缺的 3 件事（在做）
+### 投稿前剩余工作
 
-1. **合上"发现→提炼→部署"闭环**：现在能提炼公式（见第 3 节 distillation），但没演完整闭环——要把提炼出的快算子部署到没训过的模型上证明可用且快。
-2. **稳定 gate discovery**：Plan B 仍 2/5 NaN（见 4c），作为论文证据需要稳定。
-3. **统计严谨性**（P3，进行中）：scaling-law 图 ✅（`scripts/plot_scaling_law.py` → `results/figures/fig_scaling_law`，InnerNet 优势 3.4%→1.6%→1.1%→0.8% 单调收缩）；stats 脚本 ✅（`scripts/compute_stats.py`，Welch t-test + Mann-Whitney + Cohen's d）；剩训练曲线 + 对现有实验补 p-value。
+1. **结果源审计**：canonical manifest 已建立；继续清理修复前后结果混用、缺原始来源和不完整 seeds。
+2. **统计严谨性**：paired/unpaired 工具已完成；继续为正文核心结果生成 raw seeds、差值区间、效应量和配对/非配对检验。
+3. **透明报告 gate 稳定性**：Plan B 历史结果仍有 2/5 NaN；诊断 job 已完成但原始结果尚未复制。发现结论不要求 5/5 稳定，但论文必须同时报告成功率和失败率。
+
+部署不是投稿前置条件。CNN deploy 已完成，FFN deploy 因时限中止；它们只作为扩展结果，不阻塞以“发现”为核心的论文。
 
 ---
 
