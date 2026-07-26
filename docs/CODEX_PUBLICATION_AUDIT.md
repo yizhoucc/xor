@@ -309,6 +309,32 @@ Codex 独立复算修正：上一行的 `±1.05` 是 sample SD；`RESULTS_EN.md`
 
 注：`seq_mnist_gated_diag` 的 `results.p` 结构（list of per-seed dict）不在 `build_result_manifest.py` 当前支持的四种结果文件之内，故不进 manifest；作为原始证据留档即可。
 
+### 2026-07-26 (Claude) - 发现证据强化：SwiGLU 干净、gate 非可辨识
+
+用户方向：用与原论文一致的"发现证据"思路，为两个核心再发现补跨 seed 定量证据（纯分析已有 checkpoint，不新增长训练）。
+
+**SwiGLU 再发现（成功，已进正文）**：
+
+- `scripts/distill_crossseed.py` 对 5 个独立训练的 InnerNet FFN（`exp/ivs_d128_v2/inner_weights_seed42..46.pth`）逐个提炼。
+- 结果：swiglu 拟合 **R²=0.947±0.010**（范围 0.931–0.956），门控系数 **0.238±0.005**（silu(a)·b），纯乘法 mult 每个 seed 只有 0.66。
+- 结论：独立优化的网络可复现地收敛到同一 SwiGLU 门控 → 这是 discovery paper 需要的证据，已写入 `RESULTS_EN/CN`（`results/figures/distill_crossseed_ivs_d128.json`）。
+
+**Gate 再发现（当前证据不足，机制性 claim 撑不住）**：
+
+- `scripts/gate_crossseed.py` 对 Seq-MNIST Plan B 150ep 成功 seed（42/43/46，`exp/seq_mnist_gated_rnn_long_20260515_174406_cc6a1c88`）的 inner_net1/inner_net2 做同样的门控拟合。
+- 网格 [-3,3]²：inner_net1 门控 R²=0.29±0.27（0.004–0.529），inner_net2=0.43±0.31（0.18–0.77）。跨 seed 朝向/符号都变。
+- 追加排除：换 LSTM 精确门 σ(a)·tanh(b)、在真实 Seq-MNIST 数据流形上重测（forward hook 抓 InnerNet 实际输入），仍乱——inner_net1 on-manifold R²=0.14/0.00/0.00；**seed43 的 inner_net1 对任何门形式 R²≈0（近似平面）却拿了 98.15% 准确率**。
+- 判断：**非可辨识性**。递归 cell 把 gating 分摊到 cell 递归 + W_h/W_x/W_c + LayerNorm + 两个 InnerNet，不同 seed 找不同分解；InnerNet 表面本身不被约束成干净的门。**加 seed 不会变干净**（与样本量无关）。对比 SwiGLU 干净的原因：FFN 里 InnerNet 直接替换激活，SwiGLU 是唯一自然极小点，可辨识。
+- 写作处理：`RESULTS_EN` 的 gate 机制性 claim（"InnerNet1/2 各自学成 input/output gate"、"strongest evidence"）当前无干净证据支撑；内部 `RESULTS_CN` 已如实记录。**待下方集群实验有结论后再定对外框架**。
+
+**计划中的集群实验（探索性，用户已同意集群免费可跑）**：
+
+- 目的：检验非可辨识性是否可通过"约束 cell"消除，从而拿到干净的 output-gate 再发现证据。
+- 设计：`SeqMinGatedRNN` = 去掉 `W_c` 线性投影与 `ln_c`，让 `inner_net2` 直接读 `c_t`（保留 ortho_init + ln_a/ln_b 以维持可训练性）。若仍达 ~98%，则 inner_net2 被迫承担 output-gate 计算。
+- 预注册成功判据：成功 seed 中 inner_net2 门控 R²>0.7 且多数朝向一致 → 记为干净 output-gate 再发现；否则坐实非可辨识，对外用功能性框架（98% vs 11%、逼近 GRU、参数少 46%），不做机制性 claim。
+- 规模：10 seeds × 150ep（成功率历史约 3/5，多跑几个 seed 保证有足够成功样本做一致性分析）。
+- 请 Codex 审查：上述判断链条、成功判据是否合理，以及约束 cell 是否可能引入新的非门控解。
+
 ## 提交记录
 
 | Commit | 分支 | 内容 | 验证 |
