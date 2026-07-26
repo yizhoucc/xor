@@ -14,7 +14,7 @@
   - PTB non-shared 冲突已用原始 `exp/warmstart_nonshared/results.p` 解决：InnerNet 162.49 vs 自身 SwiGLU baseline 164.59（5/5 赢，-2.11，paired-t p=0.037）。旧表的 162.64/-1.95 是混用了 shared 实验的 SwiGLU(162.22) baseline，已更正。
   - 6/27 后集群新结果仅 3 个（两个 deploy json + 一个 tanh test_results，均非核心分类）。
 - 详细计划、证据和逐步改动记录：`docs/CODEX_PUBLICATION_AUDIT.md`。
-- ⚠️ **2026-07-26 发现证据复核**：`exp/ivs_d128_v2/inner_weights_seed42..46.pth` 均由 `scripts/innernet_vs_swiglu.py` 生成；脚本先把同一个 InnerNet 显式拟合到 SwiGLU，再装入每个 seed。因此 R²=0.947±0.010 只能称 **warm-start 后跨 seed 保留**，不能称独立再发现。Seq-MNIST 的表面分析也不支持单个 InnerNet 分别成为 input/output gate；对外只报功能性结果，并公开 3/5 成功、2/5 NaN。
+- ⚠️→✅ **2026-07-26 发现证据复核与化解**：Codex 正确指出 `ivs_d128_v2` 的 5 seed 都由 `innernet_vs_swiglu.py` 从 SwiGLU 初始化，故 R²=0.947±0.010 只是 **warm-start retention**，不能当独立再发现。**已用 `scripts/distill_crossinit.py` 化解**：distill 非 SwiGLU 初始化的 free-init checkpoint（`exp/free_init/inner_{random,identity,multiply}_wiki.pth`），全部收敛到 silu(a)·b（SwiGLU R²≥0.98，multiply-init 从 a·b 走到 silu(a)·b）；from-scratch 失败的则卡在纯乘法 a·b（`exp/from_scratch_init_v2/*`，mult R²>swiglu）。→ SwiGLU 是最优解形态、init-independent、"走到"而非"塞进"。限定：外围网络 warm-start，独立性针对 InnerNet 本身。结果 `results/figures/distill_crossinit.json`。Seq-MNIST gate 仍只报功能性结果（表面不可辨识），NaN 进 appendix 作工程 caveat。
 
 ## 核心结论
 

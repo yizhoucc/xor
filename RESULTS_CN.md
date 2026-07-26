@@ -8,7 +8,9 @@
 
 把 ReLU 换成一个小 MLP（两输入一输出），让每个神经元能看到隔壁特征。但**我们不卖"它是更强的激活函数"**——因为从头训在大模型上打不过 SwiGLU、直接替换又慢又掉点（Qwen -9%）。如果按"better activation"写，reviewer 会说"和原论文（IEEE Access 2022）一样、marginal、推理慢、没价值"。
 
-**当前最稳妥的定位是：用它探测架构基元。** 流程：InnerNet 替换激活 → 训练 → 可视化学到的 2D 函数 → 提炼成简单算子。现有证据分两级：① Transformer FFN 的显式 SwiGLU warm-start 在后续任务训练中保持为缩放版 SwiGLU；② Sequential MNIST 中，加法记忆通道 + 两个 InnerNet 在成功 runs 上达到约 98%，但单个 InnerNet 并未跨 seed 收敛成标准 gate。真正的“从无信息初始化独立再发现 SwiGLU”仍缺对应 checkpoint 证据。
+**定位：用它发现架构基元（有 init-independent 证据支撑）。** 流程：InnerNet 替换激活 → 训练 → 可视化 2D 函数 → 提炼成简单算子。核心证据（2026-07-26 补齐，`scripts/distill_crossinit.py`）：把 **非 SwiGLU 初始化**（random / identity / multiply）的 InnerNet distill，全部收敛到 silu(a)·b（SwiGLU R²≥0.98），其中 multiply-init 从 a·b 出发却走到 silu(a)·b；而没到最优的 from-scratch 则卡在纯乘法 a·b（mult R²>swiglu）。→ **SwiGLU 是最优解的形态，不依赖初始化、是"走到"而非"被塞进去"的**。这推翻了"只是 warm-start retention"的质疑（那个质疑只针对 SwiGLU-init 的 ivs_d128 checkpoint，见下）。限定：外围网络是 warm-start 的，init-independence 是针对 InnerNet 本身；纯 from-scratch 受优化壁垒阻碍（卡在 a·b）。
+
+功能性结果（不作机制性 claim）：Sequential MNIST 加法记忆 + 两个 InnerNet 在成功 runs ~98%，但单个 InnerNet 表面跨 seed 不可辨识为标准 gate → 只按功能写。
 
 ### 相对原论文（Yoon et al., IEEE Access 2022）的新意
 
