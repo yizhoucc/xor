@@ -1,0 +1,22 @@
+data_path: ./data
+exp_dir: ./exp
+exp_name: seq_mnist_min_gated
+gpus:
+- 0
+model:
+  name: SeqMinGatedRNN
+run_id: '3188742'
+save_dir: ./exp/seq_mnist_min_gated_20260726_164231_b3186401
+seed: 50
+seq_mnist:
+  batch_size: 128
+  epochs: 150
+  grad_clip: 1.0
+  hidden_size: 128
+  inner_hidden: 32
+  lr: 0.001
+  num_seeds: 1
+  num_workers: 4
+  ortho_init: true
+task_type: seq_mnist
+use_gpu: true

@@ -14,7 +14,7 @@
   - PTB non-shared 冲突已用原始 `exp/warmstart_nonshared/results.p` 解决：InnerNet 162.49 vs 自身 SwiGLU baseline 164.59（5/5 赢，-2.11，paired-t p=0.037）。旧表的 162.64/-1.95 是混用了 shared 实验的 SwiGLU(162.22) baseline，已更正。
   - 6/27 后集群新结果仅 3 个（两个 deploy json + 一个 tanh test_results，均非核心分类）。
 - 详细计划、证据和逐步改动记录：`docs/CODEX_PUBLICATION_AUDIT.md`。
-- ⚠️→✅ **2026-07-26 发现证据复核与推进**：Codex 正确指出 `ivs_d128_v2` 的 5 seed 都由 `innernet_vs_swiglu.py` 从 SwiGLU 初始化，故 R²=0.947±0.010 只是 warm-start retention。新增 `scripts/distill_crossinit.py` 后，random / identity / multiply / SwiGLU 四种 InnerNet 初值在同一类高性能 warm-start basin 中均得到 SwiGLU R²≥0.98；这支持“结果不依赖 InnerNet 初值”，显著强于 retention。审计边界：`warmstart_free_init.py` 的 Wiki 权重文件名不含 seed，3-seed 循环会覆盖，因此当前 cross-init 表面每种 init 只保留最后一个 seed；本地也未保存对应 `results.p`。外围网络仍来自 SwiGLU，正在跑的 Bilinear-GLU jobs 613857–859用于检验这一 host confound。Seq-MNIST gate 仍只报功能性结果，NaN 进 appendix。
+- ⚠️ **2026-07-30 发现证据更新**：SwiGLU-host cross-init 显示四种 InnerNet 初值均得到 SwiGLU R²≥0.98，但 Bilinear-host 因果实验给出相反边界：4 个完成的 joint seeds 无论 random/multiply init 均保持纯乘法（mult R²≈0.998–0.999，SwiGLU R²≈0.51–0.56），同时 PPL 从 host 79.60±0.31 降至 73.51±0.37 / 73.72±0.35。结论是 learned surface **依赖 host/optimization basin**，现有证据不支持 network-independent SwiGLU attractor。cross-init 多 seed补跑因 GPU 架构不兼容失败，尚待在兼容节点完成。
 
 ## 核心结论
 
@@ -28,6 +28,7 @@
 - Non-shared（每层不同 InnerNet）比 shared 效果更好（PTB -2.11 vs -1.04，配对 5/5 赢），参数差可以忽略
 - **Multiply-init MLM 大幅赢**：MultInit 15.93±0.21 vs SwiGLU 19.09±0.27（-16.6%，5 seeds）
 - **初始化不影响收敛终点**：4 种初始化都收敛到 ~71.7-72.6（Wiki d=128），都大幅赢 SwiGLU ~77.3
+- **约束 SeqMinGatedRNN**：去掉 `W_c` 后，8/9 个实际训练 seed 成功，最佳准确率 **98.44±0.22%**（popSD，范围 98.10–98.83%）；1 个 NaN，另有 1 个未进入训练的 infrastructure OOM。参数降至 21K，但标准 gate 表面仍不可辨识。
 
 ## 论文定位（已定 — 2026-06-27）
 
@@ -53,15 +54,16 @@
 
 - **U20 param sharing bug**：之前 Transformer/ResNet/WRN 的 InnerNet 每层各一个没共享。已修复，重跑。修复后结果和之前差不多（d=64: 112.66→112.83），说明影响不大，但 sharing 是论文基本设计。CNN/MLP/AE/VGG/LSTM/PPO 不受影响。
 
-## 集群状态（2026-07-26）
+## 集群状态（2026-07-30）
 
-### 运行中 — Gate 可辨识性实验（约束 cell）
+### 当前队列：空；7 月 26 日任务均已终止
 
 | Job | 实验 | 状态 | 目的 |
 |-----|------|------|------|
-| 613846–613855 | `SeqMinGatedRNN`（去掉 W_c）seeds 42–51 并行，150ep 各一 job | RUNNING (7-26) | 探索去掉 W_c 后 inner_net2 的 gate-family held-out fit 是否提高且跨 seed 更一致。R²>0.7 仅作为预先记录的筛查阈值，不能单独证明 gate 再发现；还需 empirical-manifold、方向一致性和非门控基线比较。~1.5 天出结果（单 seed ~36h，并行）。 |
-| 613861–613870 | **#1 因果矩阵** `warmstart_causal` host=bilinear × freeze{joint,frozen} × seed{42–46}（inits=random,multiply） | RUNNING (7-26) | 早期 bilinear_probe(613857-859) 已被此升级版取代。冻结臂（host 固定 a·b，只训 InnerNet）vs 联合臂对比：若冻结→恢复 a·b、联合→转 silu(a)·b 且 PPL 更好，则证明 **SwiGLU 是任务优化发现的，非模仿宿主门**。存逐 epoch InnerNet 权重（a·b→silu 轨迹）。~几小时。 |
-| 613871–613875 | **#2 cross-init×cross-seed** host=swiglu joint × seed{42–46}（inits=random/identity/multiply/swiglu） | RUNNING (7-26) | 补齐之前只有"1 seed×4 init"的缺陷（wiki 文件名无 seed 被覆盖）。每 seed 每 init 单独存文件，之后 distill 报 mean±SD/最低 R²。 |
+| 613846–613855 | `SeqMinGatedRNN` seeds 42–51 | 8 success / 1 NaN / 1 infra OOM | Seeds 42/44–50 完成；seed 51 ep17 NaN；seed 43 节点无 GPU后 host-memory OOM。成功结果 98.44±0.22%（popSD）。inner1/2 gate R²=0.245±0.223 / 0.447±0.263，约束未改善机制可辨识性。 |
+| 613861–613870 | Bilinear causal matrix | 5 completed / 2 timeout / 3 incompatible-GPU failures | Joint seeds 42/43/45/46 完成并保持 `a*b`；joint seed44 timeout。Frozen seed42完成、seed43完成 random 后 timeout；seeds44–46落到 RTX Pro 6000，CUDA build不支持。部分结果已拉回。 |
+| 613871–613875 | SwiGLU cross-init×cross-seed | 5 incompatible-GPU failures | 全部落到 RTX Pro 6000 (`mind-1-19`)，启动时 `no kernel image`；没有训练结果。需要在 L40S/兼容GPU重跑。 |
+| 613857–613859 | 旧 Bilinear probe | CANCELLED by user | 约29分钟时被取消，未进入 InnerNet probe；已被 causal matrix 取代。 |
 
 ### 已终止（原 2026-06-27 提交的 job，终态已核实）
 
@@ -107,8 +109,9 @@
 | Plan B + clip | 37K | 成功 seeds ~97.6–98.1% | 3/5 ✅, 2 NaN | NaN 未解决 |
 | Plan B + tanh-bounded | 37K | 成功 seeds ~97.5–98.2% | 3/5 ✅, 2 NaN | NaN 未解决 |
 | Plan B + all | 37K | 成功 seeds ~97.9–98.2% | 3/5 ✅, 2 NaN | NaN 未解决 |
+| **SeqMinGatedRNN（无 `W_c`）** | **21K** | **98.44±0.22%** | **8/9实际训练成功，1 NaN；另1 infra OOM** | 功能稳定性提高，gate表面仍不可辨识 |
 
-**关键发现**：Plan A（单 InnerNet 替换 tanh）完全失败。Plan B（2 InnerNet + cell state）在 3/5 seeds 达到 98.36%，说明加法记忆 + 可学二元交互在功能上足以解决任务；跨 seed/on-manifold 分析不支持单个 InnerNet 收敛为标准 gate。**训练不稳定（5 seeds 里 2 个 NaN）目前未解决：3 种修复（梯度裁剪 / tanh 约束 / 组合）全部无效。**
+**关键发现**：Plan A（单InnerNet替换tanh）完全失败。Plan B证明加法记忆+可学二元交互在功能上足以解决任务；约束版本进一步以21K参数在8/9实际训练seed达到98.44%。但跨seed表面分析仍不支持单个InnerNet收敛为标准gate，说明性能发现与机制可辨识性必须分开。
 
 ### 其他最近完成
 
@@ -130,8 +133,8 @@
 
 | # | 项目 | 状态 | 说明 |
 |---|------|------|------|
-| **P1** | **表面定量提炼** | ⚠️ provenance 已纠正 | FFN warm-start checkpoint 可由 `0.24·silu(a)·b` 解释（R²=0.942），5 seeds 为 R²=0.947±0.010。但 5 runs 共享显式 SwiGLU-fitted 初值，只证明训练后保留，不能证明独立再发现。真正 discovery 证据需非 SwiGLU 初值的多 seed checkpoint。 |
-| **P2** | **Seq-MNIST 功能与稳定性边界** | ✅ 诊断已收口；探索实验运行中 | Plan B 3/5 成功 seeds 约 98.36%，2/5 NaN；单个 InnerNet gate 表面跨 seed 不一致。论文如实报告成功率和失败率。约束 cell jobs 613846–855 只探索可辨识性，不预设其能证明 gate。 |
+| **P1** | **表面定量提炼** | ⚠️ host-dependent 边界已发现 | SwiGLU host 内不同 init → SwiGLU-like；Bilinear host joint 4 seeds → pure `a*b` 且同样达到约73.5 PPL。不能 claim universal SwiGLU attractor；当前支持“InnerNet 在给定高性能 basin 中优化出/恢复适配该 basin 的二元算子”。缺失矩阵需在兼容 GPU 补齐。 |
+| **P2** | **Seq-MNIST 功能与稳定性边界** | ✅ 约束实验完成 | 去掉 `W_c` 后 8/9 实际训练成功，98.44±0.22%，1 NaN（另 1 infra OOM），参数从37K降至21K。inner2 gate R² 0.447±0.263，与旧设计约0.43±0.31相同：功能结果增强，机制仍不可辨识。 |
 | **P3** | **结果审计与统计严谨性** | ⏳ 进行中 | canonical manifest 与 paired/unpaired stats 已完成。旧 `fig_scaling_law` 使用 parameter-sharing 修复前的数据，暂不用于论文；修复后汇总并非单调（3.3%→1.6%→0.8%→1.7%）。四规模 vs GELU paired-t 已复算：p=0.00022/0.05095/0.361/0.173。剩余：自动分组汇总、冲突报告和其余核心结果统计。 |
 
 ### 🔴 Critical
@@ -188,7 +191,7 @@
 | U38 | Multiply-init 多任务 | ✅ 5/5 seeds | d=64 持平, d=128 -0.24, PTB -1.08, **MLM MultInit 15.93±0.21 vs SwiGLU 19.09±0.27 (-16.6%)** |
 | U39 | Scratch-init (从头训对比) | ⏳ 2.5/5 seeds | SwiGLU 一致赢所有 InnerNet 初始化。Seed 42: SwiGLU 76.6 > Gaussian 78.1 > Random 79.3 > Multiply 80.2 |
 | U40 | RNN PTB 重跑 | ✅ | 2arg Test PPL≈169, 1arg PPL≈179, tanh PPL≈140。**InnerNet 输 tanh baseline 20-28%**。PTB 上 InnerNet 不好用 |
-| U41 | Sequential MNIST（加法记忆 + InnerNet） | ⏳ 约束 cell 探索运行中 | Plan A 11.04%（失败）；Plan B 3/5 成功 seeds ~98.36%，2/5 NaN。功能结果成立，但单个 InnerNet gate 表面不可辨识。 |
+| U41 | Sequential MNIST（加法记忆 + InnerNet） | ✅ 约束实验完成 | Plan A 11.04%失败；原Plan B 3/5成功；约束版21K、8/9实际训练成功、98.44±0.22%。功能结果增强，但单个InnerNet gate表面仍不可辨识。 |
 | U42 | Plan B 训练稳定性 | ✅ 诊断收口：全叠加仍 2/5 NaN | 前 3 个稳定性变体各 2/5 NaN。第 3 轮全叠加（ortho+warmup3+cell_tanh+clip0.25）诊断 547208 结果已拉回：seed 42 ep4 NaN、seed 46 ep1 NaN，43/44/45 正常。全叠加未根治，稳定性是已知边界。 |
 | **U20** | **修复 InnerNet parameter sharing** | ✅ TF 全完成 | d=64 112.83, d=128 95.26, d=192 88.42, **d=256 84.62**, PTB 207.91。全部赢 GELU。ResNet full 持平, internal +1.5%。MLM 124.82 差 |
 

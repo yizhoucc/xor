@@ -382,6 +382,18 @@ Codex `b6cf813` 的三点复核：point 1（SwiGLU 只是 warm-start retention�
 
 本地验证：8 个 audit/statistics tests 通过；新增脚本和模型 `py_compile` 通过；cross-init 数值完整复现；Bilinear probe 小模型 forward/转换 smoke-test 通过。
 
+### 2026-07-30 (Codex) - 集群终态、约束 RNN 与因果矩阵
+
+通过 `squeue` / `sacct` 核实当前队列为空。约束 RNN jobs 613846–613855 中，8 个 seed 完成150 epochs，seed51在epoch17出现NaN，seed43所在节点没有暴露GPU并在52秒后host-memory OOM。原始config、日志、`results.p`和best checkpoint已拉回本地 `exp/seq_mnist_min_gated_20260726_*`。
+
+8个成功seed（42/44–50）最佳准确率为98.10–98.83%，均值 **98.435%**，population SD **0.220%**。对best checkpoint重跑gate拟合：inner_net1 R²=**0.2445±0.2227**，inner_net2=**0.4470±0.2632**（sample SD），与旧unconstrained模型约0.29/0.43基本相同。删除 `W_c` 将模型降至21,068参数并提高有效训练成功率，但没有改善canonical gate可辨识性。
+
+因果矩阵 jobs 613861–613875 终态：Bilinear joint seeds42/43/45/46完成，seed44 timeout；frozen seed42完成、seed43在完成random分支后timeout；其余3个frozen及全部5个SwiGLU cross-init落到 `mind-1-19` 的RTX Pro 6000，当前CUDA/PyTorch build不支持该架构，启动即报 `no kernel image`。这些是基础设施失败，不是实验负结果。
+
+已完成的Bilinear joint结果一致反驳预设假说：host PPL **79.60±0.31**，joint random/multiply为 **73.51±0.37 / 73.72±0.35**，但最终表面仍为纯乘法。random mult R²=**0.9982±0.0006**，multiply mult R²=**0.9989±0.0005**；SwiGLU R²仅约0.53/0.55。现有frozen controls也为mult R²≈0.999。结论：SwiGLU-host中的cross-init收敛是host/basin-conditioned，不是network-independent SwiGLU attractor。因为没有“Bilinear继续训练10ep”分支，PPL改善不能单独归因于activation。
+
+旧Bilinear jobs 613857–613859均为用户取消，未进入InnerNet probe。新因果实验的逐epoch权重和Slurm日志已拉回 `exp/causal/`；缺失矩阵若补跑，应显式请求 `gpu:L40S:1` 或排除 `mind-1-19`，并延长慢GPU上的frozen任务时限。
+
 ## 提交记录
 
 | Commit | 分支 | 内容 | 验证 |

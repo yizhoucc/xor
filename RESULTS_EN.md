@@ -8,10 +8,10 @@ InnerNet replaces scalar activations (ReLU) with a small learned MLP taking two 
 
 We position InnerNet not as a drop-in *better activation function*, but as a **differentiable probe for architectural primitives**: replace fixed activations with InnerNet, train, visualize the learned 2D function, and quantify it with simple closed-form operators. The central finding, with a supporting functional result:
 
-- **SwiGLU is the attractor at the optimum (initialization-independent)** — in a capable Transformer FFN, an InnerNet trained from *non*-SwiGLU initializations (random, identity, or pure-multiplication) all converge to the scaled-SwiGLU surface `c·silu(a)·b` (SwiGLU R² ≥ 0.98). Multiplication-initialized InnerNets start at `a·b` and move to `silu(a)·b`. InnerNets that fail to reach the optimum (from-scratch) instead stall at pure multiplication `a·b`. The good solution *is* SwiGLU, reached rather than imposed.
+- **Learned operators are basin-dependent** — within a SwiGLU-warm-started Transformer, random, identity, and multiplication InnerNet initializations converge to a scaled-SwiGLU surface (SwiGLU R² ≥ 0.98). In contrast, four completed jointly trained Bilinear-host runs converge to pure multiplication (mult R² ≥ 0.998) while reaching similarly strong PPL. InnerNet can recover and refine a useful bivariate operator, but the operator is not a network-independent SwiGLU attractor.
 - **Functional recurrent gating** — a recurrent network with an additive memory channel and two InnerNets solves Sequential MNIST (~98% vs 11% for a plain RNN); we report this as a functional result, since the individual InnerNet surfaces are not identifiable as canonical LSTM/GRU gates.
 
-This makes the large-scale behavior a boundary, not a contradiction: from-scratch InnerNet underperforms hand-designed SwiGLU because it is trapped at `a·b`, the optimization barrier — not a capacity limit (frozen-InnerNet capacity matches SwiGLU). Scope: the surrounding network is warm-started; the initialization-independence is over the InnerNet itself.
+This makes the large-scale behavior a boundary, not a contradiction: from-scratch InnerNet underperforms hand-designed SwiGLU because optimization and the surrounding network determine which functional basin is reached, not because InnerNet lacks the required capacity (frozen-InnerNet capacity matches SwiGLU).
 
 **Supporting findings:**
 
@@ -141,7 +141,7 @@ Multiply-initialized InnerNet (f(a,b)=a·b) across 4 tasks:
 
 MLM shows the largest gain. Simple multiplicative interaction f(a,b)=a·b provides a strong initialization, particularly for tasks where feature interaction dominates.
 
-### Distillation: SwiGLU is the Attractor, Independent of Initialization
+### Distillation: Initialization Robustness Within a Host Basin
 
 We distill each trained InnerNet FFN surface f(a, b) into closed-form operators by least-squares on a [-5, 5]² grid (`scripts/distill_innernet.py`), reporting R² per family. The decisive test varies the **InnerNet initialization** (a capable network is held fixed) and asks what surface it converges to:
 
@@ -153,11 +153,13 @@ We distill each trained InnerNet FFN surface f(a, b) into closed-form operators 
 | SwiGLU (control) | 0.58 | **0.984** | reaches optimum |
 | random / multiply, **from-scratch** (fail) | **0.72–0.89** | 0.27–0.46 | stalls at `a·b` |
 
-Regardless of a *non*-SwiGLU initialization, an InnerNet that reaches the good optimum converges to the scaled-SwiGLU surface `c·silu(a)·b` (**SwiGLU R² ≥ 0.98**, ≫ 0.6 for pure multiplication). The multiplication-initialized run is the sharpest case: it starts at `a·b` and moves to `silu(a)·b`. Conversely, InnerNets that fail to optimize (from-scratch) stall at pure multiplication `a·b` (mult R² > SwiGLU R²). SwiGLU is therefore the functional form of the good solution — reached, not imposed by initialization. **Scope:** the surrounding network is warm-started from SwiGLU; the initialization-independence is over the InnerNet itself. A fully-from-scratch demonstration is blocked by the optimization barrier (which lands on `a·b`).
+Within the SwiGLU-warm-started host, all tested InnerNet initializations converge to the scaled-SwiGLU surface. The multiplication-initialized branch moves from `a·b` to `silu(a)·b`, showing that the final surface is not merely retained from the InnerNet initialization. This conclusion is conditional on the host basin.
+
+A causal host control gives the complementary result. Starting from a trained Bilinear-GLU host (`a·b`), four completed joint-training seeds improve from host PPL **79.60±0.31** to **73.51±0.37** (random init) and **73.72±0.35** (multiply init), yet their final surfaces remain pure multiplication: mult R² **0.9982±0.0006** / **0.9989±0.0005**, versus SwiGLU R² 0.528/0.549. Available frozen-host controls also recover `a·b` (mult R²≈0.999). The PPL gain cannot be assigned solely to the activation because no Bilinear-continued branch was run; the surface result nevertheless rejects a universal, network-independent SwiGLU attractor.
 
 Single-checkpoint fits corroborate the operator across settings (Transformer FFN d=128 SwiGLU R²=0.94 / `0.24·silu(a)·b`; CNN CIFAR-10 0.91 / `0.35·silu(a)·b`; SwiGLU-fit control 0.99, validating the fitting procedure).
 
-Config: `scripts/distill_crossinit.py` (cross-init table → `results/figures/distill_crossinit.json`), `scripts/distill_innernet.py` (single checkpoint). Note: `scripts/distill_crossseed.py` distills the SwiGLU-initialized `innernet_vs_swiglu.py` checkpoints, so its 5-seed table (0.947 ± 0.010) measures *warm-start retention*, not init-independence; the cross-init table above is the discovery evidence.
+Config: `scripts/distill_crossinit.py`, `scripts/warmstart_causal.py`, and `scripts/distill_innernet.py`. The causal matrix is incomplete because several jobs timed out or landed on an unsupported RTX Pro 6000 node, but all four completed joint Bilinear seeds agree on the operator family.
 
 ---
 
@@ -188,12 +190,13 @@ Sequential MNIST reads each 28×28 image pixel-by-pixel (784 timesteps), then cl
 | SeqGRU | 52K | **98.72% ± 0.14%** | 5/5 |
 | SeqInnerNetRNN (Plan A) | 19K | 11.04% ± 0.62% | 5/5 |
 | **SeqGatedRNN (Plan B)** | 37K | **~98.4%** (98.42 / 98.15 / 98.51) | 3/5 successful (2 NaN) |
+| **SeqMinGatedRNN (no `W_c`)** | 21K | **98.44% ± 0.22%** | 8/9 trained (1 NaN; 1 additional infrastructure OOM) |
 
 **Plan A** (single InnerNet replacing tanh) fails — identical to vanilla RNN. Without an additive memory channel, InnerNet cannot learn to prevent information decay over 784 steps.
 
-**Plan B** (2 InnerNets + cell state) reaches ~98.4% on its three successful runs, approaching GRU's 98.72% with 46% fewer parameters than LSTM. This establishes functional sufficiency: an additive memory path plus learned bivariate interactions can solve the long-sequence task. Cross-seed grid and on-manifold fits do **not** show that InnerNet1 and InnerNet2 individually converge to canonical input and output gates; the solution is distributed across the recurrent projections, cell state, normalization, and InnerNets. Two of five runs diverged to NaN, so optimization stability remains a limitation.
+**Plan B** establishes functional sufficiency: an additive memory path plus learned bivariate interactions can solve the long-sequence task. Removing `W_c` reduces the model to 21K parameters (69% fewer than LSTM) while retaining 98.44% accuracy and increasing observed training success to 8/9 valid runs. One valid run diverged to NaN; one additional submitted job failed before training because its Slurm node exposed no GPU and exhausted host memory. Cross-seed surface fits remain non-identifiable: constrained inner_net1/inner_net2 gate R² values are 0.245±0.223 and 0.447±0.263, essentially unchanged from the unconstrained model.
 
-Config: `config/experiments/seq_mnist_*.yaml`
+Config: `config/experiments/seq_mnist_min_gated.yaml`; raw runs: `exp/seq_mnist_min_gated_20260726_*`; surface analysis: `results/figures/gate_crossseed_seqmin_constrained.json`.
 
 ## 5. Parameter Efficiency — MLP CIFAR-10 (5 seeds)
 
@@ -255,9 +258,9 @@ InnerNet provides consistent benefits in **feedforward networks without built-in
 - **ResNet internal-only**: +1.5% on CIFAR-100 — position matters
 - **Parameter efficiency**: 55% parameter savings (InnerNet w=128 ≈ ReLU w=256)
 - **Multiply-init MLM**: -16.6% PPL vs SwiGLU (5 seeds)
-- **Functional recurrent interaction**: RNN + additive cell state + InnerNet reaches 98% on 3/5 Sequential MNIST runs; individual gate surfaces are not identifiable and 2/5 runs diverge
+- **Functional recurrent interaction**: the 21K constrained model reaches 98.44±0.22% on 8/9 trained Sequential MNIST runs; individual gate surfaces remain non-identifiable
 
-**Capacity and optimization**: InnerNet wins or ties SwiGLU in **10/11** warm-start tasks. The ivs_d128 experiment directly verifies capacity ≥ SwiGLU (Frozen InnerNet 77.38±0.51 = SwiGLU 77.38±0.54, 5 seeds). Four different initializations all converge to the same optimum (~71.9 vs SwiGLU ~77.3), confirming the endpoint is task-determined. The from-scratch gap is an optimization issue: InnerNet's per-epoch compute is higher, and the advantage decreases with model size. Most impactful for small/on-device models and warm-start finetuning scenarios.
+**Capacity and optimization**: InnerNet wins or ties SwiGLU in **10/11** warm-start tasks. The ivs_d128 experiment directly verifies capacity ≥ SwiGLU (Frozen InnerNet 77.38±0.51 = SwiGLU 77.38±0.54, 5 seeds). Within a SwiGLU host, four different InnerNet initializations reach the same performance basin; the Bilinear-host control shows that the learned operator family remains host-dependent. The from-scratch gap is an optimization issue: InnerNet's per-epoch compute is higher, and the advantage decreases with model size.
 
 **Boundaries**: InnerNet is redundant at positions protected by skip connections, but effective at unprotected internal positions even in residual networks.
 

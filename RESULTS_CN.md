@@ -8,9 +8,9 @@
 
 把 ReLU 换成一个小 MLP（两输入一输出），让每个神经元能看到隔壁特征。但**我们不卖"它是更强的激活函数"**——因为从头训在大模型上打不过 SwiGLU、直接替换又慢又掉点（Qwen -9%）。如果按"better activation"写，reviewer 会说"和原论文（IEEE Access 2022）一样、marginal、推理慢、没价值"。
 
-**定位：用它发现架构基元（有 init-independent 证据支撑）。** 流程：InnerNet 替换激活 → 训练 → 可视化 2D 函数 → 提炼成简单算子。核心证据（2026-07-26 补齐，`scripts/distill_crossinit.py`）：把 **非 SwiGLU 初始化**（random / identity / multiply）的 InnerNet distill，全部收敛到 silu(a)·b（SwiGLU R²≥0.98），其中 multiply-init 从 a·b 出发却走到 silu(a)·b；而没到最优的 from-scratch 则卡在纯乘法 a·b（mult R²>swiglu）。→ **SwiGLU 是最优解的形态，不依赖初始化、是"走到"而非"被塞进去"的**。这推翻了"只是 warm-start retention"的质疑（那个质疑只针对 SwiGLU-init 的 ivs_d128 checkpoint，见下）。限定：外围网络是 warm-start 的，init-independence 是针对 InnerNet 本身；纯 from-scratch 受优化壁垒阻碍（卡在 a·b）。
+**定位：用它探测给定优化 basin 中的二元架构基元。** SwiGLU-host 内，random / identity / multiply 等 InnerNet 初值都会走到 SwiGLU-like 表面；但新的 Bilinear-host 因果实验中，4 个完成的 joint seeds 全部保持纯 `a·b`（mult R²≥0.998），没有转成 SwiGLU，同时 PPL 也达到约 73.5。结论因此不是“存在唯一、网络无关的 SwiGLU 最优形态”，而是 **InnerNet 能从不同初值优化/恢复与外围网络 basin 相容的高性能二元算子**。这是更可信也更一般的 architecture-probe 结论。
 
-功能性结果（不作机制性 claim）：Sequential MNIST 加法记忆 + 两个 InnerNet 在成功 runs ~98%，但单个 InnerNet 表面跨 seed 不可辨识为标准 gate → 只按功能写。
+功能性结果（不作机制性 claim）：Sequential MNIST 约束模型以 21K 参数在 8/9 个实际训练 seed 达到 98.44±0.22%，但单个 InnerNet 表面仍不可辨识为标准 gate。
 
 ### 相对原论文（Yoon et al., IEEE Access 2022）的新意
 
@@ -27,7 +27,7 @@
 
 1. **结果源审计**：canonical manifest 已建立；继续清理修复前后结果混用、缺原始来源和不完整 seeds。
 2. **统计严谨性**：paired/unpaired 工具已完成；继续为正文核心结果生成 raw seeds、差值区间、效应量和配对/非配对检验。
-3. **gate 稳定性必须透明报告**：Plan B 全叠加诊断（547208，本地 `exp/seq_mnist_gated_diag_20260627_171855_d46bf25c`）仍 2/5 NaN，是已知未解边界。即使不把稳定性作为贡献，成功结果也是从 5 次尝试中筛出的 3 次，因此对外必须写明 **3/5 successful, 2 NaN**；否则读者无法判断选择机制。
+3. **gate 稳定性必须透明报告**：原 Plan B 为3/5成功、2 NaN；约束版本去掉 `W_c` 后为8/9实际训练成功、1 NaN，另有1次基础设施OOM。两套分母都应报告，不能只选成功runs。
 
 部署不是投稿前置条件。CNN deploy 已完成，FFN deploy 因时限中止；它们只作为扩展结果，不阻塞以“发现”为核心的论文。
 
@@ -199,6 +199,8 @@ SwiGLU 一直赢 1-3 PPL。Gaussian pretrain 略好于 random/multiply。确认�
 
 **跨 seed 一致性（warm-start retention）**：5 个 seeds 的后续任务优化彼此独立，但它们共享同一份显式拟合到 SwiGLU 的 InnerNet 初值。逐个提炼得到 SwiGLU 拟合 **R²=0.947±0.010**（范围 0.931–0.956），系数 **0.238±0.005**，纯乘法约 0.66。这个结果排除了单个 seed 的偶然漂移，但不能升级成“独立再发现”；要支持后者，必须分析从 Gaussian/random 等非 SwiGLU 初值训练并保存的多 seed checkpoint。
 
+**Bilinear-host 因果结果（2026-07-30）**：4 个完成的 joint seeds（42/43/45/46）中，host PPL 为 **79.60±0.31**，换入 random/multiply InnerNet 并联合训练 10ep 后为 **73.51±0.37 / 73.72±0.35**。但表面没有变成 SwiGLU：random 的 mult R² **0.9982±0.0006**、multiply 的 mult R² **0.9989±0.0005**，SwiGLU R² 只有约 0.53/0.55。已有 frozen controls 同样恢复 `a·b`（mult R²≈0.999）。因此 SwiGLU-host 的 cross-init 结论只在该 host basin 内成立，不能写成 network-independent attractor。PPL 改善也不能全归因于 activation，因为缺少 Bilinear host 继续训练 10ep 的对照。
+
 | | swiglu R² | silu(a)·b 系数 | mult R² |
 |--|:---:|:---:|:---:|
 | 42/43/44/45/46 | 0.942/0.931/0.956/0.949/0.955 | 0.238/0.231/0.241/0.243/0.237 | 0.66 全部 |
@@ -287,11 +289,13 @@ Sequential MNIST：逐像素读 MNIST（784 步），最后分类。RNN 完全�
 | SeqGRU | 52K | **98.72% ± 0.14%** | 5/5 ✅ | 最强，非常稳定 |
 | SeqInnerNetRNN (Plan A) | 19K | **11.04% ± 0.62%** | 5/5 ✅ | **失败**，和 RNN 一样 |
 | **SeqGatedRNN (Plan B, 150ep)** | 37K | **成功 seeds ~98.36%**（98.42/98.15/98.51） | 3/5 ✅, 2 NaN | **成功！逼近 GRU** |
+| **SeqMinGatedRNN（去 `W_c`）** | 21K | **98.44% ± 0.22%** | 8/9 实际训练成功，1 NaN；另1 infra OOM | 更小、更稳定，逼近 GRU |
 
 LSTM 每个 seed：87.6%, 71.2%, 49.4%, 83.1%, 93.8%——方差极大。
 GRU 每个 seed：98.8%, 98.9%, 98.5%, 98.7%, 98.7%——非常稳定。
 Plan A 每个 seed：11.4%, 9.8%, 11.4%, 11.4%, 11.4%——一致失败。
 Plan B（150ep）成功 seed：98.42%, 98.15%, 98.51%（seed 44/46 NaN 训炸）。
+SeqMinGatedRNN 成功 seed 42/44/45/46/47/48/49/50：98.43/98.10/98.50/98.25/98.83/98.25/98.47/98.65%，均值 **98.435%**、popSD **0.220%**；seed 51 在 ep17 NaN。seed 43 的节点没有暴露 GPU，52 秒后 host-memory OOM，属于基础设施失败。
 
 ### 分析
 
@@ -299,15 +303,15 @@ Plan B（150ep）成功 seed：98.42%, 98.15%, 98.51%（seed 44/46 NaN 训炸）
 
 **Plan B 的功能性结果**：给模型加法 cell state 和两个 InnerNet 后，3 个成功 seed 达到约 98%。这证明该组合足以解决长序列记忆任务，但不证明 InnerNet1/2 分别成为标准 input/output gate。
 
-Plan B（37K 参数）比 LSTM（68K）参数少 46%，成功 seeds 性能逼近 GRU。只给"加法记忆通道"这个最小脚手架，InnerNet+cell state 就能解长记忆任务（vs plain RNN 11%）。
+约束版本去掉 `W_c` 后只有 21K 参数，比 LSTM 少约69%、比 GRU 少约59%，仍达到98.44%。这显著加强功能性结论：只保留加法记忆、归一化和两个二元交互网络，已经足以逼近GRU。
 
 **⚠️ 机制性 claim 的定量核查（2026-07-26，内部）**：用和 SwiGLU 同样的跨 seed distillation 方法（`scripts/gate_crossseed.py`，成功 seed 42/43/46，输入经 LN 故取 [-3,3]² 网格）去测"InnerNet1/2 是不是干净的 sigmoid 门"，**结果不支持**：
 - inner_net1 门控 R² = **0.29 ± 0.27**（0.004~0.529），inner_net2 = **0.43 ± 0.31**（0.18~0.77）——远不及 SwiGLU 的 0.947±0.010。
 - 跨 seed 极不一致：朝向、符号都在变；seed 43 的 inner_net1 门控 R²≈0（几乎无门控结构）却照样 98.15%；有的 seed 线性基线拟合还更好。
 - **结论**：功能层面 gate-like 行为成立（存在性证明：加法记忆 + 可学交互足以解 Seq-MNIST），但"每个 InnerNet 各自收敛成一个干净的 input/output gate"这个机制性读法**站不住**——网络靠 cell-state 递归 + 线性映射 + InnerNet 的分布式配合解决，不是单个 InnerNet = 单个门。
 - **进一步排除（2026-07-26）**：换 LSTM 精确门形式 σ(a)·tanh(b)、以及在**真实 Seq-MNIST 数据流形**上（跑真实前向抓 InnerNet 实际输入）重测，仍然乱——inner_net1 on-manifold 门控 R²=0.14/0.00/0.00，seed43 的 inner_net1 对任何门形式都 ≈0（full_gate 0.02）却照样 98.15%。**确认是非可辨识性**（gating 被 cell 递归 + W_h/W_x/W_c + LayerNorm + InnerNet 分摊），不是家族/范围选错，也不是 seed 数不够——**加 seed 不会变干净**。
-- **能不能靠跑集群拿到证据？评估：不能可靠拿到。** 唯一有机会的是重新设计"约束 cell"（去掉线性投影/LN，逼 InnerNet 成为唯一能承载门的地方）再从头训——但那是新架构、要 GPU 训几天、结果不确定、且模型已不是论文里那个。不值得赌。
-- **对外写作建议**：gate 只按**功能性存在证明**写（成功 runs 98% vs 11%，逼近 GRU，参数少 46%），并公开 3/5 成功、2/5 NaN。SwiGLU 的跨 seed 表面也只能称 warm-start retention，不能称无信息初始化的再发现。结果留档 `results/figures/gate_crossseed_seqmnist.json`。
+- **约束 cell 已完成（2026-07-28）**：去掉 `W_c`、保留 `ln_c` 后，8/9 个实际训练 seed 成功。但 grid 分析仍不干净：inner_net1 gate R²=**0.245±0.223**，inner_net2=**0.447±0.263**，与旧模型0.29/0.43基本相同，朝向和符号仍跨 seed 变化。`W_c` 不是非可辨识性的主因。
+- **对外写作建议**：gate 只按功能性存在证明写（98.44% vs plain RNN 11%，21K参数），并公开8/9实际训练成功、1 NaN和额外1次基础设施OOM。机制分析留档 `results/figures/gate_crossseed_seqmin_constrained.json`。
 
 ### 训练稳定性 — 3 种修复全部失败 ❌（2026-06）
 
@@ -382,7 +386,7 @@ Configs: `config/experiments/resnet_cifar_internal_2arg.yaml`
 
 | 实验 | 进度 |
 |------|------|
-| Sequential MNIST — RNN/LSTM/GRU/InnerNetRNN/GatedRNN | 5 jobs 在跑，50ep×5seeds |
+| Sequential MNIST — RNN/LSTM/GRU/InnerNetRNN/GatedRNN | 已完成；约束版8/9实际训练成功，98.44±0.22% |
 
 GPT v4 (3/5 seeds)、free_init_v2 (Wiki 3/3, MLM 2/3)、scratch_init (2.5/5) 时间到未完成，数据已够用。
 
@@ -401,4 +405,4 @@ GPT v4 (3/5 seeds)、free_init_v2 (Wiki 3/3, MLM 2/3)、scratch_init (2.5/5) 时
 - 大模型直接替换不可行（Qwen -9%），但 warm-start + 继续训可以（ivs_d128 追平）
 - InnerNet 适合：(1) 小模型 / on-device (2) warm-start finetune (3) 架构搜索工具
 - 不适合：大模型从头训、大模型直接替换
-- **Sequential MNIST 功能性结果**：Plan B（2 InnerNet + cell state）在 3/5 runs 达到 98%，接近 GRU 99%；Plan A（单 InnerNet）失败。表面分析不支持单个 InnerNet = 标准 gate，另有 2/5 NaN
+- **Sequential MNIST 功能性结果**：21K约束版在8/9实际训练runs达到98.44±0.22%，接近GRU 98.72%；Plan A失败。表面分析仍不支持单个InnerNet=标准gate

@@ -18,9 +18,12 @@ Usage:
 import argparse
 import json
 import os
+import sys
 
 import numpy as np
 import torch
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from model.seq_rnn import InnerNetActivation
 
@@ -86,7 +89,13 @@ def main():
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
 
-    out = {"run_dir": args.run_dir, "seeds": args.seeds, "inner_net1": [], "inner_net2": []}
+    out = {
+        "run_dir": args.run_dir,
+        "seeds": args.seeds,
+        "inner_net1": [],
+        "inner_net2": [],
+        "summary": {},
+    }
     for which, prefix in [("inner_net1", "cell.inner_net1."),
                           ("inner_net2", "cell.inner_net2.")]:
         print(f"\n=== {which} ({'input gate' if which.endswith('1') else 'output gate'} hypothesis) ===")
@@ -109,6 +118,12 @@ def main():
             out[which].append({"seed": s, "fits": fits, "best_gate": bg})
         g = np.array(gate_r2s)
         print(f"gate R^2: mean={g.mean():.4f} sd={g.std(ddof=1):.4f} range=[{g.min():.3f},{g.max():.3f}]")
+        out["summary"][which] = {
+            "gate_r2_mean": float(g.mean()),
+            "gate_r2_sample_sd": float(g.std(ddof=1)),
+            "gate_r2_min": float(g.min()),
+            "gate_r2_max": float(g.max()),
+        }
 
     if args.out:
         with open(args.out, "w") as fh:
