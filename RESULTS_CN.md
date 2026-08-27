@@ -51,6 +51,8 @@ Configs: `config/experiments/cnn_cifar_2arg.yaml` 等，exp: `exp/cnn_cifar_2arg
 
 2026-08-27 原始结果补拉：FashionMNIST 2-arg 已达到 5 seeds（90.91±0.29%，population SD），SVHN 1-arg 已达到 5 seeds（95.16±0.23%）；SVHN 2-arg 当前 3 seeds 为 95.016±0.005%，仍需补 seeds 44/45。对应 config：`config/experiments/cnn_fmnist_2arg.yaml`、`cnn_svhn_1arg.yaml`、`cnn_svhn_2arg.yaml`；exp 模式：`exp/cnn_{fmnist,svhn}_{1arg,2arg}_*`。
 
+二维激活对比图 `results/figures/fig2_2d_activation_surfaces.{png,pdf}` 的 InnerNet panel 现直接读取 `results/figures/inner_weights_cnn_seed42.pth`，不再使用手写示意函数。
+
 多 seed 训练曲线见 `results/figures/fig_training_curves.pdf`（MLP/CNN × MNIST/CIFAR-10，mean±sample SD）。图中 MLP-MNIST ReLU 使用参数匹配的 width-112 配置，已排除同名旧 width-64 run，避免把两套架构混入方差带。
 
 ## 2. 自编码器

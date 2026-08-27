@@ -77,47 +77,13 @@ plt.savefig(f'{out_dir}/fig1_activation_functions_1d.png', bbox_inches='tight')
 print('Saved fig1_activation_functions_1d')
 
 
-# ── Figure 2: 2D gating functions (SwiGLU vs InnerNet concept) ──
-fig, axes = plt.subplots(1, 3, figsize=(15, 4.5))
-
-a = np.linspace(-3, 3, 200)
-b = np.linspace(-3, 3, 200)
-A, B = np.meshgrid(a, b)
-
-# Panel A: ReLU (1D, applied independently)
-Z_relu = relu(A)  # only depends on first input
-im0 = axes[0].contourf(A, B, Z_relu, levels=30, cmap='RdBu_r')
-axes[0].set_title('(a) ReLU: f(a) = max(0, a)', fontsize=12)
-axes[0].set_xlabel('a')
-axes[0].set_ylabel('b')
-plt.colorbar(im0, ax=axes[0], shrink=0.8)
-
-# Panel B: SwiGLU
-Z_swiglu = swiglu_surface(A, B)
-Z_swiglu = np.clip(Z_swiglu, -5, 5)
-im1 = axes[1].contourf(A, B, Z_swiglu, levels=30, cmap='RdBu_r')
-axes[1].set_title('(b) SwiGLU: SiLU(a) × b', fontsize=12)
-axes[1].set_xlabel('a')
-axes[1].set_ylabel('b')
-plt.colorbar(im1, ax=axes[1], shrink=0.8)
-
-# Panel C: Soft XOR (what InnerNet might learn)
-# XOR-like: high when signs differ, low when same
-Z_xor = np.tanh(A) * (1 - np.tanh(B)) + np.tanh(B) * (1 - np.tanh(A))
-# Alternative: just show a*b (multiplicative interaction)
-# or a learned-looking function
-Z_innernet = np.sign(A * B) * np.sqrt(np.abs(A * B)) * 0.8 + 0.3 * (A - B)
-Z_innernet = np.clip(Z_innernet, -4, 4)
-im2 = axes[2].contourf(A, B, Z_innernet, levels=30, cmap='RdBu_r')
-axes[2].set_title('(c) InnerNet: MLP(a, b) → learned', fontsize=12)
-axes[2].set_xlabel('a')
-axes[2].set_ylabel('b')
-plt.colorbar(im2, ax=axes[2], shrink=0.8)
-
-plt.tight_layout()
-plt.savefig(f'{out_dir}/fig2_2d_activation_surfaces.pdf', bbox_inches='tight')
-plt.savefig(f'{out_dir}/fig2_2d_activation_surfaces.png', bbox_inches='tight')
-print('Saved fig2_2d_activation_surfaces')
+# ── Figure 2: 2D gating functions using a real trained checkpoint ──
+from plot_activation_surfaces import generate as generate_activation_surfaces
+generate_activation_surfaces(
+    f'{out_dir}/inner_weights_cnn_seed42.pth',
+    f'{out_dir}/fig2_2d_activation_surfaces',
+)
+print('Saved fig2_2d_activation_surfaces from a task-trained CNN checkpoint')
 
 
 # ── Figure 3: Evolution timeline ──

@@ -229,7 +229,7 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 
 | # | 项目 | 状态 |
 |---|------|------|
-| M2 | XOR 可视化（2D 激活函数表面） | TODO |
+| M2 | 2D 激活函数表面可视化 | ✅ `fig2_2d_activation_surfaces.{png,pdf}` 已改为真实 CNN checkpoint；移除原来手写的“learned”示意面，避免把合成函数误作实验结果 |
 | M3 | CNN 小 scale 反转解释 | TODO（论文讨论） |
 | M4 | 回归 inconsistency 解释 | TODO |
 | M5 | RL inconsistency | TODO（降级 preliminary） |
