@@ -532,7 +532,7 @@ find /home/yizhouc3/xor/exp -type f \
 - Cluster 的 `~/xor` 有未提交实验改动，因此创建隔离 worktree `/home/yizhouc3/xor-codex-audit`，没有覆盖原目录。
 - 提交 causal matrix v2：5 seeds × Bilinear host（joint/frozen × random/multiply）和 5 seeds × SwiGLU host（joint × random/identity/multiply/swiglu）。输出位于 `/user_data/yizhouc3/xor_causal_v2/`。
 - 首批 3 个 jobs 因共享 HuggingFace cache 的 NFS stale lock 失败，另 2 次在 Titan RTX 上发生 CUDA illegal/misaligned address；已改成每-job `/tmp` HF cache，重试时排除故障节点。当前10个 host jobs 正常运行，20个 probe jobs等待依赖。
-- Cluster 已发送 Bark 启动/异常通知；完成通知 job 664234 依赖当前矩阵。
+- Cluster 已发送 Bark 启动/异常通知；完成通知 job 664237 依赖当前有效矩阵。SwiGLU seed43 的 random/identity probe 664199 在 Titan RTX 上出现同类 CUDA 错误，已由排除该节点的 664236 替代。
 - P3 manifest 扩展到 standalone `results.p/results.json`，并新增 `run_status`，NaN runs 不再与成功 runs 混算。当前471 experiments / 1096 metric rows / 387 raw-verified / 84 incomplete。
 - 新增科学配置签名、自动分组、同-seed冲突报告、同名配置碰撞报告。当前203/203 groups可汇报，0 true metric conflicts；唯一 variant collision 是 `mlp_mnist_relu` 的64-width未匹配版与112-width参数匹配版。
 - 新增15项预注册核心 paired comparisons、Markdown table cell consistency checker 和deploy trade-off分析器。RESULTS_CN/EN 已注册40 cells，当前40/40与 canonical summary一致；全套20 tests通过。
