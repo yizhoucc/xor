@@ -159,6 +159,29 @@ class BuildResultManifestTest(unittest.TestCase):
             self.assertEqual([row["seed"] for row in metrics], [42, 43])
             self.assertEqual([row["metric"] for row in metrics], ["test_ppl", "test_ppl"])
 
+    def test_orphan_warmstart_all_results_is_included(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "exp"
+            run = root / "warmstart"
+            run.mkdir(parents=True)
+            with (run / "results.p").open("wb") as handle:
+                pickle.dump({"all_results": [{
+                    "seed": 42,
+                    "best_swiglu_20": 77.0,
+                    "best_innernet_20": 76.8,
+                    "best_swiglu_final": 77.1,
+                    "best_frozen": 77.05,
+                    "ppl_swap": 99.0,
+                }]}, handle)
+
+            inventory, metrics = build_manifest(root)
+            self.assertEqual(inventory[0]["audit_status"], "raw-verified")
+            self.assertEqual(len(metrics), 5)
+            self.assertEqual(
+                {row["condition"] for row in metrics},
+                {"swiglu_continued", "innernet_joint", "swiglu_capacity_baseline", "frozen_innernet", "immediate_swap"},
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

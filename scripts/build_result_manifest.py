@@ -260,6 +260,28 @@ def parse_script_results(data, metadata, source_file):
     if not isinstance(data, dict):
         return rows
 
+    # InnerNet-vs-SwiGLU warm-start scripts: {all_results: [{seed, ...}, ...]}.
+    if isinstance(data.get("all_results"), list):
+        scalar_conditions = {
+            "best_swiglu_20": ("swiglu_continued", "best_val_ppl"),
+            "best_innernet_20": ("innernet_joint", "best_val_ppl"),
+            "best_swiglu_final": ("swiglu_capacity_baseline", "best_val_ppl"),
+            "best_frozen": ("frozen_innernet", "best_val_ppl"),
+            "ppl_swap": ("immediate_swap", "val_ppl"),
+        }
+        for item in data["all_results"]:
+            seed = item.get("seed", "")
+            for key, (condition, metric) in scalar_conditions.items():
+                value = item.get(key)
+                if not _finite_number(value):
+                    continue
+                row_metadata = {**metadata, "condition": condition}
+                rows.append(_metric_row(
+                    row_metadata, seed, metric, value,
+                    "reported_scalar", "", "", source_file,
+                ))
+        return rows
+
     # Deploy scripts: {args, results: {condition: {metric: [seed values]}}}
     if isinstance(data.get("results"), dict):
         for condition, payload in data["results"].items():
