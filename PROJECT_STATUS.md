@@ -7,7 +7,7 @@
 - 原论文协议已核对：原论文按总参数量调整 baseline 宽度；本项目 MLP/CNN 参数匹配思路一致。Transformer 现有比较是 same-width 而非 total-parameter-matched，这只限制性能增益措辞，不影响 SwiGLU-like interaction 的发现结论。
 - 原论文同样没有部署闭环，只通过函数拟合和结构统计汇报发现；当前不新增部署实验。
 - 配对统计工具已完成：新增 paired t-test、Wilcoxon、Cohen's dz、bootstrap CI 和非有限 pair 报告，并保留独立样本模式。5-seed same-width Transformer 示例中，`GELU-InnerNet=+1.558 PPL`（paired-t p=0.05095），`SwiGLU-InnerNet=-2.280 PPL`（p=0.00917）；正式结果需同时报告 raw seeds 和非参数检验。
-- 本地结果 inventory/manifest 已生成：472 个实验、1121 行指标；**388 raw-verified、84 incomplete、0 completed-no-result**。已纳入统一 runner 之外的 deploy、Seq-MNIST 与 warm-start `results.p/results.json`，包括 `ivs_d128_v2` 的逐 epoch 分支。自动分组得到 208 个可汇报指标组、0 个同配置 seed 冲突；另检测到 1 个实验命名碰撞（`mlp_mnist_relu` 同名但分别为 64-width 未匹配版与 112-width 参数匹配版）。
+- 本地结果 inventory/manifest 已生成：474 个实验、1132 行指标；**399 raw-verified、75 incomplete、0 completed-no-result**。已纳入统一 runner 之外的 deploy、Seq-MNIST 与 warm-start `results.p/results.json`，包括 `ivs_d128_v2` 的逐 epoch 分支。自动分组得到 209 个可汇报指标组、0 个同配置 seed 冲突；另检测到 1 个实验命名碰撞（`mlp_mnist_relu` 同名但分别为 64-width 未匹配版与 112-width 参数匹配版）。
 - ✅ **SSH 取证已完成（Claude，2026-07-26）**：
   - CNN CIFAR-10 2-arg seed 42 已从集群拉回，`test_accuracy=0.7969`（**79.69%**，非之前反推的 79.68%），日志确认，现为 **raw-verified**。五个 seed 齐全，mean=78.57%（popSD 0.74 / sampleSD 0.82）。
   - 4 个旧 job 终态：547111 FFN deploy **TIMEOUT**（未完成，innernet 仅 4 seed、distilled 空）；547112 CNN deploy COMPLETED；547208 Seq-MNIST 诊断 COMPLETED；547209 bark COMPLETED。队列现已空。
@@ -72,6 +72,8 @@
 Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前矩阵全部有效 jobs，结束后自动提醒拉取和分析结果。
 
 启动异常与处置：首批 host 664180/183/186 在 L40S 上因共享 HuggingFace cache 的 NFS `Stale file handle` 失败；已在 `9f82434` 改为每-job `/tmp` cache。664195/664216、probe 664199 和 frozen probe 664215 在 Titan RTX 节点 `mind-1-24` 出现 CUDA illegal/misaligned address；664236 替代664199，**664238 替代664215**。两个 causal Slurm 脚本现默认排除已知故障节点 `mind-1-19-[1-2],mind-1-24`，失败 job 的依赖均已替换，不影响实验设计。
+
+通用 `slurm_run*.sh` 也已支持 `XOR_CODE_DIR`/`XOR_RUN_DIR`、per-job HuggingFace cache 和故障节点排除；后续补 seed 可用隔离 worktree 的代码，同时复用 `~/xor/exp` 中已有阶段 checkpoint。
 
 ### 上一轮（2026-07-26）已终止
 
@@ -154,16 +156,16 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 |---|------|------|------|
 | **P1** | **表面定量提炼** | ⏳ causal matrix v2 运行中 | 初步结果显示 host-dependent：SwiGLU host → SwiGLU-like，Bilinear host → pure `a*b`。有效矩阵现为 5 seeds × Bilinear joint/frozen × random/multiply，以及 5 seeds × SwiGLU joint × 4 init；共享 host checkpoint、可续跑，并排除已知不兼容节点。当前 6/10 host 已完成，12/20 probes 已启动；664215 的节点级 CUDA 失败已由 664238 替代，无未处理失败。`scripts/analyze_causal_matrix.py` 已就绪，结果落盘后自动检查 40/40 conditions 并汇总 PPL、surface R² 与 operator votes。 |
 | **P2** | **Seq-MNIST 功能与稳定性边界** | ✅ 约束实验完成 | 去掉 `W_c` 后 8/9 实际训练成功，98.44±0.22%，1 NaN（另 1 infra OOM），参数从37K降至21K。inner2 gate R² 0.447±0.263，与旧设计约0.43±0.31相同：功能结果增强，机制仍不可辨识。 |
-| **P3** | **结果审计与统计严谨性** | ✅ 工具链完成；等待 P1 新结果 | canonical manifest 已覆盖统一 runner + deploy/Seq-MNIST/warm-start script-native 结果；自动分组/冲突报告、15项预注册核心比较、文档一致性检查及deploy trade-off分析完成（23 tests PASS）。当前208/208科学配置/状态组可汇报，0个同配置seed冲突；RESULTS_CN/EN 的40个已注册 headline cells 与 manifest **40/40一致**。NaN runs 与 success runs 显式分组（SeqMin成功组8 seeds=98.435%，NaN组1 seed）。causal v2 完成并拉回后只需重跑生成链并补注册项。 |
+| **P3** | **结果审计与统计严谨性** | ✅ 工具链完成；等待 P1 新结果 | canonical manifest 已覆盖统一 runner + deploy/Seq-MNIST/warm-start script-native 结果；自动分组/冲突报告、15项预注册核心比较、文档一致性检查及deploy trade-off分析完成（24 tests PASS）。当前209/209科学配置/状态组可汇报，0个同配置seed冲突；RESULTS_CN/EN 的40个已注册 headline cells 与 manifest **40/40一致**。NaN runs 与 success runs 显式分组（SeqMin成功组8 seeds=98.435%，NaN组1 seed）。causal v2 完成并拉回后只需重跑生成链并补注册项。 |
 
 ### 🔴 Critical
 
 | # | 项目 | 状态 |
 |---|------|------|
-| C1 | 补齐 5 seeds | ⏳ SVHN 2arg/FMNIST 1arg 在集群上失败（OOM/时间到），需重提交 |
+| C1 | 补齐 5 seeds | ⏳ FMNIST 2arg 已拉回并验证 5/5；SVHN 2arg 已拉回 3/5，尚缺 seeds 44/45 |
 | C2 | CNN 参数公平对比 | ✅ ReLU matched 70.67% vs InnerNet 78.29% (同 127K) |
 | C3 | AE 参数匹配 | ✅ ReLU matched 0.0059 vs InnerNet 0.0039 (同 ~660K) |
-| C4 | 1-arg 系统对比 | ⏳ SVHN 1arg 5/5 ✅, FMNIST 1arg 失败需重提交 |
+| C4 | 1-arg 系统对比 | ⏳ SVHN 1arg 原始结果已拉回并验证 5/5；FMNIST 1arg 仍为 1/5，尚缺 seeds 42–45 |
 | C5 | ReLU+LN ablation | ✅ 4 数据集完成 |
 | M1 | 训练曲线 | ✅ `results/figures/fig_training_curves.{png,pdf}`；4-panel mean±sample-SD 图已生成，并排除同名的旧 MLP-MNIST width-64 baseline，使用参数匹配 width-112 版本 |
 
@@ -245,7 +247,7 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 | MNIST | 99.41±0.04 | 99.42±0.06 | 99.02±0.03 | 99.18±0.02 | — | +0.39 |
 | CIFAR-10 | 78.57±0.74 | 81.02±1.02 | 73.99±0.49 | 75.14±0.34 | 70.67±0.43 | +4.58 |
 | FashionMNIST | 90.91±0.29 | ⏳ | 89.34±0.13 | 89.34±0.16 | — | +1.57 |
-| SVHN | ⏳(1 seed) | 95.16±0.23 | 92.55±0.19 | 92.82±0.09 | — | +2.46 |
+| SVHN | 95.016±0.005 (n=3) | 95.16±0.23 | 92.55±0.19 | 92.82±0.09 | — | +2.46 |
 | CIFAR-100 big | 53.74±0.88 | — | 50.00±0.83 | — | — | +3.74 |
 
 ### Transformer LM (PPL↓)

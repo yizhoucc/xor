@@ -42,12 +42,14 @@
 | MNIST | 99.41±0.04 | 99.42±0.06 | 99.02±0.03 | 99.18±0.02 | — | — | +0.39 |
 | CIFAR-10 | 78.57±0.74 | 81.02±1.02 | 73.99±0.49 | 75.14±0.34 | 70.67±0.43 | 79.79±0.54 | **+4.58** |
 | FashionMNIST | 90.91±0.29 | ⏳ | 89.34±0.13 | 89.34±0.16 | — | — | +1.57 |
-| SVHN | ⏳ | 95.16±0.23 | 92.55±0.19 | 92.82±0.09 | — | — | +2.46 |
+| SVHN | 95.016±0.005 (n=3) | 95.16±0.23 | 92.55±0.19 | 92.82±0.09 | — | — | +2.46 |
 | CIFAR-100 big | 53.74±0.88 | — | 50.00±0.83 | — | — | 46.48±0.50 | **+3.74** |
 
 参数公平对比：同样 127K 参数，InnerNet 78.57% vs ReLU 70.67%，差 8 个点。
 
 Configs: `config/experiments/cnn_cifar_2arg.yaml` 等，exp: `exp/cnn_cifar_2arg_*`
+
+2026-08-27 原始结果补拉：FashionMNIST 2-arg 已达到 5 seeds（90.91±0.29%，population SD），SVHN 1-arg 已达到 5 seeds（95.16±0.23%）；SVHN 2-arg 当前 3 seeds 为 95.016±0.005%，仍需补 seeds 44/45。对应 config：`config/experiments/cnn_fmnist_2arg.yaml`、`cnn_svhn_1arg.yaml`、`cnn_svhn_2arg.yaml`；exp 模式：`exp/cnn_{fmnist,svhn}_{1arg,2arg}_*`。
 
 多 seed 训练曲线见 `results/figures/fig_training_curves.pdf`（MLP/CNN × MNIST/CIFAR-10，mean±sample SD）。图中 MLP-MNIST ReLU 使用参数匹配的 width-112 配置，已排除同名旧 width-64 run，避免把两套架构混入方差带。
 
@@ -400,14 +402,14 @@ GPT v4 (3/5 seeds)、free_init_v2 (Wiki 3/3, MLM 2/3)、scratch_init (2.5/5) 时
 
 ## 统计与可追溯性（2026-08-27）
 
-- `scripts/build_result_manifest.py` 已扫描 472 个实验目录，得到 1121 行结构化指标：388 个实验 raw-verified，84 个 incomplete，0 个 completed-no-result；deploy、Seq-MNIST 和 warm-start 脚本自产的 `results.p/results.json` 也已纳入，包括 `ivs_d128_v2` 的逐 epoch 分支。
-- `scripts/summarize_result_manifest.py` 按科学配置、condition 与 run status 自动去重并汇总 mean、sample SD、population SD、raw seeds/values；当前 208 个指标组全部可汇报，0 个同配置 seed 数值冲突。
+- `scripts/build_result_manifest.py` 已扫描 474 个实验目录，得到 1132 行结构化指标：399 个实验 raw-verified，75 个 incomplete，0 个 completed-no-result；deploy、Seq-MNIST 和 warm-start 脚本自产的 `results.p/results.json` 也已纳入，包括 `ivs_d128_v2` 的逐 epoch 分支。
+- `scripts/summarize_result_manifest.py` 按科学配置、condition 与 run status 自动去重并汇总 mean、sample SD、population SD、raw seeds/values；当前 209 个指标组全部可汇报，0 个同配置 seed 数值冲突。
 - NaN run 不再与成功 run 混算：SeqMinGatedRNN 成功组 8 seeds 自动复算为 **98.435%**（sample SD 0.236%，population SD 0.220%），另保留 1 个 NaN seed 的独立记录。
 - 自动发现 1 个同名配置碰撞：`mlp_mnist_relu` 同时指 64-width 未参数匹配版（seed1234=85.63%）和 112-width 参数匹配版（seed1234=91.27%，其余 seeds 同组）。两者现在按配置签名分开，不再混算。
 - 15 项核心比较已由 `config/audit/core_comparisons.yaml` 注册并自动复算。Transformer d=64/128/192/256 的 InnerNet-vs-GELU paired-t p 分别为 **0.00022 / 0.05095 / 0.361 / 0.173**；d=128 SwiGLU-vs-InnerNet p=**0.00917**。CNN、AE、Big-MLP headline 的 paired-t 均 <0.014。
 - 小样本解释：n=5 时双侧 Wilcoxon 的离散最小值通常是 0.0625，因此不单看“p<0.05”；正式报告同时给 raw seeds、bootstrap CI、paired-t/Wilcoxon 和 Cohen's dz。
 - `scripts/check_document_claims.py` 已把 RESULTS_CN/EN 的40个已注册 headline table cells 与 canonical summary 自动对照，当前 **40/40 match**。
-- 产物：`results/audit/grouped_metric_summary.csv`、`metric_conflicts.csv`、`experiment_variant_collisions.csv`、`core_comparisons.csv`、`document_consistency.csv`、`deploy_analysis.json`；23 个审计/统计单元测试全部通过。
+- 产物：`results/audit/grouped_metric_summary.csv`、`metric_conflicts.csv`、`experiment_variant_collisions.csv`、`core_comparisons.csv`、`document_consistency.csv`、`deploy_analysis.json`；24 个审计/统计单元测试全部通过。
 
 ## 总结
 

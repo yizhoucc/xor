@@ -540,3 +540,4 @@ find /home/yizhouc3/xor/exp -type f \
 - 新增 `plot_warmstart_curves.py`，从 `exp/ivs_d128_v2/results.p` 绘制五 seed 的 warm-start fork 与 frozen-capacity mean±sample-SD 轨迹，产物为 `fig_warmstart_curves.{png,pdf}`；U31 完成。
 - Bilinear frozen seed42 probe 664215 在 `mind-1-24` 再现 CUDA illegal memory access；已提交替代 job 664238（排除该节点），并更新 Bark job 664237 的依赖。两个 causal Slurm 脚本现默认排除 `mind-1-19-[1-2],mind-1-24`。
 - 新增 `analyze_causal_matrix.py`：递归读取20个 probe JSON/40个条件，显式报告缺失项，并按 host、freeze/joint、init 汇总 PPL、mult/SwiGLU/poly3 surface R² 与 operator votes；结果完成后直接生成审计 JSON/CSV。
+- 从 cluster 补拉11个已完成但本地缺结果的 CNN run（排除每个2–3GB的 `in2cells.p`，保留 config、日志、训练统计、测试结果和 checkpoints）：FMNIST 2-arg 现5/5 raw-verified，SVHN 1-arg现5/5，SVHN 2-arg现3/5。manifest 更新为474 experiments / 1132 rows / 399 raw-verified / 75 incomplete / 209 reportable groups，40/40文档检查与24 tests通过。
