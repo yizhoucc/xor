@@ -152,7 +152,7 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 
 | # | 项目 | 状态 | 说明 |
 |---|------|------|------|
-| **P1** | **表面定量提炼** | ⏳ causal matrix v2 运行中 | 初步结果显示 host-dependent：SwiGLU host → SwiGLU-like，Bilinear host → pure `a*b`。有效矩阵现为 5 seeds × Bilinear joint/frozen × random/multiply，以及 5 seeds × SwiGLU joint × 4 init；共享 host checkpoint、可续跑，并排除已知不兼容节点。当前 6/10 host 已完成，12/20 probes 已启动；664215 的节点级 CUDA 失败已由 664238 替代，无未处理失败。 |
+| **P1** | **表面定量提炼** | ⏳ causal matrix v2 运行中 | 初步结果显示 host-dependent：SwiGLU host → SwiGLU-like，Bilinear host → pure `a*b`。有效矩阵现为 5 seeds × Bilinear joint/frozen × random/multiply，以及 5 seeds × SwiGLU joint × 4 init；共享 host checkpoint、可续跑，并排除已知不兼容节点。当前 6/10 host 已完成，12/20 probes 已启动；664215 的节点级 CUDA 失败已由 664238 替代，无未处理失败。`scripts/analyze_causal_matrix.py` 已就绪，结果落盘后自动检查 40/40 conditions 并汇总 PPL、surface R² 与 operator votes。 |
 | **P2** | **Seq-MNIST 功能与稳定性边界** | ✅ 约束实验完成 | 去掉 `W_c` 后 8/9 实际训练成功，98.44±0.22%，1 NaN（另 1 infra OOM），参数从37K降至21K。inner2 gate R² 0.447±0.263，与旧设计约0.43±0.31相同：功能结果增强，机制仍不可辨识。 |
 | **P3** | **结果审计与统计严谨性** | ✅ 工具链完成；等待 P1 新结果 | canonical manifest 已覆盖统一 runner + deploy/Seq-MNIST/warm-start script-native 结果；自动分组/冲突报告、15项预注册核心比较、文档一致性检查及deploy trade-off分析完成（23 tests PASS）。当前208/208科学配置/状态组可汇报，0个同配置seed冲突；RESULTS_CN/EN 的40个已注册 headline cells 与 manifest **40/40一致**。NaN runs 与 success runs 显式分组（SeqMin成功组8 seeds=98.435%，NaN组1 seed）。causal v2 完成并拉回后只需重跑生成链并补注册项。 |
 

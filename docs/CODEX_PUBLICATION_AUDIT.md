@@ -539,3 +539,4 @@ find /home/yizhouc3/xor/exp -type f \
 - 重写 `plot_scaling_law.py`，从 canonical summary/core statistics 读取 post-sharing 数据并生成误差条与 paired-t 标注；旧 hard-coded pre-fix 图已替换。当前趋势为3.3%→1.6%→0.8%→1.7%，正向但非单调；全套测试增至21项。
 - 新增 `plot_warmstart_curves.py`，从 `exp/ivs_d128_v2/results.p` 绘制五 seed 的 warm-start fork 与 frozen-capacity mean±sample-SD 轨迹，产物为 `fig_warmstart_curves.{png,pdf}`；U31 完成。
 - Bilinear frozen seed42 probe 664215 在 `mind-1-24` 再现 CUDA illegal memory access；已提交替代 job 664238（排除该节点），并更新 Bark job 664237 的依赖。两个 causal Slurm 脚本现默认排除 `mind-1-19-[1-2],mind-1-24`。
+- 新增 `analyze_causal_matrix.py`：递归读取20个 probe JSON/40个条件，显式报告缺失项，并按 host、freeze/joint、init 汇总 PPL、mult/SwiGLU/poly3 surface R² 与 operator votes；结果完成后直接生成审计 JSON/CSV。
