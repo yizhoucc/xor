@@ -1,4 +1,4 @@
-# 项目状态 — 2026-06-27
+# 项目状态 — 2026-08-27
 
 ## Codex 发表前审计（2026-07-26）
 
@@ -54,9 +54,22 @@
 
 - **U20 param sharing bug**：之前 Transformer/ResNet/WRN 的 InnerNet 每层各一个没共享。已修复，重跑。修复后结果和之前差不多（d=64: 112.66→112.83），说明影响不大，但 sharing 是论文基本设计。CNN/MLP/AE/VGG/LSTM/PPO 不受影响。
 
-## 集群状态（2026-07-30）
+## 集群状态（2026-08-27）
 
-### 当前队列：空；7 月 26 日任务均已终止
+### 当前运行：P1 causal matrix v2（30 jobs + 依赖）
+
+旧矩阵因单个 job 重复训练 host、串行执行多个 init，出现 24h timeout；另有 8 个 job 落到 PyTorch 不支持的 RTX Pro 6000 节点。现已改成**共享 host checkpoint + probe 拆分 + 可续跑 + 结构化 `results.json`**，并用独立 worktree `/home/yizhouc3/xor-codex-audit` 保护 cluster 上有未提交改动的 `~/xor`。
+
+| Job IDs | 阶段 | 数量 | 状态/约束 | 输出 |
+|---------|------|------|-----------|------|
+| **664180/183/186/189/192** | Bilinear host seeds 42–46 | 5 | SUBMITTED；排除 `mind-1-19-1/2` | `/user_data/yizhouc3/xor_causal_v2/hosts/bilinear_seed*.pth` |
+| **664195/198/201/204/207** | SwiGLU host seeds 42–46 | 5 | SUBMITTED；排除 `mind-1-19-1/2` | `/user_data/yizhouc3/xor_causal_v2/hosts/swiglu_seed*.pth` |
+| **664181/182/184/185/187/188/190/191/193/194** | Bilinear joint/frozen × random/multiply × 5 seeds | 10 | PENDING dependency | `/user_data/yizhouc3/xor_causal_v2/probes/bilinear_*` |
+| **664196/197/199/200/202/203/205/206/208/209** | SwiGLU joint × 4 init × 5 seeds（每 job 2 init） | 10 | PENDING dependency | `/user_data/yizhouc3/xor_causal_v2/probes/swiglu_*` |
+
+提交清单：`/user_data/yizhouc3/xor_causal_v2/submitted_20260827.tsv`。代码提交：`e801536`（host cache/resume/JSON）+ `963ea13`（隔离 worktree 支持）。预期在调度后约 12–24h 完成；实际 wall time 取决于兼容 GPU 排队。
+
+### 上一轮（2026-07-26）已终止
 
 | Job | 实验 | 状态 | 目的 |
 |-----|------|------|------|
@@ -133,7 +146,7 @@
 
 | # | 项目 | 状态 | 说明 |
 |---|------|------|------|
-| **P1** | **表面定量提炼** | ⚠️ host-dependent 边界已发现 | SwiGLU host 内不同 init → SwiGLU-like；Bilinear host joint 4 seeds → pure `a*b` 且同样达到约73.5 PPL。不能 claim universal SwiGLU attractor；当前支持“InnerNet 在给定高性能 basin 中优化出/恢复适配该 basin 的二元算子”。缺失矩阵需在兼容 GPU 补齐。 |
+| **P1** | **表面定量提炼** | ⏳ causal matrix v2 已提交 | 初步结果显示 host-dependent：SwiGLU host → SwiGLU-like，Bilinear host → pure `a*b`。为补齐旧矩阵的 timeout/不兼容 GPU 缺口，已提交 jobs 664180–664209：5 seeds × Bilinear joint/frozen × random/multiply，以及 5 seeds × SwiGLU joint × 4 init；共享 host checkpoint 并排除 RTX Pro 6000。 |
 | **P2** | **Seq-MNIST 功能与稳定性边界** | ✅ 约束实验完成 | 去掉 `W_c` 后 8/9 实际训练成功，98.44±0.22%，1 NaN（另 1 infra OOM），参数从37K降至21K。inner2 gate R² 0.447±0.263，与旧设计约0.43±0.31相同：功能结果增强，机制仍不可辨识。 |
 | **P3** | **结果审计与统计严谨性** | ⏳ 进行中 | canonical manifest 与 paired/unpaired stats 已完成。旧 `fig_scaling_law` 使用 parameter-sharing 修复前的数据，暂不用于论文；修复后汇总并非单调（3.3%→1.6%→0.8%→1.7%）。四规模 vs GELU paired-t 已复算：p=0.00022/0.05095/0.361/0.173。剩余：自动分组汇总、冲突报告和其余核心结果统计。 |
 
