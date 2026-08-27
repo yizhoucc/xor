@@ -22,6 +22,8 @@ KNOWN_RESULT_FILES = (
     "lm_results.p",
     "mixer_results.p",
     "rl_results.p",
+    "results.p",
+    "results.json",
 )
 STAGE_MARKERS = (
     "PRETRAIN_DONE",
@@ -55,6 +57,7 @@ METRIC_FIELDS = (
     "metric",
     "value",
     "selection",
+    "run_status",
     "selected_epoch",
     "num_epochs",
     "source_file",
@@ -128,13 +131,17 @@ def _base_metadata(config, experiment_dir, config_hash, config_signature):
     }
 
 
-def _metric_row(metadata, seed, metric, value, selection, epoch, num_epochs, source_file):
+def _metric_row(
+    metadata, seed, metric, value, selection, epoch, num_epochs, source_file,
+    run_status="success",
+):
     return {
         **metadata,
         "seed": seed,
         "metric": metric,
         "value": float(value),
         "selection": selection,
+        "run_status": run_status,
         "selected_epoch": epoch,
         "num_epochs": num_epochs,
         "source_file": str(source_file),
@@ -221,12 +228,107 @@ def parse_multiseed_curves(data, metadata, source_file):
     return rows
 
 
+def parse_script_results(data, metadata, source_file):
+    """Parse structured outputs produced by standalone experiment scripts."""
+    rows = []
+
+    # Sequential-MNIST runners: [{seed, best_acc, history: {test_acc: [...]}}]
+    if isinstance(data, list) and all(isinstance(item, dict) for item in data):
+        for item in data:
+            seed = item.get("seed", "")
+            train_curve = item.get("history", {}).get("train_loss", [])
+            run_status = "nan" if any(
+                isinstance(value, numbers.Real) and not math.isfinite(value)
+                for value in train_curve
+            ) else "success"
+            if _finite_number(item.get("best_acc")):
+                rows.append(_metric_row(
+                    metadata, seed, "best_test_accuracy", item["best_acc"],
+                    "best_over_recorded_epochs", "", len(item.get("history", {}).get("test_acc", [])),
+                    source_file, run_status,
+                ))
+            curve = item.get("history", {}).get("test_acc", [])
+            finite_curve = [(index, value) for index, value in enumerate(curve) if _finite_number(value)]
+            if finite_curve:
+                index, value = finite_curve[-1]
+                rows.append(_metric_row(
+                    metadata, seed, "final_test_accuracy", value,
+                    "final_recorded_epoch", index + 1, len(curve), source_file, run_status,
+                ))
+        return rows
+
+    if not isinstance(data, dict):
+        return rows
+
+    # Deploy scripts: {args, results: {condition: {metric: [seed values]}}}
+    if isinstance(data.get("results"), dict):
+        for condition, payload in data["results"].items():
+            if not isinstance(payload, dict):
+                continue
+            for metric, values in payload.items():
+                if not isinstance(values, list):
+                    continue
+                metric_name = {"acc": "test_accuracy", "ppl": "test_ppl", "tput": "throughput"}.get(metric, metric)
+                for index, value in enumerate(values):
+                    if _finite_number(value):
+                        row_metadata = {**metadata, "condition": condition}
+                        rows.append(_metric_row(
+                            row_metadata, 42 + index, metric_name, value,
+                            "reported_vector", "", "", source_file,
+                        ))
+        return rows
+
+    # Causal probes: {host, freeze, seed, host_ppl, conditions: {init: {...}}}
+    if isinstance(data.get("conditions"), dict) and "host" in data:
+        seed = data.get("seed", "")
+        if _finite_number(data.get("host_ppl")):
+            host_metadata = {**metadata, "condition": f"{data['host']}_host"}
+            rows.append(_metric_row(
+                host_metadata, seed, "best_val_ppl", data["host_ppl"],
+                "host_final", "", "", source_file,
+            ))
+        mode = "frozen" if data.get("freeze") else "joint"
+        for init_name, payload in data["conditions"].items():
+            if not isinstance(payload, dict) or not _finite_number(payload.get("best_ppl")):
+                continue
+            condition_metadata = {**metadata, "condition": f"{data['host']}_{mode}_{init_name}"}
+            rows.append(_metric_row(
+                condition_metadata, seed, "best_val_ppl", payload["best_ppl"],
+                "best_over_probe_epochs", "", data.get("probe_epochs", ""), source_file,
+            ))
+        return rows
+
+    # Warm-start scripts: {dataset: [{seed, best_sw, best_in}, ...], ...}
+    if data and all(isinstance(records, list) for records in data.values()):
+        for dataset, records in data.items():
+            for item in records:
+                if not isinstance(item, dict):
+                    continue
+                seed = item.get("seed", "")
+                for key, value in item.items():
+                    if not key.startswith("best_") or not _finite_number(value):
+                        continue
+                    condition = {"best_sw": "swiglu", "best_in": "innernet"}.get(key, key[5:])
+                    row_metadata = {**metadata, "dataset": dataset, "condition": condition}
+                    rows.append(_metric_row(
+                        row_metadata, seed, "best_val_ppl", value,
+                        "reported_scalar", "", "", source_file,
+                    ))
+    return rows
+
+
 def parse_result_file(path, metadata, config_seed):
-    with path.open("rb") as handle:
-        data = pickle.load(handle)
+    if path.suffix == ".json":
+        with path.open() as handle:
+            data = json.load(handle)
+    else:
+        with path.open("rb") as handle:
+            data = pickle.load(handle)
     if path.name == "test_results.p":
         return parse_test_results(data, metadata, config_seed, path)
-    return parse_multiseed_curves(data, metadata, path)
+    if path.name in {"lm_results.p", "mixer_results.p", "rl_results.p"}:
+        return parse_multiseed_curves(data, metadata, path)
+    return parse_script_results(data, metadata, path)
 
 
 def audit_experiment(config_path, root):
@@ -290,10 +392,57 @@ def audit_experiment(config_path, root):
 def build_manifest(exp_root):
     inventory = []
     metrics = []
-    for config_path in sorted(exp_root.rglob("config.yaml")):
+    config_paths = sorted(exp_root.rglob("config.yaml"))
+    configured_dirs = {path.parent for path in config_paths}
+    for config_path in config_paths:
         inventory_row, metric_rows = audit_experiment(config_path, exp_root)
         inventory.append(inventory_row)
         metrics.extend(metric_rows)
+
+    # Standalone scripts often write results without a config.yaml. Preserve
+    # their raw values while explicitly marking the missing config provenance.
+    orphan_paths = []
+    for name in ("results.p", "results.json"):
+        orphan_paths.extend(
+            path for path in exp_root.rglob(name) if path.parent not in configured_dirs
+        )
+    for result_path in sorted(orphan_paths):
+        relative_dir = result_path.parent.relative_to(exp_root.parent)
+        if result_path.suffix == ".json":
+            with result_path.open() as handle:
+                data = json.load(handle)
+        else:
+            with result_path.open("rb") as handle:
+                data = pickle.load(handle)
+        args = data.get("args", {}) if isinstance(data, dict) else {}
+        signature_source = args if args else {"orphan_result": str(relative_dir)}
+        metadata = {
+            "experiment_dir": str(relative_dir),
+            "exp_name": result_path.parent.name,
+            "task_type": "standalone_script",
+            "model": "",
+            "dataset": args.get("dataset", "") if isinstance(args, dict) else "",
+            "condition": result_path.parent.name,
+            "config_hash": "",
+            "config_signature": _config_signature(signature_source),
+        }
+        relative_result = result_path.relative_to(exp_root.parent)
+        metric_rows = parse_script_results(data, metadata, relative_result)
+        metrics.extend(metric_rows)
+        inventory.append({
+            "experiment_dir": str(relative_dir),
+            "exp_name": metadata["exp_name"],
+            "task_type": metadata["task_type"],
+            "model": "",
+            "dataset": metadata["dataset"],
+            "config_seed": "",
+            "config_hash": "",
+            "config_signature": metadata["config_signature"],
+            "markers": "",
+            "result_files": result_path.name,
+            "audit_status": "raw-verified" if metric_rows else "result-unparsed",
+            "notes": "standalone structured result; config.yaml unavailable",
+        })
     return inventory, metrics
 
 

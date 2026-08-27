@@ -47,6 +47,7 @@ def _select(rows, spec):
         row for row in rows
         if row["exp_name"] == spec["exp_name"]
         and row["metric"] == spec["metric"]
+        and row.get("run_status", "success") == spec.get("run_status", "success")
         and (not spec.get("selection") or row["selection"] == spec["selection"])
     ]
     signatures = {row["config_signature"] for row in selected}

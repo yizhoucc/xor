@@ -19,8 +19,10 @@ GROUP_FIELDS = (
     "task_type",
     "model",
     "dataset",
+    "condition",
     "metric",
     "selection",
+    "run_status",
     "config_signature",
 )
 SUMMARY_FIELDS = GROUP_FIELDS + (

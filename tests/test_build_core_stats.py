@@ -8,6 +8,7 @@ def _row(exp_name, seed, value, signature="sig"):
         "exp_name": exp_name,
         "metric": "accuracy",
         "selection": "reported_scalar",
+        "run_status": "success",
         "config_signature": signature,
         "seed": str(seed),
         "value": str(value),

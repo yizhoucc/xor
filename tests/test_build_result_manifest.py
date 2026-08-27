@@ -101,6 +101,64 @@ class BuildResultManifestTest(unittest.TestCase):
             self.assertEqual(row["audit_status"], "incomplete")
             self.assertEqual(metrics, [])
 
+    def test_seq_mnist_script_results_are_parsed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "exp"
+            run = root / "seq_run"
+            run.mkdir(parents=True)
+            _write_config(run, task_type="seq_mnist")
+            with (run / "results.p").open("wb") as handle:
+                pickle.dump([{
+                    "seed": 42,
+                    "best_acc": 0.98,
+                    "history": {"test_acc": [0.5, 0.98, 0.97]},
+                }], handle)
+
+            inventory, metrics = build_manifest(root)
+            self.assertEqual(inventory[0]["audit_status"], "raw-verified")
+            self.assertEqual(
+                {(row["metric"], row["value"], row["run_status"]) for row in metrics},
+                {
+                    ("best_test_accuracy", 0.98, "success"),
+                    ("final_test_accuracy", 0.97, "success"),
+                },
+            )
+
+    def test_seq_mnist_nan_run_is_explicitly_tagged(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "exp"
+            run = root / "seq_run"
+            run.mkdir(parents=True)
+            _write_config(run, task_type="seq_mnist")
+            with (run / "results.p").open("wb") as handle:
+                pickle.dump([{
+                    "seed": 42,
+                    "best_acc": 0.1,
+                    "history": {"train_loss": [2.3, float("nan")], "test_acc": [0.1]},
+                }], handle)
+
+            _, metrics = build_manifest(root)
+            self.assertTrue(metrics)
+            self.assertEqual({row["run_status"] for row in metrics}, {"nan"})
+
+    def test_orphan_deploy_json_is_included(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "exp"
+            run = root / "deploy"
+            run.mkdir(parents=True)
+            with (run / "results.json").open("w") as handle:
+                import json
+                json.dump({
+                    "args": {"dataset": "wikitext", "num_seeds": 2},
+                    "results": {"innernet": {"ppl": [10.0, 9.0]}},
+                }, handle)
+
+            inventory, metrics = build_manifest(root)
+            self.assertEqual(inventory[0]["audit_status"], "raw-verified")
+            self.assertIn("config.yaml unavailable", inventory[0]["notes"])
+            self.assertEqual([row["seed"] for row in metrics], [42, 43])
+            self.assertEqual([row["metric"] for row in metrics], ["test_ppl", "test_ppl"])
+
 
 if __name__ == "__main__":
     unittest.main()
