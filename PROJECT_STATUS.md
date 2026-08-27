@@ -154,7 +154,7 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 |---|------|------|------|
 | **P1** | **表面定量提炼** | ⏳ causal matrix v2 已提交 | 初步结果显示 host-dependent：SwiGLU host → SwiGLU-like，Bilinear host → pure `a*b`。为补齐旧矩阵的 timeout/不兼容 GPU 缺口，已提交 jobs 664180–664209：5 seeds × Bilinear joint/frozen × random/multiply，以及 5 seeds × SwiGLU joint × 4 init；共享 host checkpoint 并排除 RTX Pro 6000。 |
 | **P2** | **Seq-MNIST 功能与稳定性边界** | ✅ 约束实验完成 | 去掉 `W_c` 后 8/9 实际训练成功，98.44±0.22%，1 NaN（另 1 infra OOM），参数从37K降至21K。inner2 gate R² 0.447±0.263，与旧设计约0.43±0.31相同：功能结果增强，机制仍不可辨识。 |
-| **P3** | **结果审计与统计严谨性** | ✅ 工具链完成；等待 P1 新结果 | canonical manifest 已覆盖统一 runner + deploy/Seq-MNIST/warm-start script-native 结果；自动分组/冲突报告、15项预注册核心比较、文档一致性检查及deploy trade-off分析完成（20 tests PASS）。当前203/203科学配置/状态组可汇报，0个同配置seed冲突；RESULTS_CN/EN 的40个已注册 headline cells 与 manifest **40/40一致**。NaN runs 与 success runs 显式分组（SeqMin成功组8 seeds=98.435%，NaN组1 seed）。causal v2 完成并拉回后只需重跑生成链并补注册项。 |
+| **P3** | **结果审计与统计严谨性** | ✅ 工具链完成；等待 P1 新结果 | canonical manifest 已覆盖统一 runner + deploy/Seq-MNIST/warm-start script-native 结果；自动分组/冲突报告、15项预注册核心比较、文档一致性检查及deploy trade-off分析完成（21 tests PASS）。当前203/203科学配置/状态组可汇报，0个同配置seed冲突；RESULTS_CN/EN 的40个已注册 headline cells 与 manifest **40/40一致**。NaN runs 与 success runs 显式分组（SeqMin成功组8 seeds=98.435%，NaN组1 seed）。causal v2 完成并拉回后只需重跑生成链并补注册项。 |
 
 ### 🔴 Critical
 
@@ -199,7 +199,7 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 | U27 | ViT warm-start | ✅ | 持平 (77.54 vs 77.59) |
 | U28 | Mixer warm-start | ✅ | InnerNet 略好 (81.25 vs 81.13) |
 | U29 | 可视化训练后 InnerNet 2D 函数 | ✅ | 4 任务对比完成。不同任务学到不同函数——d=64 接近 SwiGLU，MLM 偏离最大。偏离越大效果越好 |
-| U30 | Scaling law 图 | TODO | d=64/128/192/256 的优势画曲线 |
+| U30 | Scaling law 图 | ✅ | `fig_scaling_law.{png,pdf}` 已从 canonical post-sharing 数据自动生成：3.3%→1.6%→0.8%→1.7%，明确为正向但非单调，并标注 paired-t p 值 |
 | U31 | 训练曲线 | TODO | warm-start 两条分支 PPL 随 epoch 变化 |
 | U32 | 参数量和推理速度 | ✅ | `deploy_analysis.json`：CNN InnerNet只比SwiGLU多129参数但慢6.59×；distilled快2.68×但仍比SwiGLU慢2.46×。FFN InnerNet约比SwiGLU慢6.03×（4 seeds；distilled未跑到） |
 | U33 | 提炼 InnerNet 为简单公式 | ✅ | d=128 poly3 R²=0.997；SwiGLU family R²=0.942。CNN poly3 R²=0.974、SwiGLU family R²=0.908。causal结果说明具体算子依赖host/basin，不能称普适SwiGLU吸引子 |

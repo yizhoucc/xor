@@ -536,3 +536,4 @@ find /home/yizhouc3/xor/exp -type f \
 - P3 manifest 扩展到 standalone `results.p/results.json`，并新增 `run_status`，NaN runs 不再与成功 runs 混算。当前471 experiments / 1096 metric rows / 387 raw-verified / 84 incomplete。
 - 新增科学配置签名、自动分组、同-seed冲突报告、同名配置碰撞报告。当前203/203 groups可汇报，0 true metric conflicts；唯一 variant collision 是 `mlp_mnist_relu` 的64-width未匹配版与112-width参数匹配版。
 - 新增15项预注册核心 paired comparisons、Markdown table cell consistency checker 和deploy trade-off分析器。RESULTS_CN/EN 已注册40 cells，当前40/40与 canonical summary一致；全套20 tests通过。
+- 重写 `plot_scaling_law.py`，从 canonical summary/core statistics 读取 post-sharing 数据并生成误差条与 paired-t 标注；旧 hard-coded pre-fix 图已替换。当前趋势为3.3%→1.6%→0.8%→1.7%，正向但非单调；全套测试增至21项。

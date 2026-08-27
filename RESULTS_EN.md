@@ -73,6 +73,8 @@ Configs: `config/experiments/ae_mnist_2arg.yaml`, exp: `exp/ae_mnist_2arg_*`
 
 InnerNet reaches lower mean PPL than GELU at every scale (-0.8% to -3.3%), and at d=64 its PPL matches the hand-designed SwiGLU model (112.83 vs 112.31). Performance parity alone does not identify the learned operator. Paired tests against GELU give p=0.00022, 0.05095, 0.361, and 0.173 at d=64, 128, 192, and 256, respectively; thus the direction is consistent, while inferential support is strongest at the smallest scale. These are same-width comparisons, not parameter-matched ones.
 
+The post-sharing scaling figure is generated directly from canonical audit artifacts (`results/figures/fig_scaling_law.pdf`). It replaces the archived hard-coded pre-fix plot and shows a positive but non-monotonic benefit (3.3%, 1.6%, 0.8%, 1.7%).
+
 **Scale boundary**: The same-width advantage remains positive but non-monotonic through d=256 in the standard Transformer sweep. It reverses in the larger GPT-style experiment, while warm-start experiments show that the learned function remains expressive enough in the controlled setting.
 
 ### InnerNet vs SwiGLU: Fair Comparison (5 seeds)
