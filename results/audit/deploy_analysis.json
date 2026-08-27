@@ -1,0 +1,193 @@
+{
+  "cnn": {
+    "comparisons": {
+      "distilled_vs_innernet": {
+        "cohen_dz": -6.264675993342665,
+        "metric_difference_ci": [
+          -0.0407,
+          -0.03170000000000002
+        ],
+        "metric_difference_condition_minus_reference": -0.03630000000000002,
+        "paired_seed_count": 5,
+        "paired_t_p": 0.0001506622538636018,
+        "throughput_ratio_condition_vs_reference": 2.679211291423353,
+        "wilcoxon_p": 0.0625
+      },
+      "distilled_vs_relu": {
+        "cohen_dz": 3.855258093412937,
+        "metric_difference_ci": [
+          0.011739999999999973,
+          0.01711999999999998
+        ],
+        "metric_difference_condition_minus_reference": 0.013879999999999981,
+        "paired_seed_count": 5,
+        "paired_t_p": 0.0009954248003339957,
+        "throughput_ratio_condition_vs_reference": 0.28852434232251656,
+        "wilcoxon_p": 0.0625
+      },
+      "distilled_vs_swiglu": {
+        "cohen_dz": 2.565270008878381,
+        "metric_difference_ci": [
+          0.009619999999999962,
+          0.017880000000000007
+        ],
+        "metric_difference_condition_minus_reference": 0.013499999999999979,
+        "paired_seed_count": 5,
+        "paired_t_p": 0.004575472354400085,
+        "throughput_ratio_condition_vs_reference": 0.4068260940732912,
+        "wilcoxon_p": 0.0625
+      },
+      "relu_vs_innernet": {
+        "cohen_dz": -6.98245438199652,
+        "metric_difference_ci": [
+          -0.05581999999999998,
+          -0.04468000000000003
+        ],
+        "metric_difference_condition_minus_reference": -0.05018,
+        "paired_seed_count": 5,
+        "paired_t_p": 9.82639468848783e-05,
+        "throughput_ratio_condition_vs_reference": 9.285910747969032,
+        "wilcoxon_p": 0.0625
+      },
+      "swiglu_vs_innernet": {
+        "cohen_dz": -6.587797244510505,
+        "metric_difference_ci": [
+          -0.056319999999999995,
+          -0.044360000000000024
+        ],
+        "metric_difference_condition_minus_reference": -0.0498,
+        "paired_seed_count": 5,
+        "paired_t_p": 0.00012360161059393217,
+        "throughput_ratio_condition_vs_reference": 6.585642687267458,
+        "wilcoxon_p": 0.0625
+      }
+    },
+    "conditions": {
+      "distilled": {
+        "complete": true,
+        "completed_seeds": 5,
+        "mean_acc": 0.81318,
+        "mean_throughput": 4344.751603198017,
+        "parameters": 658570,
+        "sample_sd_acc": 0.003174429082528075
+      },
+      "innernet": {
+        "complete": true,
+        "completed_seeds": 5,
+        "mean_acc": 0.8494800000000001,
+        "mean_throughput": 1621.653214551,
+        "parameters": 658699,
+        "sample_sd_acc": 0.005739076580774987
+      },
+      "relu": {
+        "complete": true,
+        "completed_seeds": 5,
+        "mean_acc": 0.7993,
+        "mean_throughput": 15058.527014477662,
+        "parameters": 331690,
+        "sample_sd_acc": 0.001719011343767092
+      },
+      "swiglu": {
+        "complete": true,
+        "completed_seeds": 5,
+        "mean_acc": 0.7996800000000001,
+        "mean_throughput": 10679.62863369156,
+        "parameters": 658570,
+        "sample_sd_acc": 0.003743928418119127
+      }
+    },
+    "expected_seeds": 5,
+    "primary_metric": "acc"
+  },
+  "ffn": {
+    "comparisons": {
+      "distilled_vs_gelu": {
+        "cohen_dz": null,
+        "metric_difference_ci": null,
+        "metric_difference_condition_minus_reference": null,
+        "paired_seed_count": 0,
+        "paired_t_p": null,
+        "throughput_ratio_condition_vs_reference": null,
+        "wilcoxon_p": null
+      },
+      "distilled_vs_innernet": {
+        "cohen_dz": null,
+        "metric_difference_ci": null,
+        "metric_difference_condition_minus_reference": null,
+        "paired_seed_count": 0,
+        "paired_t_p": null,
+        "throughput_ratio_condition_vs_reference": null,
+        "wilcoxon_p": null
+      },
+      "distilled_vs_swiglu": {
+        "cohen_dz": null,
+        "metric_difference_ci": null,
+        "metric_difference_condition_minus_reference": null,
+        "paired_seed_count": 0,
+        "paired_t_p": null,
+        "throughput_ratio_condition_vs_reference": null,
+        "wilcoxon_p": null
+      },
+      "gelu_vs_innernet": {
+        "cohen_dz": 0.9141734864279624,
+        "metric_difference_ci": [
+          0.07248702539118312,
+          1.191664028703677
+        ],
+        "metric_difference_condition_minus_reference": 0.6320755270474301,
+        "paired_seed_count": 4,
+        "paired_t_p": 0.16494135163714582,
+        "throughput_ratio_condition_vs_reference": 6.807899748694945,
+        "wilcoxon_p": 0.25
+      },
+      "swiglu_vs_innernet": {
+        "cohen_dz": -1.2987002229211915,
+        "metric_difference_ci": [
+          -2.9920952399006,
+          -0.5323222176720783
+        ],
+        "metric_difference_condition_minus_reference": -1.7883701409843447,
+        "paired_seed_count": 4,
+        "paired_t_p": 0.08055662065370409,
+        "throughput_ratio_condition_vs_reference": 6.026720366796265,
+        "wilcoxon_p": 0.125
+      }
+    },
+    "conditions": {
+      "distilled": {
+        "complete": false,
+        "completed_seeds": 0,
+        "mean_ppl": null,
+        "mean_throughput": null,
+        "parameters": 2347536,
+        "sample_sd_ppl": null
+      },
+      "gelu": {
+        "complete": true,
+        "completed_seeds": 5,
+        "mean_ppl": 79.20835538321872,
+        "mean_throughput": 677897.2635168859,
+        "parameters": 2083344,
+        "sample_sd_ppl": 0.21199889291722207
+      },
+      "innernet": {
+        "complete": false,
+        "completed_seeds": 4,
+        "mean_ppl": 78.61298877187903,
+        "mean_throughput": 99575.09489572565,
+        "parameters": 2347665,
+        "sample_sd_ppl": 0.8358559822859479
+      },
+      "swiglu": {
+        "complete": true,
+        "completed_seeds": 5,
+        "mean_ppl": 77.137752180578,
+        "mean_throughput": 600111.2524337407,
+        "parameters": 2347536,
+        "sample_sd_ppl": 1.0631643367395316
+      }
+    },
+    "expected_seeds": 5,
+    "primary_metric": "ppl"
+  }
+}

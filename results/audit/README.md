@@ -21,6 +21,7 @@ python scripts/build_result_manifest.py
 python scripts/summarize_result_manifest.py
 python scripts/build_core_stats.py
 python scripts/check_document_claims.py
+python scripts/analyze_deploy_results.py
 ```
 
 `config/audit/core_comparisons.yaml` is the reviewable registry of headline
@@ -31,6 +32,10 @@ Wilcoxon/Mann-Whitney tests, and effect sizes.
 `config/audit/document_claims.yaml` registers key Markdown table cells against
 canonical summary rows. `document_consistency.csv` records the expected value,
 observed cell, raw-source experiment, seed count, and match status.
+
+`deploy_analysis.json` records deploy completeness, parameter counts, quality
+differences, paired tests, and same-GPU throughput ratios for the CNN and FFN
+deployment experiments.
 
 Regenerate with:
 
