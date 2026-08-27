@@ -90,6 +90,11 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 
 提交清单：`/user_data/yizhouc3/xor_cnn_seed_completion_20260827.tsv` 与 `/user_data/yizhouc3/xor_m6_baselines_20260827.tsv`。使用隔离代码 `/home/yizhouc3/xor-codex-audit`；Critical seed补齐完成通知 job **664247**，M6 baseline完成通知 job **664264**。
 
+### 当前验证：cluster-only
+
+- **664267**：❌ FAILED（4秒），尝试在 CPU 分区运行完整 pytest；原因是 cluster conda `xor` 环境未安装 pytest，未进入测试执行。
+- **664268**：⏳ RUNNING，CPU 分区依次执行 `cnn_cifar_prelu_ln.yaml` 与 `cnn_cifar_swish_ln.yaml` 的 `run.py --validate`，用于替代本地验证。
+
 ### 上一轮（2026-07-26）已终止
 
 | Job | 实验 | 状态 | 目的 |
