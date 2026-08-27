@@ -93,7 +93,7 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 ### 当前验证：cluster-only
 
 - **664267**：❌ FAILED（4秒），尝试在 CPU 分区运行完整 pytest；原因是 cluster conda `xor` 环境未安装 pytest，未进入测试执行。
-- **664268**：⏳ RUNNING，CPU 分区依次执行 `cnn_cifar_prelu_ln.yaml` 与 `cnn_cifar_swish_ln.yaml` 的 `run.py --validate`，用于替代本地验证。
+- **664268**：✅ COMPLETED（36秒），CPU 分区的 `run.py --validate` 已确认两份 M6 配置均可构建并完成一次前向；PReLU/Swish 参数量分别为 125,226 / 125,222。
 
 ### 上一轮（2026-07-26）已终止
 
@@ -244,7 +244,7 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 | M3 | CNN 小 scale 反转解释 | ✅ n=3 不支持稳定反转：paired差值 -11.04/+0.74/-0.10pp，均值-3.47pp但 p=0.457；由单个 seed1234 崩落驱动，按高方差边界报告，不归因于固定机制 |
 | M4 | 回归 inconsistency 解释 | ✅ Housing width sweep 显示容量交叉：w32/64/120 改善5.6/1.6/4.7%，w256/512 反转为-2.2/-4.5%；n=3，仅w64/120 paired-t<0.05，解释为小模型 inductive-bias 收益随容量消失，不作普适回归增益 claim |
 | M5 | RL inconsistency | ✅ 已统一指标并降级 | 全部按每 seed 最后20个 recorded eval 的均值汇总；Acrobot InnerNet 显著优于 ReLU，LunarLander 与 ReLU 持平且方差很大，RL 仅作扩展证据 |
-| M6 | PReLU/Swish baseline 对比 | ⏳ jobs 664254–664263 已提交 | CIFAR-10 CNN，参数匹配宽度46/92/92/92 + LayerNorm，PReLU/Swish各5 seeds；依赖 Critical CNN jobs 完成后启动，Bark job 664264 |
+| M6 | PReLU/Swish baseline 对比 | ⏳ jobs 664254–664263 已提交；cluster验证通过 | CIFAR-10 CNN，参数匹配宽度46/92/92/92 + LayerNorm，PReLU/Swish各5 seeds；664268 已验证两份配置，训练依赖 Critical CNN jobs 完成后启动，Bark job 664264 |
 
 ### 🟢 Minor
 
