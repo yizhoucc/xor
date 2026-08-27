@@ -13,7 +13,7 @@ HOST=${1:?}; SEED=${2:?}; HOST_CKPT=${3:?}; SAVE_DIR=${4:?}
 source /usr/share/Modules/init/bash
 module load anaconda3-2023.03 cuda-12.4
 eval "$(conda shell.bash hook)"; conda activate xor
-cd /home/yizhouc3/xor
+cd "${XOR_CODE_DIR:-/home/yizhouc3/xor}"
 echo "Node: $(hostname) host=$HOST seed=$SEED host_ckpt=$HOST_CKPT"
 python scripts/warmstart_causal.py --host "$HOST" --seed "$SEED" \
     --save_dir "$SAVE_DIR" --host_checkpoint "$HOST_CKPT" --host_only
