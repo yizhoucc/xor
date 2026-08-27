@@ -19,7 +19,13 @@ Generate in order:
 ```bash
 python scripts/build_result_manifest.py
 python scripts/summarize_result_manifest.py
+python scripts/build_core_stats.py
 ```
+
+`config/audit/core_comparisons.yaml` is the reviewable registry of headline
+comparisons. `core_comparisons.csv` contains seed-aligned raw values, mean
+differences, bootstrap confidence intervals, paired/Welch t-tests,
+Wilcoxon/Mann-Whitney tests, and effect sizes.
 
 Regenerate with:
 

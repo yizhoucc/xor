@@ -1,0 +1,76 @@
+comparisons:
+  - name: transformer_d64_innernet_vs_gelu
+    condition: {exp_name: transformer_wikitext_2arg_small, metric: best_val_ppl}
+    reference: {exp_name: transformer_wikitext_baseline_small, metric: best_val_ppl}
+    paired: true
+    lower_better: true
+  - name: transformer_d128_innernet_vs_gelu
+    condition: {exp_name: transformer_wikitext_2arg, metric: best_val_ppl}
+    reference: {exp_name: transformer_wikitext_baseline, metric: best_val_ppl}
+    paired: true
+    lower_better: true
+  - name: transformer_d192_innernet_vs_gelu
+    condition: {exp_name: transformer_wikitext_scale_2arg_d192, metric: best_val_ppl}
+    reference: {exp_name: transformer_wikitext_scale_gelu_d192, metric: best_val_ppl}
+    paired: true
+    lower_better: true
+  - name: transformer_d256_innernet_vs_gelu
+    condition: {exp_name: transformer_wikitext_2arg_large, metric: best_val_ppl}
+    reference: {exp_name: transformer_wikitext_baseline_large, metric: best_val_ppl}
+    paired: true
+    lower_better: true
+  - name: transformer_d128_innernet_vs_swiglu
+    condition: {exp_name: transformer_wikitext_2arg, metric: best_val_ppl}
+    reference: {exp_name: transformer_wikitext_swiglu, metric: best_val_ppl}
+    paired: true
+    lower_better: true
+  - name: cnn_cifar10_2arg_vs_relu
+    condition: {exp_name: cnn_cifar_2arg, metric: test_accuracy}
+    reference: {exp_name: cnn_cifar_relu, metric: test_accuracy}
+    paired: true
+    lower_better: false
+  - name: cnn_cifar10_2arg_vs_relu_ln
+    condition: {exp_name: cnn_cifar_2arg, metric: test_accuracy}
+    reference: {exp_name: cnn_cifar_relu_ln, metric: test_accuracy}
+    paired: true
+    lower_better: false
+  - name: cnn_cifar10_2arg_vs_relu_matched
+    condition: {exp_name: cnn_cifar_2arg, metric: test_accuracy}
+    reference: {exp_name: cnn_cifar_relu_matched, metric: test_accuracy}
+    paired: true
+    lower_better: false
+  - name: cnn_cifar100_2arg_vs_relu
+    condition: {exp_name: cnn_cifar100_big_2arg, metric: test_accuracy}
+    reference: {exp_name: cnn_cifar100_big_relu, metric: test_accuracy}
+    paired: true
+    lower_better: false
+  - name: cnn_cifar100_2arg_vs_swiglu
+    condition: {exp_name: cnn_cifar100_big_2arg, metric: test_accuracy}
+    reference: {exp_name: cnn_cifar100_swiglu, metric: test_accuracy}
+    paired: true
+    lower_better: false
+  - name: ae_mnist_2arg_vs_relu
+    condition: {exp_name: ae_mnist_2arg, metric: test_mse}
+    reference: {exp_name: ae_mnist_relu, metric: test_mse}
+    paired: true
+    lower_better: true
+  - name: ae_mnist_2arg_vs_relu_matched
+    condition: {exp_name: ae_mnist_2arg, metric: test_mse}
+    reference: {exp_name: ae_mnist_relu_matched, metric: test_mse}
+    paired: true
+    lower_better: true
+  - name: ae_fmnist_2arg_vs_relu
+    condition: {exp_name: ae_fmnist_2arg, metric: test_mse}
+    reference: {exp_name: ae_fmnist_relu, metric: test_mse}
+    paired: true
+    lower_better: true
+  - name: ae_cifar10_2arg_vs_relu
+    condition: {exp_name: ae_cifar_2arg, metric: test_mse}
+    reference: {exp_name: ae_cifar_relu, metric: test_mse}
+    paired: true
+    lower_better: true
+  - name: big_mlp_mnist_2arg_vs_relu
+    condition: {exp_name: mlp_mnist_big_2arg, metric: test_accuracy}
+    reference: {exp_name: mlp_mnist_big_relu, metric: test_accuracy}
+    paired: true
+    lower_better: false
