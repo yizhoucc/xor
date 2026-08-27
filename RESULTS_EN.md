@@ -257,6 +257,12 @@ Fifteen headline comparisons are registered in `config/audit/core_comparisons.ya
 
 The registered headline cells in RESULTS_CN/EN are also checked directly against the canonical summary; all 40 currently registered cells match. Audit artifacts: `results/audit/grouped_metric_summary.csv`, `metric_conflicts.csv`, `experiment_variant_collisions.csv`, `core_comparisons.csv`, and `document_consistency.csv`.
 
+## Distilled-Operator Deployment
+
+On CIFAR-10 (5 seeds), the learned InnerNet reaches **84.95±0.57%**, while its fixed polynomial approximation reaches **81.32±0.32%**, compared with 79.93±0.17% for ReLU and 79.97±0.37% for SwiGLU (sample SD). The distilled operator is 2.68× faster than InnerNet, but loses 3.63 accuracy points (paired-t p=0.00015); it remains 1.39/1.35 points above ReLU/SwiGLU (p=0.0010/0.0046). It is still 2.46× slower than SwiGLU because the unfused polynomial uses several elementwise operations. InnerNet adds only 129 parameters over the fixed gated models, confirming that runtime—not parameter count—is the practical cost.
+
+The corresponding Transformer deployment timed out before the distilled condition began (InnerNet 4/5 seeds; distilled 0/5). Completed branches show approximately 99.6k tokens/s for InnerNet versus 600.1k for SwiGLU, a 6.03× throughput gap on the same GPU. We therefore treat deployment as a bounded auxiliary result: closed-form distillation recovers part of the speed and retains some accuracy benefit in CNNs, but the current approximation is not lossless and the FFN deployment is incomplete. Source: `results/audit/deploy_analysis.json`.
+
 ## Summary
 
 InnerNet provides consistent benefits in **feedforward networks without built-in feature interaction mechanisms**:

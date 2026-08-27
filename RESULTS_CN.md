@@ -31,6 +31,8 @@
 
 部署不是投稿前置条件。CNN deploy 已完成，FFN deploy 因时限中止；它们只作为扩展结果，不阻塞以“发现”为核心的论文。
 
+**部署结果**：CNN 上 InnerNet 为 **84.95±0.57%**，提炼后的固定 poly3 为 **81.32±0.32%**，ReLU/SwiGLU 约为79.9%（5 seeds，sample SD）。固定算子比 InnerNet 快 **2.68×**，但仍比 SwiGLU 慢2.46×，并损失3.63个准确率点；它仍显著优于 ReLU/SwiGLU约1.4点。说明“发现→提炼”能回收部分效率和收益，但现有手写多项式没有完成无损部署。FFN deploy 超时，只有 InnerNet 4 seeds且 distilled 0 seeds；已完成分支显示 InnerNet训练吞吐约比SwiGLU慢6.03×，不据此声称FFN部署成功。详见 `results/audit/deploy_analysis.json`。
+
 ---
 
 ## 1. CNN 图像分类（5 seeds）

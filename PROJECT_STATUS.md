@@ -95,9 +95,11 @@ Bark：启动通知已发送；完成通知 job **664234** 依赖当前矩阵全
 
 **P2 进展**：第 2 轮（ortho+warmup，job 547114 已取消）**回归了**——seed 42（原本最稳）在 ep1 NaN，seed 43 却正常。本地复现确认 **init 时前向不 NaN**（所有 seed max|out|≈0.06-0.2），所以 **NaN 是训练中（ep1 内）的不稳定，不是初始化前向问题，也不是纯梯度爆炸**（warmup lr≈0 仍炸）。**第 3 轮诊断 547208 结果已拉回本地（`exp/seq_mnist_gated_diag_20260627_171855_d46bf25c/results.p`）：全叠加稳定手段（ortho+warmup3+cell_tanh+clip0.25）后仍 2/5 NaN——seed 42 ep4 炸、seed 46 ep1 炸；43/44/45 正常（5ep 快测只到 0.56/0.65/0.67，未收敛）。结论：稳定性仍是未解问题，全叠加也没根治。**
 
-目标：
-- 547111（FFN）：distilled 固定算子（poly3，从 ivs_d128 提炼）≈ InnerNet 质量但 ≈SwiGLU 速度。输出 `exp/deploy_ffn_d128/results.json`（PPL + tok/s）。
-- 547112（CNN）：CNN InnerNet 提炼出的是**真·非-SwiGLU 算子**（poly3 R²=0.974，swiglu 形式只 0.91，带实打实的 b/b² 项）；部署它证明新算子 ≈ InnerNet 且快。输出 `exp/deploy_cnn_cifar10/results.json`（acc + img/s）。
+**部署分析（`results/audit/deploy_analysis.json`）**：
+- CNN 5 seeds：InnerNet **84.95±0.57%**、distilled poly3 **81.32±0.32%**、SwiGLU **79.97±0.37%**、ReLU **79.93±0.17%**（sample SD）。distilled 比 InnerNet 低 **3.63 points**（paired-t p=0.00015），但仍比 ReLU/SwiGLU 高 1.39/1.35 points（p=0.0010/0.0046）。
+- CNN 吞吐：InnerNet 1,622 img/s；distilled 4,345（**2.68×** InnerNet）；SwiGLU 10,680（6.59×）；ReLU 15,059（9.29×）。Distilled 与 SwiGLU 参数相同（658,570），InnerNet只多129参数；瓶颈是逐元素小 MLP 的执行成本，不是参数量。
+- FFN deploy 不完整：InnerNet 4/5、distilled 0/5。已完成分支中 InnerNet约99.6k tok/s，SwiGLU约600.1k（**6.03×**），GELU约677.9k（6.81×）。不能对 distilled FFN 质量/速度作结论。
+- 结论：CNN 闭式蒸馏追回部分速度并保留相对 fixed baselines 的优势，但没有保持完整 InnerNet 精度，且手写 poly3 仍比 SwiGLU慢2.46×；因此部署闭环是有限正面结果，不是论文主 claim。
 
 ### 已完成
 
@@ -199,8 +201,8 @@ Bark：启动通知已发送；完成通知 job **664234** 依赖当前矩阵全
 | U29 | 可视化训练后 InnerNet 2D 函数 | ✅ | 4 任务对比完成。不同任务学到不同函数——d=64 接近 SwiGLU，MLM 偏离最大。偏离越大效果越好 |
 | U30 | Scaling law 图 | TODO | d=64/128/192/256 的优势画曲线 |
 | U31 | 训练曲线 | TODO | warm-start 两条分支 PPL 随 epoch 变化 |
-| U32 | 参数量和推理速度 | TODO | InnerNet 加了多少参数，推理慢多少 |
-| U33 | 提炼 InnerNet 为简单公式 | ✅ d=128 | f(a,b)≈0.12·a·b+0.11-0.06·b+0.03·a²·b。和 SwiGLU 完全不同，变成缩小版乘法交互 |
+| U32 | 参数量和推理速度 | ✅ | `deploy_analysis.json`：CNN InnerNet只比SwiGLU多129参数但慢6.59×；distilled快2.68×但仍比SwiGLU慢2.46×。FFN InnerNet约比SwiGLU慢6.03×（4 seeds；distilled未跑到） |
+| U33 | 提炼 InnerNet 为简单公式 | ✅ | d=128 poly3 R²=0.997；SwiGLU family R²=0.942。CNN poly3 R²=0.974、SwiGLU family R²=0.908。causal结果说明具体算子依赖host/basin，不能称普适SwiGLU吸引子 |
 | U34 | Qwen2.5-0.5B finetune | ✅ **负面结果** | 3 seeds: InnerNet ~80% vs SwiGLU ~89%。替换瞬间崩到 52-66%，恢复不回来。大模型直接替换不可行 |
 | U35 | InnerNet hidden dim 消融 | TODO | hidden=8/16/32/64 对比，InnerNet 需要多大才够 |
 | U36 | Non-shared warm-start | ⏳ PTB ✅ MLM ✅ | PTB 5/5 赢, CNN +3.12%, **MLM non-shared 15.63 vs SwiGLU 18.91 (-3.28)**。Wiki d=128 不在当前队列，本地无最终原始结果，不再标记为运行中。 |
