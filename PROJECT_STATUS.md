@@ -233,7 +233,7 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 | M3 | CNN 小 scale 反转解释 | ✅ n=3 不支持稳定反转：paired差值 -11.04/+0.74/-0.10pp，均值-3.47pp但 p=0.457；由单个 seed1234 崩落驱动，按高方差边界报告，不归因于固定机制 |
 | M4 | 回归 inconsistency 解释 | ✅ Housing width sweep 显示容量交叉：w32/64/120 改善5.6/1.6/4.7%，w256/512 反转为-2.2/-4.5%；n=3，仅w64/120 paired-t<0.05，解释为小模型 inductive-bias 收益随容量消失，不作普适回归增益 claim |
 | M5 | RL inconsistency | ✅ 已统一指标并降级 | 全部按每 seed 最后20个 recorded eval 的均值汇总；Acrobot InnerNet 显著优于 ReLU，LunarLander 与 ReLU 持平且方差很大，RL 仅作扩展证据 |
-| M6 | PReLU/Swish baseline 对比 | TODO |
+| M6 | PReLU/Swish baseline 对比 | ⏳ 配置与模型支持已完成并验证 | CIFAR-10 CNN，参数匹配宽度46/92/92/92 + LayerNorm，PReLU/Swish各5 seeds；等待提交到 Critical CNN jobs 之后 |
 
 ### 🟢 Minor
 

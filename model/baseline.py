@@ -5,6 +5,17 @@ import math
 __all__ = ['BaselineMLP', 'BaselineCNN', 'BaselineRNN']
 
 
+def _make_activation(name):
+    name = name.lower()
+    if name == 'relu':
+        return nn.ReLU()
+    if name == 'prelu':
+        return nn.PReLU(num_parameters=1)
+    if name in ('silu', 'swish'):
+        return nn.SiLU()
+    raise ValueError(f"Unsupported baseline activation: {name}")
+
+
 class BaselineMLP(nn.Module):
     """ReLU baseline MLP for comparison with XorNeuronMLP.
 
@@ -23,6 +34,7 @@ class BaselineMLP(nn.Module):
         self.num_classes = config.model.num_classes
         self.dropout = config.model.dropout
         self.use_layernorm = getattr(config.model, 'use_layernorm', False)
+        self.activation = getattr(config.model, 'activation', 'relu')
 
         layers = []
         in_dim = self.input_dim
@@ -30,7 +42,7 @@ class BaselineMLP(nn.Module):
             layers.append(nn.Linear(in_dim, h_dim))
             if self.use_layernorm:
                 layers.append(nn.LayerNorm(h_dim, elementwise_affine=False))
-            layers.append(nn.ReLU())
+            layers.append(_make_activation(self.activation))
             layers.append(nn.Dropout(p=self.dropout))
             in_dim = h_dim
 
@@ -85,6 +97,7 @@ class BaselineCNN(nn.Module):
         self.num_classes = config.model.num_classes
         self.dropout = config.model.dropout
         self.use_layernorm = getattr(config.model, 'use_layernorm', False)
+        self.activation = getattr(config.model, 'activation', 'relu')
 
         # Compute spatial dimensions through the network
         if config.dataset.name in ('mnist', 'fashionmnist'):
@@ -105,7 +118,7 @@ class BaselineCNN(nn.Module):
             if self.use_layernorm:
                 conv_layers.append(nn.LayerNorm([self.out_channel[i], x_size, x_size],
                                                  elementwise_affine=False))
-            conv_layers.append(nn.ReLU())
+            conv_layers.append(_make_activation(self.activation))
             if x_size >= 2:
                 conv_layers.append(nn.MaxPool2d(kernel_size=2))
                 x_size = x_size // 2
