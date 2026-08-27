@@ -22,6 +22,7 @@ Usage (one seed per job, fan out with --seed):
 """
 import argparse
 import copy
+import json
 import os
 
 import numpy as np
@@ -37,10 +38,26 @@ _wf = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_wf)
 
 
-def build_inits(names, device):
+INIT_SEED_OFFSETS = {
+    "random": 101,
+    "identity": 211,
+    "multiply": 307,
+    "swiglu": 401,
+}
+
+
+def build_inits(names, device, seed):
+    """Build each InnerNet init from a dedicated deterministic RNG stream.
+
+    This keeps a condition identical whether it is run alone or grouped with
+    other initializations in the same Slurm job.
+    """
     import torch.nn.functional as F
     out = {}
     for n in names:
+        torch.manual_seed(seed * 1000 + INIT_SEED_OFFSETS[n])
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed * 1000 + INIT_SEED_OFFSETS[n])
         net = _wf.InnerNetAct(32).to(device)
         if n == "multiply":
             _wf.fit_to_target(net, device, lambda a, b: a * b)
@@ -65,6 +82,10 @@ def main():
     ap.add_argument("--base_epochs", type=int, default=20)
     ap.add_argument("--probe_epochs", type=int, default=10)
     ap.add_argument("--save_dir", required=True)
+    ap.add_argument("--host_checkpoint", default=None,
+                    help="Load/save reusable host checkpoint (.pth).")
+    ap.add_argument("--host_only", action="store_true",
+                    help="Train/save the host and exit before InnerNet probes.")
     args = ap.parse_args()
     _wf.args = args
 
@@ -80,21 +101,52 @@ def main():
     val_loader = DataLoader(val_ds, batch_size=128, num_workers=4)
 
     torch.manual_seed(args.seed); np.random.seed(args.seed)
-    inits = build_inits(args.inits.split(","), device)
 
-    # 1. Train host network.
+    # 1. Train or load the reusable host network.
     Host = SwiGLUTransformer if args.host == "swiglu" else BilinearGLUTransformer
     host = Host(V, 128, 4, 512, 4, 64, 0.1).to(device)
-    opt = optim.Adam(host.parameters(), lr=5e-4)
-    for ep in range(args.base_epochs):
-        _wf.train_ep(host, train_loader, opt, device)
-        if (ep + 1) % 5 == 0:
-            print(f"  {args.host} host Ep {ep+1}: PPL={_wf.evaluate_ppl(host, val_loader, device):.2f}", flush=True)
+    if args.host_checkpoint and os.path.exists(args.host_checkpoint):
+        payload = torch.load(args.host_checkpoint, map_location=device, weights_only=False)
+        host.load_state_dict(payload["host_state_dict"])
+        host_ppl = float(payload["host_ppl"])
+        print(f"  loaded host checkpoint {args.host_checkpoint} PPL={host_ppl:.2f}", flush=True)
+    else:
+        opt = optim.Adam(host.parameters(), lr=5e-4)
+        for ep in range(args.base_epochs):
+            _wf.train_ep(host, train_loader, opt, device)
+            if (ep + 1) % 5 == 0:
+                ppl = _wf.evaluate_ppl(host, val_loader, device)
+                print(f"  {args.host} host Ep {ep+1}: PPL={ppl:.2f}", flush=True)
+        host_ppl = _wf.evaluate_ppl(host, val_loader, device)
+        print(f"  host final PPL={host_ppl:.2f}", flush=True)
+        if args.host_checkpoint:
+            os.makedirs(os.path.dirname(args.host_checkpoint), exist_ok=True)
+            torch.save({
+                "host_state_dict": host.state_dict(),
+                "host_ppl": host_ppl,
+                "host": args.host,
+                "seed": args.seed,
+                "base_epochs": args.base_epochs,
+            }, args.host_checkpoint)
+            print(f"  saved host checkpoint {args.host_checkpoint}", flush=True)
+
+    if args.host_only:
+        print("Host-only job done.", flush=True)
+        return
+
     host_state = host.state_dict()
-    host_ppl = _wf.evaluate_ppl(host, val_loader, device)
-    print(f"  host final PPL={host_ppl:.2f}", flush=True)
+    inits = build_inits(args.inits.split(","), device, args.seed)
 
     # 2. Per init: drop in InnerNet, train (frozen or joint), save per-epoch + final.
+    results = {
+        "host": args.host,
+        "freeze": bool(args.freeze),
+        "seed": args.seed,
+        "host_checkpoint": args.host_checkpoint,
+        "host_ppl": host_ppl,
+        "probe_epochs": args.probe_epochs,
+        "conditions": {},
+    }
     for init_name, inner_state in inits.items():
         inner = _wf.InnerNetAct(32).to(device)
         inner.load_state_dict(inner_state)
@@ -112,6 +164,11 @@ def main():
         opt2 = optim.Adam(params, lr=5e-4)
 
         tag = f"{args.host}_{'frozen' if args.freeze else 'joint'}_{init_name}"
+        final_path = os.path.join(args.save_dir, f"inner_{tag}_seed{args.seed}.pth")
+        if os.path.exists(final_path):
+            print(f"  [{tag}] final checkpoint exists; skipping", flush=True)
+            results["conditions"][init_name] = {"status": "existing", "checkpoint": final_path}
+            continue
         ppls = []
         for ep in range(args.probe_epochs):
             _wf.train_ep(model, train_loader, opt2, device)
@@ -120,9 +177,17 @@ def main():
             # per-epoch InnerNet weights for the a*b -> silu trajectory
             torch.save(model.blocks[0].ffn.inner_net.state_dict(),
                        os.path.join(args.save_dir, f"inner_{tag}_seed{args.seed}_ep{ep+1:02d}.pth"))
-        torch.save(model.blocks[0].ffn.inner_net.state_dict(),
-                   os.path.join(args.save_dir, f"inner_{tag}_seed{args.seed}.pth"))
+        torch.save(model.blocks[0].ffn.inner_net.state_dict(), final_path)
+        results["conditions"][init_name] = {
+            "status": "completed",
+            "ppl": ppls,
+            "best_ppl": min(ppls),
+            "checkpoint": final_path,
+        }
         print(f"  [{tag}] best PPL={min(ppls):.2f} (host {host_ppl:.2f})", flush=True)
+
+    with open(os.path.join(args.save_dir, "results.json"), "w") as f:
+        json.dump(results, f, indent=2)
 
     print("Done.", flush=True)
 
