@@ -253,7 +253,7 @@ All structured local experiment artifacts are indexed by a canonical manifest (`
 
 Fifteen headline comparisons are registered in `config/audit/core_comparisons.yaml` and regenerated as `results/audit/core_comparisons.csv`. For InnerNet versus GELU at d=64/128/192/256, paired-t p-values are 0.00022/0.05095/0.361/0.173; SwiGLU versus InnerNet at d=128 gives p=0.00917. CNN, autoencoder, and large-MLP headline comparisons have paired-t p<0.014. Because a two-sided Wilcoxon test with n=5 has coarse resolution (typically a minimum p=0.0625), formal reporting includes raw seeds, bootstrap confidence intervals, parametric and non-parametric tests, and Cohen's dz rather than relying on a single threshold.
 
-Audit artifacts: `results/audit/grouped_metric_summary.csv`, `metric_conflicts.csv`, `experiment_variant_collisions.csv`, and `core_comparisons.csv`.
+The registered headline cells in RESULTS_CN/EN are also checked directly against the canonical summary; all 40 currently registered cells match. Audit artifacts: `results/audit/grouped_metric_summary.csv`, `metric_conflicts.csv`, `experiment_variant_collisions.csv`, `core_comparisons.csv`, and `document_consistency.csv`.
 
 ## Summary
 
