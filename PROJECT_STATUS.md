@@ -7,7 +7,7 @@
 - 原论文协议已核对：原论文按总参数量调整 baseline 宽度；本项目 MLP/CNN 参数匹配思路一致。Transformer 现有比较是 same-width 而非 total-parameter-matched，这只限制性能增益措辞，不影响 SwiGLU-like interaction 的发现结论。
 - 原论文同样没有部署闭环，只通过函数拟合和结构统计汇报发现；当前不新增部署实验。
 - 配对统计工具已完成：新增 paired t-test、Wilcoxon、Cohen's dz、bootstrap CI 和非有限 pair 报告，并保留独立样本模式。5-seed same-width Transformer 示例中，`GELU-InnerNet=+1.558 PPL`（paired-t p=0.05095），`SwiGLU-InnerNet=-2.280 PPL`（p=0.00917）；正式结果需同时报告 raw seeds 和非参数检验。
-- 本地结果 inventory/manifest 已生成：471 个实验、1096 行指标；**387 raw-verified、84 incomplete、0 completed-no-result**。已纳入统一 runner 之外的 deploy、Seq-MNIST 与 warm-start `results.p/results.json`。自动分组得到 203 个可汇报指标组、0 个同配置 seed 冲突；另检测到 1 个实验命名碰撞（`mlp_mnist_relu` 同名但分别为 64-width 未匹配版与 112-width 参数匹配版）。
+- 本地结果 inventory/manifest 已生成：472 个实验、1121 行指标；**388 raw-verified、84 incomplete、0 completed-no-result**。已纳入统一 runner 之外的 deploy、Seq-MNIST 与 warm-start `results.p/results.json`，包括 `ivs_d128_v2` 的逐 epoch 分支。自动分组得到 208 个可汇报指标组、0 个同配置 seed 冲突；另检测到 1 个实验命名碰撞（`mlp_mnist_relu` 同名但分别为 64-width 未匹配版与 112-width 参数匹配版）。
 - ✅ **SSH 取证已完成（Claude，2026-07-26）**：
   - CNN CIFAR-10 2-arg seed 42 已从集群拉回，`test_accuracy=0.7969`（**79.69%**，非之前反推的 79.68%），日志确认，现为 **raw-verified**。五个 seed 齐全，mean=78.57%（popSD 0.74 / sampleSD 0.82）。
   - 4 个旧 job 终态：547111 FFN deploy **TIMEOUT**（未完成，innernet 仅 4 seed、distilled 空）；547112 CNN deploy COMPLETED；547208 Seq-MNIST 诊断 COMPLETED；547209 bark COMPLETED。队列现已空。
@@ -62,10 +62,10 @@
 
 | Job IDs | 阶段 | 数量 | 状态/约束 | 输出 |
 |---------|------|------|-----------|------|
-| **664213/231/219/189/192** | Bilinear host seeds 42–46 | 5 | RUNNING/SUBMITTED；失败项已自动重提 | `/user_data/yizhouc3/xor_causal_v2/hosts/bilinear_seed*.pth` |
-| **664224/198/201/204/207** | SwiGLU host seeds 42–46 | 5 | RUNNING/SUBMITTED；失败项已自动重提 | `/user_data/yizhouc3/xor_causal_v2/hosts/swiglu_seed*.pth` |
-| **664214/215/232/233/220/221/190/191/193/194** | Bilinear joint/frozen × random/multiply × 5 seeds | 10 | PENDING dependency | `/user_data/yizhouc3/xor_causal_v2/probes/bilinear_*` |
-| **664225/226/236/200/202/203/205/206/208/209** | SwiGLU joint × 4 init × 5 seeds（每 job 2 init） | 10 | RUNNING/PENDING | `/user_data/yizhouc3/xor_causal_v2/probes/swiglu_*` |
+| **664213/231/219/189/192** | Bilinear host seeds 42–46 | 5 | 2 COMPLETED / 3 RUNNING | `/user_data/yizhouc3/xor_causal_v2/hosts/bilinear_seed*.pth` |
+| **664224/198/201/204/207** | SwiGLU host seeds 42–46 | 5 | 4 COMPLETED / 1 RUNNING | `/user_data/yizhouc3/xor_causal_v2/hosts/swiglu_seed*.pth` |
+| **664214/215/232/233/220/221/190/191/193/194** | Bilinear joint/frozen × random/multiply × 5 seeds | 10 | 4 RUNNING / 6 PENDING dependency | `/user_data/yizhouc3/xor_causal_v2/probes/bilinear_*` |
+| **664225/226/236/200/202/203/205/206/208/209** | SwiGLU joint × 4 init × 5 seeds（每 job 2 init） | 10 | 8 RUNNING / 2 PENDING dependency | `/user_data/yizhouc3/xor_causal_v2/probes/swiglu_*` |
 
 提交清单：`/user_data/yizhouc3/xor_causal_v2/submitted_20260827.tsv`。代码提交：`e801536`（host cache/resume/JSON）+ `963ea13`（隔离 worktree 支持）+ `9f82434`（每-job HF cache）。预期在调度后约 12–24h 完成；实际 wall time 取决于兼容 GPU 排队。
 
@@ -152,9 +152,9 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 
 | # | 项目 | 状态 | 说明 |
 |---|------|------|------|
-| **P1** | **表面定量提炼** | ⏳ causal matrix v2 已提交 | 初步结果显示 host-dependent：SwiGLU host → SwiGLU-like，Bilinear host → pure `a*b`。为补齐旧矩阵的 timeout/不兼容 GPU 缺口，已提交 jobs 664180–664209：5 seeds × Bilinear joint/frozen × random/multiply，以及 5 seeds × SwiGLU joint × 4 init；共享 host checkpoint 并排除 RTX Pro 6000。 |
+| **P1** | **表面定量提炼** | ⏳ causal matrix v2 运行中 | 初步结果显示 host-dependent：SwiGLU host → SwiGLU-like，Bilinear host → pure `a*b`。有效矩阵现为 5 seeds × Bilinear joint/frozen × random/multiply，以及 5 seeds × SwiGLU joint × 4 init；共享 host checkpoint、可续跑，并排除已知不兼容节点。当前 6/10 host 已完成，12/20 probes 已启动，无新增失败。 |
 | **P2** | **Seq-MNIST 功能与稳定性边界** | ✅ 约束实验完成 | 去掉 `W_c` 后 8/9 实际训练成功，98.44±0.22%，1 NaN（另 1 infra OOM），参数从37K降至21K。inner2 gate R² 0.447±0.263，与旧设计约0.43±0.31相同：功能结果增强，机制仍不可辨识。 |
-| **P3** | **结果审计与统计严谨性** | ✅ 工具链完成；等待 P1 新结果 | canonical manifest 已覆盖统一 runner + deploy/Seq-MNIST/warm-start script-native 结果；自动分组/冲突报告、15项预注册核心比较、文档一致性检查及deploy trade-off分析完成（21 tests PASS）。当前203/203科学配置/状态组可汇报，0个同配置seed冲突；RESULTS_CN/EN 的40个已注册 headline cells 与 manifest **40/40一致**。NaN runs 与 success runs 显式分组（SeqMin成功组8 seeds=98.435%，NaN组1 seed）。causal v2 完成并拉回后只需重跑生成链并补注册项。 |
+| **P3** | **结果审计与统计严谨性** | ✅ 工具链完成；等待 P1 新结果 | canonical manifest 已覆盖统一 runner + deploy/Seq-MNIST/warm-start script-native 结果；自动分组/冲突报告、15项预注册核心比较、文档一致性检查及deploy trade-off分析完成（23 tests PASS）。当前208/208科学配置/状态组可汇报，0个同配置seed冲突；RESULTS_CN/EN 的40个已注册 headline cells 与 manifest **40/40一致**。NaN runs 与 success runs 显式分组（SeqMin成功组8 seeds=98.435%，NaN组1 seed）。causal v2 完成并拉回后只需重跑生成链并补注册项。 |
 
 ### 🔴 Critical
 
@@ -200,7 +200,7 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 | U28 | Mixer warm-start | ✅ | InnerNet 略好 (81.25 vs 81.13) |
 | U29 | 可视化训练后 InnerNet 2D 函数 | ✅ | 4 任务对比完成。不同任务学到不同函数——d=64 接近 SwiGLU，MLM 偏离最大。偏离越大效果越好 |
 | U30 | Scaling law 图 | ✅ | `fig_scaling_law.{png,pdf}` 已从 canonical post-sharing 数据自动生成：3.3%→1.6%→0.8%→1.7%，明确为正向但非单调，并标注 paired-t p 值 |
-| U31 | 训练曲线 | TODO | warm-start 两条分支 PPL 随 epoch 变化 |
+| U31 | 训练曲线 | ✅ | `fig_warmstart_curves.{png,pdf}`：5-seed warm-start fork 与 frozen-capacity 轨迹，mean±sample-SD；原始逐 epoch 数据来自 `exp/ivs_d128_v2/results.p` |
 | U32 | 参数量和推理速度 | ✅ | `deploy_analysis.json`：CNN InnerNet只比SwiGLU多129参数但慢6.59×；distilled快2.68×但仍比SwiGLU慢2.46×。FFN InnerNet约比SwiGLU慢6.03×（4 seeds；distilled未跑到） |
 | U33 | 提炼 InnerNet 为简单公式 | ✅ | d=128 poly3 R²=0.997；SwiGLU family R²=0.942。CNN poly3 R²=0.974、SwiGLU family R²=0.908。causal结果说明具体算子依赖host/basin，不能称普适SwiGLU吸引子 |
 | U34 | Qwen2.5-0.5B finetune | ✅ **负面结果** | 3 seeds: InnerNet ~80% vs SwiGLU ~89%。替换瞬间崩到 52-66%，恢复不回来。大模型直接替换不可行 |
