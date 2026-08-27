@@ -371,6 +371,8 @@ Configs: `config/experiments/*_e2e.yaml`
 
 InnerNet w=128 (415K) ≈ ReLU w=256 (921K) → **省 55% 参数**。
 
+参数量由配置实例化后直接统计，准确率来自 canonical 5-seed summary；精确值为 InnerNet w128 **415,051 参数 / 52.05%**，ReLU w256 **920,842 参数 / 51.99%**，参数减少 **54.9%**。完整宽度曲线见 `results/figures/fig_parameter_efficiency.{png,pdf}`，机器可读数据见 `results/audit/parameter_efficiency.json`。
+
 ## 7. ResNet
 
 全换没用（CIFAR-10 86.10% vs ReLU 86.33%，CIFAR-100+aug 73.00% vs 73.51%）。

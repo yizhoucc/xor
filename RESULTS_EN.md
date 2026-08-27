@@ -93,6 +93,10 @@ The post-sharing scaling figure is generated directly from canonical audit artif
 
 **Scale boundary**: The same-width advantage remains positive but non-monotonic through d=256 in the standard Transformer sweep. It reverses in the larger GPT-style experiment, while warm-start experiments show that the learned function remains expressive enough in the controlled setting.
 
+### Parameter Efficiency
+
+On CIFAR-10 MLPs, InnerNet at width 128 reaches 52.05% with 415,051 parameters, matching ReLU at width 256 (51.99%, 920,842 parameters) with **54.9% fewer parameters**. Counts are obtained by instantiating the recorded configs; accuracy and dispersion come from the canonical five-seed summary. Figure: `results/figures/fig_parameter_efficiency.{png,pdf}`; data: `results/audit/parameter_efficiency.json`.
+
 ### InnerNet vs SwiGLU: Fair Comparison (5 seeds)
 
 When InnerNet is initialized from a trained SwiGLU model (10 epochs) and both continue training for 10 more epochs (total 20 each):

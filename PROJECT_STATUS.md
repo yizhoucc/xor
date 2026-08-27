@@ -244,7 +244,7 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 | m3 | 更多 LM dataset | ✅ PTB 已完成 |
 | m4 | 计算开销分析（FLOPs + wall-clock） | TODO |
 | m5 | 显著性检验 p-value | ✅ 19项预注册比较，paired/Welch t、Wilcoxon/Mann–Whitney、bootstrap CI 与效应量均自动生成 |
-| 24 | 参数效率出图 | 数据已有 |
+| 24 | 参数效率出图 | ✅ `fig_parameter_efficiency.{png,pdf}`；模型实测参数量 + canonical 5-seed CIFAR-10准确率，InnerNet w128 415,051参数与ReLU w256 920,842参数表现相当，少54.9% |
 
 ---
 
