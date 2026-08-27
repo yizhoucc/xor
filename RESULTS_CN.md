@@ -403,7 +403,7 @@ GPT v4 (3/5 seeds)、free_init_v2 (Wiki 3/3, MLM 2/3)、scratch_init (2.5/5) 时
 - 15 项核心比较已由 `config/audit/core_comparisons.yaml` 注册并自动复算。Transformer d=64/128/192/256 的 InnerNet-vs-GELU paired-t p 分别为 **0.00022 / 0.05095 / 0.361 / 0.173**；d=128 SwiGLU-vs-InnerNet p=**0.00917**。CNN、AE、Big-MLP headline 的 paired-t 均 <0.014。
 - 小样本解释：n=5 时双侧 Wilcoxon 的离散最小值通常是 0.0625，因此不单看“p<0.05”；正式报告同时给 raw seeds、bootstrap CI、paired-t/Wilcoxon 和 Cohen's dz。
 - `scripts/check_document_claims.py` 已把 RESULTS_CN/EN 的40个已注册 headline table cells 与 canonical summary 自动对照，当前 **40/40 match**。
-- 产物：`results/audit/grouped_metric_summary.csv`、`metric_conflicts.csv`、`experiment_variant_collisions.csv`、`core_comparisons.csv`、`document_consistency.csv`；19 个 manifest/statistics/document 单元测试全部通过。
+- 产物：`results/audit/grouped_metric_summary.csv`、`metric_conflicts.csv`、`experiment_variant_collisions.csv`、`core_comparisons.csv`、`document_consistency.csv`、`deploy_analysis.json`；20 个审计/统计单元测试全部通过。
 
 ## 总结
 
