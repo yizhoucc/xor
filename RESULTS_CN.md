@@ -397,6 +397,7 @@ Configs: `config/experiments/resnet_cifar_internal_2arg.yaml`
 | 实验 | 进度 |
 |------|------|
 | P1 causal matrix v2 | 10 个可复用 host checkpoint jobs + 20 个依赖 probe jobs 已提交；排除不兼容 RTX Pro 6000，输出到 `/user_data/yizhouc3/xor_causal_v2/` |
+| Critical CNN seeds | SVHN 2-arg seeds 44/45（664241/664242）与 FashionMNIST 1-arg seeds 42–45（664243–664246）已提交；从已有 pretrain checkpoint 续跑，完成通知 664247 |
 
 GPT v4 (3/5 seeds)、free_init_v2 (Wiki 3/3, MLM 2/3)、scratch_init (2.5/5) 时间到未完成，数据已够用。
 

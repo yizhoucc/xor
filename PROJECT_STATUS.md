@@ -75,6 +75,15 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 
 通用 `slurm_run*.sh` 也已支持 `XOR_CODE_DIR`/`XOR_RUN_DIR`、per-job HuggingFace cache 和故障节点排除；后续补 seed 可用隔离 worktree 的代码，同时复用 `~/xor/exp` 中已有阶段 checkpoint。
 
+### 当前运行：Critical CNN seed 补齐（6 jobs + Bark）
+
+| Job IDs | 实验 | Seeds | 状态 | 续跑位置 |
+|---------|------|-------|------|----------|
+| **664241/664242** | CNN SVHN 2-arg | 44/45 | PENDING（Resources/Priority） | `~/xor/exp/cnn_svhn_2arg_*` |
+| **664243–664246** | CNN FashionMNIST 1-arg | 42–45 | PENDING（Priority） | `~/xor/exp/cnn_fmnist_1arg_*` |
+
+提交清单：`/user_data/yizhouc3/xor_cnn_seed_completion_20260827.tsv`。使用隔离代码 `/home/yizhouc3/xor-codex-audit`，从原 `~/xor/exp` 的 `PRETRAIN_DONE` 阶段继续；完成通知 job **664247**。
+
 ### 上一轮（2026-07-26）已终止
 
 | Job | 实验 | 状态 | 目的 |
@@ -162,10 +171,10 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 
 | # | 项目 | 状态 |
 |---|------|------|
-| C1 | 补齐 5 seeds | ⏳ FMNIST 2arg 已拉回并验证 5/5；SVHN 2arg 已拉回 3/5，尚缺 seeds 44/45 |
+| C1 | 补齐 5 seeds | ⏳ FMNIST 2arg 已拉回并验证 5/5；SVHN 2arg 已拉回 3/5，seeds 44/45 已提交（664241/664242） |
 | C2 | CNN 参数公平对比 | ✅ ReLU matched 70.67% vs InnerNet 78.29% (同 127K) |
 | C3 | AE 参数匹配 | ✅ ReLU matched 0.0059 vs InnerNet 0.0039 (同 ~660K) |
-| C4 | 1-arg 系统对比 | ⏳ SVHN 1arg 原始结果已拉回并验证 5/5；FMNIST 1arg 仍为 1/5，尚缺 seeds 42–45 |
+| C4 | 1-arg 系统对比 | ⏳ SVHN 1arg 原始结果已拉回并验证 5/5；FMNIST 1arg 仍为 1/5，seeds 42–45 已提交（664243–664246） |
 | C5 | ReLU+LN ablation | ✅ 4 数据集完成 |
 | M1 | 训练曲线 | ✅ `results/figures/fig_training_curves.{png,pdf}`；4-panel mean±sample-SD 图已生成，并排除同名的旧 MLP-MNIST width-64 baseline，使用参数匹配 width-112 版本 |
 
