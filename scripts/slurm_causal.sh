@@ -13,6 +13,8 @@ HOST=${1:?}; FREEZE=${2:?}; SEED=${3:?}; SAVE_DIR=${4:?}; INITS=${5:?}; HOST_CKP
 source /usr/share/Modules/init/bash
 module load anaconda3-2023.03 cuda-12.4
 eval "$(conda shell.bash hook)"; conda activate xor
+export HF_HOME="/tmp/xor_hf_${SLURM_JOB_ID}"
+export HF_DATASETS_CACHE="${HF_HOME}/datasets"
 cd "${XOR_CODE_DIR:-/home/yizhouc3/xor}"
 echo "Node: $(hostname) host=$HOST freeze=$FREEZE seed=$SEED dir=$SAVE_DIR inits=$INITS"
 python scripts/warmstart_causal.py --host "$HOST" --freeze "$FREEZE" --seed "$SEED" \
