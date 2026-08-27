@@ -382,13 +382,20 @@ Configs: `config/experiments/resnet_cifar_internal_2arg.yaml`
 | Qwen 0.5B 直接替换 | InnerNet ~80% vs SwiGLU ~89%，大模型替换不可行 |
 | 从头训 vs SwiGLU | scratch_init 2.5 seeds 全输（SwiGLU 赢 1-3 PPL） |
 
-## 在跑的（2026-05-13）
+## 当前运行（2026-08-27）
 
 | 实验 | 进度 |
 |------|------|
-| Sequential MNIST — RNN/LSTM/GRU/InnerNetRNN/GatedRNN | 已完成；约束版8/9实际训练成功，98.44±0.22% |
+| P1 causal matrix v2 | 10 个可复用 host checkpoint jobs + 20 个依赖 probe jobs 已提交；排除不兼容 RTX Pro 6000，输出到 `/user_data/yizhouc3/xor_causal_v2/` |
 
 GPT v4 (3/5 seeds)、free_init_v2 (Wiki 3/3, MLM 2/3)、scratch_init (2.5/5) 时间到未完成，数据已够用。
+
+## 统计与可追溯性（2026-08-27）
+
+- `scripts/build_result_manifest.py` 已扫描 468 个实验目录，得到 960 行结构化指标：373 个实验 raw-verified，95 个 incomplete，0 个 completed-no-result。
+- `scripts/summarize_result_manifest.py` 按科学配置签名自动去重并汇总 mean、sample SD、population SD、raw seeds/values；当前 171 个指标组全部可汇报，0 个同配置 seed 数值冲突。
+- 自动发现 1 个同名配置碰撞：`mlp_mnist_relu` 同时指 64-width 未参数匹配版（seed1234=85.63%）和 112-width 参数匹配版（seed1234=91.27%，其余 seeds 同组）。两者现在按配置签名分开，不再混算。
+- 产物：`results/audit/grouped_metric_summary.csv`、`metric_conflicts.csv`、`experiment_variant_collisions.csv`；13 个 manifest/statistics 单元测试全部通过。
 
 ## 总结
 

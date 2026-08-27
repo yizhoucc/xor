@@ -247,6 +247,12 @@ InnerNet wins LunarLander (+18% vs ReLU) with 30 seeds. SwiGLU fails entirely on
 | ResNet (all positions) | Neutral | Post-skip activation redundant with residual path |
 | CNN at very small scale (×0.25) | Worse (-5%) | Channel-pairing overhead dominates when model is tiny |
 
+## Reproducibility and Statistical Provenance
+
+All structured local experiment artifacts are indexed by a canonical manifest (`scripts/build_result_manifest.py`) and aggregated by scientific configuration rather than directory name (`scripts/summarize_result_manifest.py`). The current audit contains 960 metric rows from 468 experiment directories, with 373 raw-verified and 95 incomplete experiments. It produces 171 reportable metric groups with raw seed values, both sample and population standard deviations, and no unresolved within-configuration seed conflicts. A single reused experiment name (`mlp_mnist_relu`) was detected and separated into its unmatched 64-width and parameter-matched 112-width configurations.
+
+Audit artifacts: `results/audit/grouped_metric_summary.csv`, `metric_conflicts.csv`, and `experiment_variant_collisions.csv`. Paired comparisons additionally report paired t-tests, Wilcoxon tests, bootstrap confidence intervals, and Cohen's dz.
+
 ## Summary
 
 InnerNet provides consistent benefits in **feedforward networks without built-in feature interaction mechanisms**:
