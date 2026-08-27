@@ -20,12 +20,17 @@ Generate in order:
 python scripts/build_result_manifest.py
 python scripts/summarize_result_manifest.py
 python scripts/build_core_stats.py
+python scripts/check_document_claims.py
 ```
 
 `config/audit/core_comparisons.yaml` is the reviewable registry of headline
 comparisons. `core_comparisons.csv` contains seed-aligned raw values, mean
 differences, bootstrap confidence intervals, paired/Welch t-tests,
 Wilcoxon/Mann-Whitney tests, and effect sizes.
+
+`config/audit/document_claims.yaml` registers key Markdown table cells against
+canonical summary rows. `document_consistency.csv` records the expected value,
+observed cell, raw-source experiment, seed count, and match status.
 
 Regenerate with:
 

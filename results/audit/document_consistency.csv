@@ -1,0 +1,41 @@
+id,file,line_contains,column,expected,observed,status,source_exp_name,source_metric,source_seed_count
+en_cnn_cifar10,RESULTS_EN.md,| CIFAR-10 |,1,78.57±0.74,78.57±0.74,match,cnn_cifar_2arg,test_accuracy,5
+en_cnn_cifar10,RESULTS_EN.md,| CIFAR-10 |,3,73.99±0.49,73.99±0.49,match,cnn_cifar_relu,test_accuracy,5
+en_cnn_cifar10,RESULTS_EN.md,| CIFAR-10 |,5,70.67±0.43,70.67±0.43,match,cnn_cifar_relu_matched,test_accuracy,5
+en_cnn_cifar100,RESULTS_EN.md,| CIFAR-100 big |,1,53.74±0.88,53.74±0.88,match,cnn_cifar100_big_2arg,test_accuracy,5
+en_cnn_cifar100,RESULTS_EN.md,| CIFAR-100 big |,3,50.00±0.83,50.00±0.83,match,cnn_cifar100_big_relu,test_accuracy,5
+en_cnn_cifar100,RESULTS_EN.md,| CIFAR-100 big |,6,46.48±0.50,46.48±0.50,match,cnn_cifar100_swiglu,test_accuracy,5
+en_tf_d64,RESULTS_EN.md,| WikiText-2 d=64 |,1,116.63±0.84,116.63±0.84,match,transformer_wikitext_baseline_small,best_val_ppl,5
+en_tf_d64,RESULTS_EN.md,| WikiText-2 d=64 |,2,112.31±0.49,**112.31±0.49**,match,transformer_wikitext_swiglu_small,best_val_ppl,5
+en_tf_d64,RESULTS_EN.md,| WikiText-2 d=64 |,3,112.83±0.94,**112.83±0.94**,match,transformer_wikitext_2arg_small,best_val_ppl,5
+en_tf_d128,RESULTS_EN.md,| WikiText-2 d=128 |,1,96.82±1.19,96.82±1.19,match,transformer_wikitext_baseline,best_val_ppl,5
+en_tf_d128,RESULTS_EN.md,| WikiText-2 d=128 |,2,92.98±1.14,**92.98±1.14**,match,transformer_wikitext_swiglu,best_val_ppl,5
+en_tf_d128,RESULTS_EN.md,| WikiText-2 d=128 |,3,95.26±1.00,**95.26±1.00**,match,transformer_wikitext_2arg,best_val_ppl,5
+en_tf_d192,RESULTS_EN.md,| WikiText-2 d=192 |,1,89.11±0.92,89.11±0.92,match,transformer_wikitext_scale_gelu_d192,best_val_ppl,5
+en_tf_d192,RESULTS_EN.md,| WikiText-2 d=192 |,2,85.43±0.41,**85.43±0.41**,match,transformer_wikitext_swiglu_d192,best_val_ppl,5
+en_tf_d192,RESULTS_EN.md,| WikiText-2 d=192 |,3,88.42±0.94,**88.42±0.94**,match,transformer_wikitext_scale_2arg_d192,best_val_ppl,5
+en_tf_d256,RESULTS_EN.md,| WikiText-2 d=256 |,1,86.05±0.97,86.05±0.97,match,transformer_wikitext_baseline_large,best_val_ppl,5
+en_tf_d256,RESULTS_EN.md,| WikiText-2 d=256 |,2,81.56±0.94,**81.56±0.94**,match,transformer_wikitext_swiglu_large,best_val_ppl,5
+en_tf_d256,RESULTS_EN.md,| WikiText-2 d=256 |,3,84.62±1.47,**84.62±1.47**,match,transformer_wikitext_2arg_large,best_val_ppl,5
+en_big_mlp_innernet,RESULTS_EN.md,| InnerNet | **98.39,1,98.39±0.04,**98.39±0.04**,match,mlp_mnist_big_2arg,test_accuracy,5
+en_big_mlp_relu,RESULTS_EN.md,| ReLU | 97.93,1,97.93±0.07,97.93±0.07,match,mlp_mnist_big_relu,test_accuracy,5
+en_seqmin_success,RESULTS_EN.md,| **SeqMinGatedRNN,2,98.44±0.22,**98.44% ± 0.22%**,match,seq_mnist_min_gated,best_test_accuracy,8
+cn_cnn_cifar10,RESULTS_CN.md,| CIFAR-10 |,1,78.57±0.74,78.57±0.74,match,cnn_cifar_2arg,test_accuracy,5
+cn_cnn_cifar10,RESULTS_CN.md,| CIFAR-10 |,3,73.99±0.49,73.99±0.49,match,cnn_cifar_relu,test_accuracy,5
+cn_cnn_cifar10,RESULTS_CN.md,| CIFAR-10 |,5,70.67±0.43,70.67±0.43,match,cnn_cifar_relu_matched,test_accuracy,5
+cn_tf_d64,RESULTS_CN.md,| Wiki d=64 |,1,116.63,116.63,match,transformer_wikitext_baseline_small,best_val_ppl,5
+cn_tf_d64,RESULTS_CN.md,| Wiki d=64 |,2,112.31,112.31,match,transformer_wikitext_swiglu_small,best_val_ppl,5
+cn_tf_d64,RESULTS_CN.md,| Wiki d=64 |,3,112.83,**112.83**,match,transformer_wikitext_2arg_small,best_val_ppl,5
+cn_tf_d128,RESULTS_CN.md,| Wiki d=128 |,1,96.82,96.82,match,transformer_wikitext_baseline,best_val_ppl,5
+cn_tf_d128,RESULTS_CN.md,| Wiki d=128 |,2,92.98,92.98,match,transformer_wikitext_swiglu,best_val_ppl,5
+cn_tf_d128,RESULTS_CN.md,| Wiki d=128 |,3,95.26,**95.26**,match,transformer_wikitext_2arg,best_val_ppl,5
+cn_tf_d192,RESULTS_CN.md,| Wiki d=192 |,1,89.11,89.11,match,transformer_wikitext_scale_gelu_d192,best_val_ppl,5
+cn_tf_d192,RESULTS_CN.md,| Wiki d=192 |,2,85.43,85.43,match,transformer_wikitext_swiglu_d192,best_val_ppl,5
+cn_tf_d192,RESULTS_CN.md,| Wiki d=192 |,3,88.42,**88.42**,match,transformer_wikitext_scale_2arg_d192,best_val_ppl,5
+cn_tf_d256,RESULTS_CN.md,| Wiki d=256 |,1,86.05,86.05,match,transformer_wikitext_baseline_large,best_val_ppl,5
+cn_tf_d256,RESULTS_CN.md,| Wiki d=256 |,2,81.56,81.56,match,transformer_wikitext_swiglu_large,best_val_ppl,5
+cn_tf_d256,RESULTS_CN.md,| Wiki d=256 |,3,84.62,**84.62**,match,transformer_wikitext_2arg_large,best_val_ppl,5
+cn_ae_mnist_innernet,RESULTS_CN.md,| MNIST | **0.0039** | 0.0068,1,0.0039,**0.0039**,match,ae_mnist_2arg,test_mse,5
+cn_ae_mnist_innernet,RESULTS_CN.md,| MNIST | **0.0039** | 0.0068,2,0.0068,0.0068,match,ae_mnist_relu,test_mse,5
+cn_ae_mnist_innernet,RESULTS_CN.md,| MNIST | **0.0039** | 0.0068,3,0.0059,0.0059,match,ae_mnist_relu_matched,test_mse,5
+cn_seqmin_success,RESULTS_CN.md,| **SeqMinGatedRNN,2,98.44±0.22,**98.44% ± 0.22%**,match,seq_mnist_min_gated,best_test_accuracy,8

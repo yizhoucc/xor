@@ -1,0 +1,107 @@
+checks:
+  - id: en_cnn_cifar10
+    file: RESULTS_EN.md
+    section: "## 1. CNN Image Classification (5 seeds)"
+    line_contains: "| CIFAR-10 |"
+    cells:
+      1: {exp_name: cnn_cifar_2arg, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+      3: {exp_name: cnn_cifar_relu, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+      5: {exp_name: cnn_cifar_relu_matched, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+  - id: en_cnn_cifar100
+    file: RESULTS_EN.md
+    line_contains: "| CIFAR-100 big |"
+    cells:
+      1: {exp_name: cnn_cifar100_big_2arg, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+      3: {exp_name: cnn_cifar100_big_relu, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+      6: {exp_name: cnn_cifar100_swiglu, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+  - id: en_tf_d64
+    file: RESULTS_EN.md
+    line_contains: "| WikiText-2 d=64 |"
+    cells:
+      1: {exp_name: transformer_wikitext_baseline_small, metric: best_val_ppl, format: mean_pm_pop, decimals: 2}
+      2: {exp_name: transformer_wikitext_swiglu_small, metric: best_val_ppl, format: mean_pm_pop, decimals: 2}
+      3: {exp_name: transformer_wikitext_2arg_small, metric: best_val_ppl, format: mean_pm_pop, decimals: 2}
+  - id: en_tf_d128
+    file: RESULTS_EN.md
+    line_contains: "| WikiText-2 d=128 |"
+    cells:
+      1: {exp_name: transformer_wikitext_baseline, metric: best_val_ppl, format: mean_pm_pop, decimals: 2}
+      2: {exp_name: transformer_wikitext_swiglu, metric: best_val_ppl, format: mean_pm_pop, decimals: 2}
+      3: {exp_name: transformer_wikitext_2arg, metric: best_val_ppl, format: mean_pm_pop, decimals: 2}
+  - id: en_tf_d192
+    file: RESULTS_EN.md
+    line_contains: "| WikiText-2 d=192 |"
+    cells:
+      1: {exp_name: transformer_wikitext_scale_gelu_d192, metric: best_val_ppl, format: mean_pm_pop, decimals: 2}
+      2: {exp_name: transformer_wikitext_swiglu_d192, metric: best_val_ppl, format: mean_pm_pop, decimals: 2}
+      3: {exp_name: transformer_wikitext_scale_2arg_d192, metric: best_val_ppl, format: mean_pm_pop, decimals: 2}
+  - id: en_tf_d256
+    file: RESULTS_EN.md
+    line_contains: "| WikiText-2 d=256 |"
+    cells:
+      1: {exp_name: transformer_wikitext_baseline_large, metric: best_val_ppl, format: mean_pm_pop, decimals: 2}
+      2: {exp_name: transformer_wikitext_swiglu_large, metric: best_val_ppl, format: mean_pm_pop, decimals: 2}
+      3: {exp_name: transformer_wikitext_2arg_large, metric: best_val_ppl, format: mean_pm_pop, decimals: 2}
+  - id: en_big_mlp_innernet
+    file: RESULTS_EN.md
+    line_contains: "| InnerNet | **98.39"
+    cells:
+      1: {exp_name: mlp_mnist_big_2arg, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+  - id: en_big_mlp_relu
+    file: RESULTS_EN.md
+    line_contains: "| ReLU | 97.93"
+    cells:
+      1: {exp_name: mlp_mnist_big_relu, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+  - id: en_seqmin_success
+    file: RESULTS_EN.md
+    line_contains: "| **SeqMinGatedRNN"
+    cells:
+      2: {exp_name: seq_mnist_min_gated, metric: best_test_accuracy, run_status: success, format: mean_pm_pop, scale: 100, decimals: 2}
+  - id: cn_cnn_cifar10
+    file: RESULTS_CN.md
+    section: "## 1. CNN 图像分类（5 seeds）"
+    line_contains: "| CIFAR-10 |"
+    cells:
+      1: {exp_name: cnn_cifar_2arg, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+      3: {exp_name: cnn_cifar_relu, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+      5: {exp_name: cnn_cifar_relu_matched, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+  - id: cn_tf_d64
+    file: RESULTS_CN.md
+    line_contains: "| Wiki d=64 |"
+    cells:
+      1: {exp_name: transformer_wikitext_baseline_small, metric: best_val_ppl, format: mean, decimals: 2}
+      2: {exp_name: transformer_wikitext_swiglu_small, metric: best_val_ppl, format: mean, decimals: 2}
+      3: {exp_name: transformer_wikitext_2arg_small, metric: best_val_ppl, format: mean, decimals: 2}
+  - id: cn_tf_d128
+    file: RESULTS_CN.md
+    line_contains: "| Wiki d=128 |"
+    cells:
+      1: {exp_name: transformer_wikitext_baseline, metric: best_val_ppl, format: mean, decimals: 2}
+      2: {exp_name: transformer_wikitext_swiglu, metric: best_val_ppl, format: mean, decimals: 2}
+      3: {exp_name: transformer_wikitext_2arg, metric: best_val_ppl, format: mean, decimals: 2}
+  - id: cn_tf_d192
+    file: RESULTS_CN.md
+    line_contains: "| Wiki d=192 |"
+    cells:
+      1: {exp_name: transformer_wikitext_scale_gelu_d192, metric: best_val_ppl, format: mean, decimals: 2}
+      2: {exp_name: transformer_wikitext_swiglu_d192, metric: best_val_ppl, format: mean, decimals: 2}
+      3: {exp_name: transformer_wikitext_scale_2arg_d192, metric: best_val_ppl, format: mean, decimals: 2}
+  - id: cn_tf_d256
+    file: RESULTS_CN.md
+    line_contains: "| Wiki d=256 |"
+    cells:
+      1: {exp_name: transformer_wikitext_baseline_large, metric: best_val_ppl, format: mean, decimals: 2}
+      2: {exp_name: transformer_wikitext_swiglu_large, metric: best_val_ppl, format: mean, decimals: 2}
+      3: {exp_name: transformer_wikitext_2arg_large, metric: best_val_ppl, format: mean, decimals: 2}
+  - id: cn_ae_mnist_innernet
+    file: RESULTS_CN.md
+    line_contains: "| MNIST | **0.0039** | 0.0068"
+    cells:
+      1: {exp_name: ae_mnist_2arg, metric: test_mse, format: mean, decimals: 4}
+      2: {exp_name: ae_mnist_relu, metric: test_mse, format: mean, decimals: 4}
+      3: {exp_name: ae_mnist_relu_matched, metric: test_mse, format: mean, decimals: 4}
+  - id: cn_seqmin_success
+    file: RESULTS_CN.md
+    line_contains: "| **SeqMinGatedRNN"
+    cells:
+      2: {exp_name: seq_mnist_min_gated, metric: best_test_accuracy, run_status: success, format: mean_pm_pop, scale: 100, decimals: 2}
