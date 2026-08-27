@@ -163,7 +163,7 @@ Bark：启动通知已发送；完成通知 job **664234** 依赖当前矩阵全
 | C3 | AE 参数匹配 | ✅ ReLU matched 0.0059 vs InnerNet 0.0039 (同 ~660K) |
 | C4 | 1-arg 系统对比 | ⏳ SVHN 1arg 5/5 ✅, FMNIST 1arg 失败需重提交 |
 | C5 | ReLU+LN ablation | ✅ 4 数据集完成 |
-| M1 | 训练曲线 | ⏳ 数据已有，需出图 |
+| M1 | 训练曲线 | ✅ `results/figures/fig_training_curves.{png,pdf}`；4-panel mean±sample-SD 图已生成，并排除同名的旧 MLP-MNIST width-64 baseline，使用参数匹配 width-112 版本 |
 
 ### 🔴 Urgent
 

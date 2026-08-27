@@ -40,6 +40,8 @@ Configs: `config/experiments/cnn_cifar_2arg.yaml`, exp: `exp/cnn_cifar_2arg_*`
 
 Reported ± values are the population standard deviation (ddof=0) over seeds. For the headline CIFAR-10 2-arg result (n=5, seeds 42–46: 78.68, 79.69, 78.94, 77.93, 77.62) the sample standard deviation (ddof=1) is 0.82.
 
+Multi-seed training curves are provided in `results/figures/fig_training_curves.pdf` (MLP/CNN × MNIST/CIFAR-10; mean ± sample SD). The MLP-MNIST ReLU curve uses the parameter-matched width-112 configuration and excludes the older same-named width-64 run.
+
 ## 2. Autoencoder Reconstruction (MSE↓, 3–5 seeds)
 
 | Dataset | InnerNet | ReLU | ReLU matched | Improvement |

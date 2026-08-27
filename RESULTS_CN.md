@@ -47,6 +47,8 @@
 
 Configs: `config/experiments/cnn_cifar_2arg.yaml` 等，exp: `exp/cnn_cifar_2arg_*`
 
+多 seed 训练曲线见 `results/figures/fig_training_curves.pdf`（MLP/CNN × MNIST/CIFAR-10，mean±sample SD）。图中 MLP-MNIST ReLU 使用参数匹配的 width-112 配置，已排除同名旧 width-64 run，避免把两套架构混入方差带。
+
 ## 2. 自编码器
 
 | 数据集 | InnerNet | ReLU | ReLU 参数匹配 | 改进 |
