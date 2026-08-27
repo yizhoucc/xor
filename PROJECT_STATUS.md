@@ -62,12 +62,14 @@
 
 | Job IDs | 阶段 | 数量 | 状态/约束 | 输出 |
 |---------|------|------|-----------|------|
-| **664180/183/186/189/192** | Bilinear host seeds 42–46 | 5 | SUBMITTED；排除 `mind-1-19-1/2` | `/user_data/yizhouc3/xor_causal_v2/hosts/bilinear_seed*.pth` |
-| **664195/198/201/204/207** | SwiGLU host seeds 42–46 | 5 | SUBMITTED；排除 `mind-1-19-1/2` | `/user_data/yizhouc3/xor_causal_v2/hosts/swiglu_seed*.pth` |
-| **664181/182/184/185/187/188/190/191/193/194** | Bilinear joint/frozen × random/multiply × 5 seeds | 10 | PENDING dependency | `/user_data/yizhouc3/xor_causal_v2/probes/bilinear_*` |
-| **664196/197/199/200/202/203/205/206/208/209** | SwiGLU joint × 4 init × 5 seeds（每 job 2 init） | 10 | PENDING dependency | `/user_data/yizhouc3/xor_causal_v2/probes/swiglu_*` |
+| **664213/231/219/189/192** | Bilinear host seeds 42–46 | 5 | RUNNING/SUBMITTED；失败项已自动重提 | `/user_data/yizhouc3/xor_causal_v2/hosts/bilinear_seed*.pth` |
+| **664224/198/201/204/207** | SwiGLU host seeds 42–46 | 5 | RUNNING/SUBMITTED；失败项已自动重提 | `/user_data/yizhouc3/xor_causal_v2/hosts/swiglu_seed*.pth` |
+| **664214/215/232/233/220/221/190/191/193/194** | Bilinear joint/frozen × random/multiply × 5 seeds | 10 | PENDING dependency | `/user_data/yizhouc3/xor_causal_v2/probes/bilinear_*` |
+| **664225/226/199/200/202/203/205/206/208/209** | SwiGLU joint × 4 init × 5 seeds（每 job 2 init） | 10 | PENDING dependency | `/user_data/yizhouc3/xor_causal_v2/probes/swiglu_*` |
 
-提交清单：`/user_data/yizhouc3/xor_causal_v2/submitted_20260827.tsv`。代码提交：`e801536`（host cache/resume/JSON）+ `963ea13`（隔离 worktree 支持）。预期在调度后约 12–24h 完成；实际 wall time 取决于兼容 GPU 排队。
+提交清单：`/user_data/yizhouc3/xor_causal_v2/submitted_20260827.tsv`。代码提交：`e801536`（host cache/resume/JSON）+ `963ea13`（隔离 worktree 支持）+ `9f82434`（每-job HF cache）。预期在调度后约 12–24h 完成；实际 wall time 取决于兼容 GPU 排队。
+
+启动异常与处置：首批 host 664180/183/186 在 L40S 上因共享 HuggingFace cache 的 NFS `Stale file handle` 失败；已在 `9f82434` 改为每-job `/tmp` cache。664195/664216 在 Titan RTX 节点出现 CUDA illegal/misaligned address；重试排除该节点。失败 job 的旧依赖已取消并替换，不影响实验设计。
 
 ### 上一轮（2026-07-26）已终止
 
