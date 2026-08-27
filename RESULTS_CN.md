@@ -201,11 +201,14 @@ SwiGLU 一直赢 1-3 PPL。Gaussian pretrain 略好于 random/multiply。确认�
 
 | checkpoint | mult `a·b` | **swiglu `silu(a)·b`** | poly3 | 提炼出的算子 |
 |-----------|-----------|----------------------|-------|------------|
+| **Wiki d=64 post-sharing（seed42）** | 0.568 | **0.977** | 0.995 | **0.321·silu(a)·b** |
 | **ivs_d128（FFN，SwiGLU warm-start）** | 0.658 | **0.942** | 0.997 | **0.24·silu(a)·b**（缩放版 SwiGLU） |
 | CNN CIFAR-10 | 0.674 | **0.908** | 0.974 | 0.35·silu(a)·b |
 | fit-to-SwiGLU（自检）| 0.542 | **0.992** | 0.984 | 0.98·silu(a)·b ✓ |
 
 **可支持的结论**：FFN InnerNet 任务训练后的函数仍有 **94% 由单个 SwiGLU 项解释**，而纯乘法 `a·b` 只有 66%。由于它在训练前已被显式拟合成 SwiGLU，这证明的是 SwiGLU 形状在后续优化中被保留并缩放，不是自主发现。自检行确认拟合方法能还原已知的 SwiGLU 表面。
+
+d=64 的 post-sharing checkpoint 也明确是 SwiGLU-like：单项拟合解释 97.7% 方差，远高于纯乘法的56.8%。可视化 `results/figures/fig_d64_swiglu_surface.{png,pdf}` 同时给出 learned surface、scaled-SwiGLU fit 和 residual；这是单 seed 的结构证据，不替代多 seed 因果矩阵。
 
 **跨 seed 一致性（warm-start retention）**：5 个 seeds 的后续任务优化彼此独立，但它们共享同一份显式拟合到 SwiGLU 的 InnerNet 初值。逐个提炼得到 SwiGLU 拟合 **R²=0.947±0.010**（范围 0.931–0.956），系数 **0.238±0.005**，纯乘法约 0.66。这个结果排除了单个 seed 的偶然漂移，但不能升级成“独立再发现”；要支持后者，必须分析从 Gaussian/random 等非 SwiGLU 初值训练并保存的多 seed checkpoint。
 

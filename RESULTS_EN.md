@@ -165,7 +165,7 @@ Within the SwiGLU-warm-started host, all tested InnerNet initializations converg
 
 A causal host control gives the complementary result. Starting from a trained Bilinear-GLU host (`a·b`), four completed joint-training seeds improve from host PPL **79.60±0.31** to **73.51±0.37** (random init) and **73.72±0.35** (multiply init), yet their final surfaces remain pure multiplication: mult R² **0.9982±0.0006** / **0.9989±0.0005**, versus SwiGLU R² 0.528/0.549. Available frozen-host controls also recover `a·b` (mult R²≈0.999). The PPL gain cannot be assigned solely to the activation because no Bilinear-continued branch was run; the surface result nevertheless rejects a universal, network-independent SwiGLU attractor.
 
-Single-checkpoint fits corroborate the operator across settings (Transformer FFN d=128 SwiGLU R²=0.94 / `0.24·silu(a)·b`; CNN CIFAR-10 0.91 / `0.35·silu(a)·b`; SwiGLU-fit control 0.99, validating the fitting procedure).
+Single-checkpoint fits corroborate the operator across settings (post-sharing WikiText-2 d=64: SwiGLU R²=0.977 / `0.321·silu(a)·b`, versus multiplication R²=0.568; Transformer FFN d=128 SwiGLU R²=0.94 / `0.24·silu(a)·b`; CNN CIFAR-10 0.91 / `0.35·silu(a)·b`; SwiGLU-fit control 0.99, validating the fitting procedure). The d=64 learned surface, fitted operator, and residual are shown in `results/figures/fig_d64_swiglu_surface.{png,pdf}`.
 
 Config: `scripts/distill_crossinit.py`, `scripts/warmstart_causal.py`, and `scripts/distill_innernet.py`. The causal matrix is incomplete because several jobs timed out or landed on an unsupported RTX Pro 6000 node, but all four completed joint Bilinear seeds agree on the operator family.
 

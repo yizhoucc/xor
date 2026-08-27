@@ -199,7 +199,7 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 | U15 | RL 加 seeds + 只报 PPO | ✅ LunarLander 30s: InnerNet 187.6 > ReLU 158.8 > SwiGLU -249.7。InnerNet 赢（10 seeds 时输，30 seeds 翻了） |
 | U16 | Masked LM（类 BERT） | ✅ SwiGLU 93.83, GELU 101.39, InnerNet 124.82（差）。warm-start 大幅赢 |
 | U17 | Transformer Classic InnerNet FFN | ✅ Wiki 95.49 ≈ Semantic 95.26, PTB 208.81 ≈ Semantic 207.81。TF 上 Classic ≈ Semantic |
-| U18 | d=64 InnerNet 学到了什么 | TODO | d=64 时 InnerNet ≈ SwiGLU，可视化看是不是真的像 SwiGLU |
+| U18 | d=64 InnerNet 学到了什么 | ✅ | post-sharing seed42 的 SwiGLU fit R²=0.977（mult R²=0.568，poly3 R²=0.995），主项 `0.321·SiLU(a)·b`；`fig_d64_swiglu_surface.{png,pdf}` 展示 learned / fitted / residual |
 | U19 | ResNet/WRN 只换内部 ReLU | ✅ **有效果** | C100+aug **74.97%** vs ReLU 73.51% (+1.5%), C10 **87.7%** vs 86.33% (+1.4%, 2/5 done) |
 | U21 | InnerNet vs SwiGLU 对比 | ✅ 11/11 完成 | **10/11 赢或持平，LSTM 唯一输**。CNN +2.46%, MLM -16.18, PTB -1.04, GPT/ViT/d=256/AE 持平。LSTM 输 (105.79 vs 104.71) |
 | U22 | AE warm-start | ✅ | 持平 (0.01206 vs 0.01211) |
