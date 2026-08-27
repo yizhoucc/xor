@@ -27,9 +27,10 @@ from plot_utils import (
 def main():
     parser = argparse.ArgumentParser(description='Plot training curves')
     parser.add_argument('--exp-dir', default='exp')
-    parser.add_argument('--output', default='results/training_curves')
+    parser.add_argument('--output', default='results/figures/fig_training_curves')
     parser.add_argument('--phase', default='phase1', choices=['phase1', 'phase2'])
     parser.add_argument('--show-ln', action='store_true', help='Include ReLU+LN')
+    parser.add_argument('--show', action='store_true', help='Open an interactive plot window')
     args = parser.parse_args()
 
     experiments = load_all_experiments(args.exp_dir)
@@ -37,6 +38,16 @@ def main():
                 if e.test_accuracy is not None
                 and any(k in e.exp_name for k in ['mlp_', 'cnn_'])
                 and 'dqn' not in e.exp_name]
+    # The original width-64 MLP-MNIST ReLU run shares the same exp_name as the
+    # later parameter-matched width-112 baseline. Mixing them creates a false,
+    # enormous uncertainty band. Use the canonical matched configuration.
+    clf_exps = [
+        e for e in clf_exps
+        if not (
+            e.exp_name == 'mlp_mnist_relu'
+            and (e.config or {}).get('model', {}).get('out_hidden_dim') != [112, 112, 112]
+        )
+    ]
     groups = group_experiments(clf_exps)
 
     apply_paper_style()
@@ -71,10 +82,14 @@ def main():
         else:
             ax.set_ylim(0.3, 0.85)
 
+    fig.suptitle('Training curves (mean ± sample SD across seeds)', fontsize=11, y=1.01)
     fig.tight_layout()
     save_fig(fig, os.path.basename(args.output),
              output_dir=os.path.dirname(args.output) or 'results')
-    plt.show()
+    if args.show:
+        plt.show()
+    else:
+        plt.close(fig)
 
 
 if __name__ == '__main__':
