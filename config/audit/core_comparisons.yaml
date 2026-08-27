@@ -94,3 +94,28 @@ comparisons:
     reference: {exp_name: ppo_cartpole_relu, metric: mean_last20_eval_score}
     paired: true
     lower_better: false
+  - name: housing_w32_innernet_vs_relu
+    condition: {exp_name: mlp_housing_scale_2arg_w32, metric: test_mse}
+    reference: {exp_name: mlp_housing_scale_relu_w32, metric: test_mse}
+    paired: true
+    lower_better: true
+  - name: housing_w64_innernet_vs_relu
+    condition: {exp_name: mlp_housing_scale_2arg_w64, metric: test_mse}
+    reference: {exp_name: mlp_housing_scale_relu_w64, metric: test_mse}
+    paired: true
+    lower_better: true
+  - name: housing_w120_innernet_vs_relu
+    condition: {exp_name: mlp_housing_scale_2arg_w120, metric: test_mse}
+    reference: {exp_name: mlp_housing_scale_relu_w120, metric: test_mse}
+    paired: true
+    lower_better: true
+  - name: housing_w256_innernet_vs_relu
+    condition: {exp_name: mlp_housing_scale_2arg_w256, metric: test_mse}
+    reference: {exp_name: mlp_housing_scale_relu_w256, metric: test_mse}
+    paired: true
+    lower_better: true
+  - name: housing_w512_innernet_vs_relu
+    condition: {exp_name: mlp_housing_scale_2arg_w512, metric: test_mse}
+    reference: {exp_name: mlp_housing_scale_relu_w512, metric: test_mse}
+    paired: true
+    lower_better: true

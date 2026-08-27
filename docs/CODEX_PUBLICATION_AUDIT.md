@@ -544,3 +544,4 @@ find /home/yizhouc3/xor/exp -type f \
 - U18 完成：post-sharing d=64 seed42 checkpoint 的 scaled-SwiGLU R²=0.9767、mult R²=0.5683、poly3 R²=0.9948，主项系数0.3206；新增 learned/fitted/residual 三联图与机器可读拟合 JSON。
 - M2 证据修复：旧 fig2 的 InnerNet panel 是手写示意函数，却标成 learned；现改为从真实 CNN seed42 checkpoint 直接计算，保留 ReLU/SwiGLU 参照并删除合成表面。
 - PPO 审计纠错：拉回三个 LunarLander 30-seed `rl_results.p` 后确认，旧187.6/158.8/-249.7是各模型最后一个 seed 的日志 tail-average，不是30-seed均值。manifest 新增每-seed最后20个评估点均值；正确汇总为 InnerNet 98.8±94.7、ReLU 101.3±57.8、SwiGLU -210.4±84.0，InnerNet-vs-ReLU p=0.897。文档与核心统计已同步纠正。
+- M4 回归一致性分析完成：Housing 的5-width paired sweep 显示小/中宽度改善、w256/512反转；新增 canonical 图 `fig_housing_scaling` 和5项预注册统计，解释为容量边界而非互相冲突的任务结论。

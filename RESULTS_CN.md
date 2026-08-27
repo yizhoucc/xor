@@ -67,6 +67,18 @@ Configs: `config/experiments/cnn_cifar_2arg.yaml` 等，exp: `exp/cnn_cifar_2arg
 
 Configs: `config/experiments/ae_mnist_2arg.yaml`，exp: `exp/ae_mnist_2arg_*`
 
+### Housing 回归的宽度边界（MSE↓，3 seeds）
+
+| 隐藏宽度 | InnerNet | ReLU | MSE 改善 | paired-t p |
+|----------|----------|------|----------|------------|
+| 32 | 0.2367 | 0.2508 | +5.6% | 0.0823 |
+| 64 | 0.2142 | 0.2178 | +1.6% | 0.0265 |
+| 120 | 0.1969 | 0.2066 | +4.7% | 0.0320 |
+| 256 | 0.2003 | 0.1961 | -2.2% | 0.450 |
+| 512 | 0.2048 | 0.1960 | -4.5% | 0.0671 |
+
+这不是互相冲突的回归结论，而是一个容量交叉：InnerNet 在小/中型 MLP 上提供有用的二元 inductive bias，宽度足够大后 ReLU baseline 追平并反超。由于每点只有3 seeds，按边界性结果报告，不声称普适回归提升。图：`results/figures/fig_housing_scaling.{png,pdf}`；configs：`config/experiments/mlp_housing_scale_{2arg,relu}_w*.yaml`。
+
 ## 3. Transformer FFN
 
 | 配置 | GELU | SwiGLU | InnerNet | vs GELU |
@@ -414,10 +426,10 @@ GPT v4 (3/5 seeds)、free_init_v2 (Wiki 3/3, MLM 2/3)、scratch_init (2.5/5) 时
 - `scripts/summarize_result_manifest.py` 按科学配置、condition 与 run status 自动去重并汇总 mean、sample SD、population SD、raw seeds/values；当前 238 个指标组全部可汇报，0 个同配置 seed 数值冲突。
 - NaN run 不再与成功 run 混算：SeqMinGatedRNN 成功组 8 seeds 自动复算为 **98.435%**（sample SD 0.236%，population SD 0.220%），另保留 1 个 NaN seed 的独立记录。
 - 自动发现 1 个同名配置碰撞：`mlp_mnist_relu` 同时指 64-width 未参数匹配版（seed1234=85.63%）和 112-width 参数匹配版（seed1234=91.27%，其余 seeds 同组）。两者现在按配置签名分开，不再混算。
-- 19 项核心比较已由 `config/audit/core_comparisons.yaml` 注册并自动复算。Transformer d=64/128/192/256 的 InnerNet-vs-GELU paired-t p 分别为 **0.00022 / 0.05095 / 0.361 / 0.173**；d=128 SwiGLU-vs-InnerNet p=**0.00917**。CNN、AE、Big-MLP headline 的 paired-t 均 <0.014；PPO Acrobot InnerNet-vs-ReLU p=0.0036，LunarLander p=0.897。
+- 24 项核心比较已由 `config/audit/core_comparisons.yaml` 注册并自动复算。Transformer d=64/128/192/256 的 InnerNet-vs-GELU paired-t p 分别为 **0.00022 / 0.05095 / 0.361 / 0.173**；d=128 SwiGLU-vs-InnerNet p=**0.00917**。CNN、AE、Big-MLP headline 的 paired-t 均 <0.014；PPO Acrobot InnerNet-vs-ReLU p=0.0036，LunarLander p=0.897；Housing 五个宽度的配对检验也已注册。
 - 小样本解释：n=5 时双侧 Wilcoxon 的离散最小值通常是 0.0625，因此不单看“p<0.05”；正式报告同时给 raw seeds、bootstrap CI、paired-t/Wilcoxon 和 Cohen's dz。
 - `scripts/check_document_claims.py` 已把 RESULTS_CN/EN 的58个已注册 headline table cells 与 canonical summary 自动对照，当前 **58/58 match**。
-- 产物：`results/audit/grouped_metric_summary.csv`、`metric_conflicts.csv`、`experiment_variant_collisions.csv`、`core_comparisons.csv`、`document_consistency.csv`、`deploy_analysis.json`；27 个审计/统计单元测试全部通过。
+- 产物：`results/audit/grouped_metric_summary.csv`、`metric_conflicts.csv`、`experiment_variant_collisions.csv`、`core_comparisons.csv`、`document_consistency.csv`、`deploy_analysis.json`；28 个审计/统计单元测试全部通过。
 
 ## 总结
 

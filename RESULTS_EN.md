@@ -65,6 +65,18 @@ Multi-seed training curves are provided in `results/figures/fig_training_curves.
 
 Configs: `config/experiments/ae_mnist_2arg.yaml`, exp: `exp/ae_mnist_2arg_*`
 
+### Housing Regression Width Boundary (MSE↓, 3 seeds)
+
+| Hidden width | InnerNet | ReLU | MSE reduction | Paired-t p |
+|--------------|----------|------|---------------|------------|
+| 32 | 0.2367 | 0.2508 | +5.6% | 0.0823 |
+| 64 | 0.2142 | 0.2178 | +1.6% | 0.0265 |
+| 120 | 0.1969 | 0.2066 | +4.7% | 0.0320 |
+| 256 | 0.2003 | 0.1961 | -2.2% | 0.450 |
+| 512 | 0.2048 | 0.1960 | -4.5% | 0.0671 |
+
+The apparent regression inconsistency is a capacity crossover: the learned interaction helps small and medium MLPs, while sufficiently wide ReLU models catch up and reverse the mean difference. With only three seeds per width, we present this as a boundary rather than a universal regression gain. Figure: `results/figures/fig_housing_scaling.{png,pdf}`; configs: `config/experiments/mlp_housing_scale_{2arg,relu}_w*.yaml`.
+
 ## 3. Transformer Language Models (PPL↓, 5 seeds)
 
 | Config | GELU | SwiGLU | InnerNet | vs GELU |
@@ -263,7 +275,7 @@ InnerNet improves Acrobot over ReLU by 21.7 return points (paired t-test p=0.003
 
 All structured local experiment artifacts are indexed by a canonical manifest (`scripts/build_result_manifest.py`) and aggregated by scientific configuration, condition, and run outcome rather than directory name (`scripts/summarize_result_manifest.py`). The audit includes unified-runner artifacts and standalone deploy, Sequential-MNIST, warm-start, and PPO results: 1,602 metric rows from 477 experiment directories, with 402 raw-verified and 75 incomplete experiments. It produces 238 reportable groups with raw seed values, both sample and population standard deviations, and no unresolved within-configuration seed conflicts. PPO runs include a per-seed mean over the final 20 recorded evaluation points, preventing a single seed's terminal log value from being mistaken for the cross-seed result. Failed/NaN runs remain explicit rather than being silently removed; for example, the constrained Sequential-MNIST model has an eight-seed successful group at 98.435% (sample SD 0.236%; population SD 0.220%) and a separately retained NaN run. A single reused experiment name (`mlp_mnist_relu`) was detected and separated into its unmatched 64-width and parameter-matched 112-width configurations.
 
-Nineteen headline comparisons are registered in `config/audit/core_comparisons.yaml` and regenerated as `results/audit/core_comparisons.csv`. For InnerNet versus GELU at d=64/128/192/256, paired-t p-values are 0.00022/0.05095/0.361/0.173; SwiGLU versus InnerNet at d=128 gives p=0.00917. CNN, autoencoder, and large-MLP headline comparisons have paired-t p<0.014. PPO Acrobot gives p=0.0036 for InnerNet versus ReLU, whereas LunarLander gives p=0.897. Because a two-sided Wilcoxon test with n=5 has coarse resolution (typically a minimum p=0.0625), formal reporting includes raw seeds, bootstrap confidence intervals, parametric and non-parametric tests, and Cohen's dz rather than relying on a single threshold.
+Twenty-four headline comparisons are registered in `config/audit/core_comparisons.yaml` and regenerated as `results/audit/core_comparisons.csv`. For InnerNet versus GELU at d=64/128/192/256, paired-t p-values are 0.00022/0.05095/0.361/0.173; SwiGLU versus InnerNet at d=128 gives p=0.00917. CNN, autoencoder, and large-MLP headline comparisons have paired-t p<0.014. PPO Acrobot gives p=0.0036 for InnerNet versus ReLU, whereas LunarLander gives p=0.897. The five Housing-width comparisons are also registered. Because a two-sided Wilcoxon test with n=5 has coarse resolution (typically a minimum p=0.0625), formal reporting includes raw seeds, bootstrap confidence intervals, parametric and non-parametric tests, and Cohen's dz rather than relying on a single threshold.
 
 The registered headline cells in RESULTS_CN/EN are also checked directly against the canonical summary; all 58 currently registered cells match. Audit artifacts: `results/audit/grouped_metric_summary.csv`, `metric_conflicts.csv`, `experiment_variant_collisions.csv`, `core_comparisons.csv`, and `document_consistency.csv`.
 

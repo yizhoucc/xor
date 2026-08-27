@@ -165,7 +165,7 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 |---|------|------|------|
 | **P1** | **表面定量提炼** | ⏳ causal matrix v2 运行中 | 初步结果显示 host-dependent：SwiGLU host → SwiGLU-like，Bilinear host → pure `a*b`。有效矩阵现为 5 seeds × Bilinear joint/frozen × random/multiply，以及 5 seeds × SwiGLU joint × 4 init；共享 host checkpoint、可续跑，并排除已知不兼容节点。当前 8/10 host 已完成，16/20 probes 已启动；664215 的节点级 CUDA 失败已由 664238 替代，无未处理失败。`scripts/analyze_causal_matrix.py` 已就绪，结果落盘后自动检查 40/40 conditions 并汇总 PPL、surface R² 与 operator votes。 |
 | **P2** | **Seq-MNIST 功能与稳定性边界** | ✅ 约束实验完成 | 去掉 `W_c` 后 8/9 实际训练成功，98.44±0.22%，1 NaN（另 1 infra OOM），参数从37K降至21K。inner2 gate R² 0.447±0.263，与旧设计约0.43±0.31相同：功能结果增强，机制仍不可辨识。 |
-| **P3** | **结果审计与统计严谨性** | ✅ 工具链完成；等待 P1 新结果 | canonical manifest 已覆盖统一 runner + deploy/Seq-MNIST/warm-start/PPO script-native 结果；自动分组/冲突报告、19项预注册核心比较、文档一致性检查及deploy trade-off分析完成（27 tests PASS）。当前238/238科学配置/状态组可汇报，0个同配置seed冲突；RESULTS_CN/EN 的58个已注册 headline cells 与 manifest **58/58一致**。NaN runs 与 success runs 显式分组。causal v2 完成并拉回后只需重跑生成链并补注册项。 |
+| **P3** | **结果审计与统计严谨性** | ✅ 工具链完成；等待 P1 新结果 | canonical manifest 已覆盖统一 runner + deploy/Seq-MNIST/warm-start/PPO script-native 结果；自动分组/冲突报告、24项预注册核心比较、文档一致性检查及deploy trade-off分析完成（28 tests PASS）。当前238/238科学配置/状态组可汇报，0个同配置seed冲突；RESULTS_CN/EN 的58个已注册 headline cells 与 manifest **58/58一致**。NaN runs 与 success runs 显式分组。causal v2 完成并拉回后只需重跑生成链并补注册项。 |
 
 ### 🔴 Critical
 
@@ -231,7 +231,7 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 |---|------|------|
 | M2 | 2D 激活函数表面可视化 | ✅ `fig2_2d_activation_surfaces.{png,pdf}` 已改为真实 CNN checkpoint；移除原来手写的“learned”示意面，避免把合成函数误作实验结果 |
 | M3 | CNN 小 scale 反转解释 | ✅ n=3 不支持稳定反转：paired差值 -11.04/+0.74/-0.10pp，均值-3.47pp但 p=0.457；由单个 seed1234 崩落驱动，按高方差边界报告，不归因于固定机制 |
-| M4 | 回归 inconsistency 解释 | TODO |
+| M4 | 回归 inconsistency 解释 | ✅ Housing width sweep 显示容量交叉：w32/64/120 改善5.6/1.6/4.7%，w256/512 反转为-2.2/-4.5%；n=3，仅w64/120 paired-t<0.05，解释为小模型 inductive-bias 收益随容量消失，不作普适回归增益 claim |
 | M5 | RL inconsistency | ✅ 已统一指标并降级 | 全部按每 seed 最后20个 recorded eval 的均值汇总；Acrobot InnerNet 显著优于 ReLU，LunarLander 与 ReLU 持平且方差很大，RL 仅作扩展证据 |
 | M6 | PReLU/Swish baseline 对比 | TODO |
 
