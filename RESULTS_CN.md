@@ -419,6 +419,7 @@ Acrobot 上 InnerNet 比 ReLU 高21.7 return points（paired-t p=0.0036，Wilcox
 |------|------|
 | P1 causal matrix v2 | 10 个可复用 host checkpoint jobs + 20 个依赖 probe jobs 已提交；排除不兼容 RTX Pro 6000，输出到 `/user_data/yizhouc3/xor_causal_v2/` |
 | Critical CNN seeds | SVHN 2-arg seeds 44/45（664241/664242）与 FashionMNIST 1-arg seeds 42–45（664243–664246）已提交；从已有 pretrain checkpoint 续跑，完成通知 664247 |
+| PReLU/Swish baselines | CIFAR-10 CNN+LN 各5 seeds（664254–664263）已提交，依赖 Critical CNN jobs 后启动；完成通知 664264 |
 
 GPT v4 (3/5 seeds)、free_init_v2 (Wiki 3/3, MLM 2/3)、scratch_init (2.5/5) 时间到未完成，数据已够用。
 
@@ -431,7 +432,7 @@ GPT v4 (3/5 seeds)、free_init_v2 (Wiki 3/3, MLM 2/3)、scratch_init (2.5/5) 时
 - 24 项核心比较已由 `config/audit/core_comparisons.yaml` 注册并自动复算。Transformer d=64/128/192/256 的 InnerNet-vs-GELU paired-t p 分别为 **0.00022 / 0.05095 / 0.361 / 0.173**；d=128 SwiGLU-vs-InnerNet p=**0.00917**。CNN、AE、Big-MLP headline 的 paired-t 均 <0.014；PPO Acrobot InnerNet-vs-ReLU p=0.0036，LunarLander p=0.897；Housing 五个宽度的配对检验也已注册。
 - 小样本解释：n=5 时双侧 Wilcoxon 的离散最小值通常是 0.0625，因此不单看“p<0.05”；正式报告同时给 raw seeds、bootstrap CI、paired-t/Wilcoxon 和 Cohen's dz。
 - `scripts/check_document_claims.py` 已把 RESULTS_CN/EN 的58个已注册 headline table cells 与 canonical summary 自动对照，当前 **58/58 match**。
-- 产物：`results/audit/grouped_metric_summary.csv`、`metric_conflicts.csv`、`experiment_variant_collisions.csv`、`core_comparisons.csv`、`document_consistency.csv`、`deploy_analysis.json`；28 个审计/统计单元测试全部通过。
+- 产物：`results/audit/grouped_metric_summary.csv`、`metric_conflicts.csv`、`experiment_variant_collisions.csv`、`core_comparisons.csv`、`document_consistency.csv`、`deploy_analysis.json`；31 个审计/统计单元测试全部通过。
 
 ## 总结
 
