@@ -64,14 +64,14 @@
 |---------|------|------|-----------|------|
 | **664213/231/219/189/192** | Bilinear host seeds 42–46 | 5 | 2 COMPLETED / 3 RUNNING | `/user_data/yizhouc3/xor_causal_v2/hosts/bilinear_seed*.pth` |
 | **664224/198/201/204/207** | SwiGLU host seeds 42–46 | 5 | 4 COMPLETED / 1 RUNNING | `/user_data/yizhouc3/xor_causal_v2/hosts/swiglu_seed*.pth` |
-| **664214/215/232/233/220/221/190/191/193/194** | Bilinear joint/frozen × random/multiply × 5 seeds | 10 | 4 RUNNING / 6 PENDING dependency | `/user_data/yizhouc3/xor_causal_v2/probes/bilinear_*` |
+| **664214/238/232/233/220/221/190/191/193/194** | Bilinear joint/frozen × random/multiply × 5 seeds | 10 | 4 RUNNING / 6 PENDING dependency | `/user_data/yizhouc3/xor_causal_v2/probes/bilinear_*` |
 | **664225/226/236/200/202/203/205/206/208/209** | SwiGLU joint × 4 init × 5 seeds（每 job 2 init） | 10 | 8 RUNNING / 2 PENDING dependency | `/user_data/yizhouc3/xor_causal_v2/probes/swiglu_*` |
 
 提交清单：`/user_data/yizhouc3/xor_causal_v2/submitted_20260827.tsv`。代码提交：`e801536`（host cache/resume/JSON）+ `963ea13`（隔离 worktree 支持）+ `9f82434`（每-job HF cache）。预期在调度后约 12–24h 完成；实际 wall time 取决于兼容 GPU 排队。
 
 Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前矩阵全部有效 jobs，结束后自动提醒拉取和分析结果。
 
-启动异常与处置：首批 host 664180/183/186 在 L40S 上因共享 HuggingFace cache 的 NFS `Stale file handle` 失败；已在 `9f82434` 改为每-job `/tmp` cache。664195/664216 及 probe 664199 在 Titan RTX 节点出现 CUDA illegal/misaligned address；重试排除该节点（664236 替代664199）。失败 job 的旧依赖已取消并替换，不影响实验设计。
+启动异常与处置：首批 host 664180/183/186 在 L40S 上因共享 HuggingFace cache 的 NFS `Stale file handle` 失败；已在 `9f82434` 改为每-job `/tmp` cache。664195/664216、probe 664199 和 frozen probe 664215 在 Titan RTX 节点 `mind-1-24` 出现 CUDA illegal/misaligned address；664236 替代664199，**664238 替代664215**。两个 causal Slurm 脚本现默认排除已知故障节点 `mind-1-19-[1-2],mind-1-24`，失败 job 的依赖均已替换，不影响实验设计。
 
 ### 上一轮（2026-07-26）已终止
 
@@ -152,7 +152,7 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 
 | # | 项目 | 状态 | 说明 |
 |---|------|------|------|
-| **P1** | **表面定量提炼** | ⏳ causal matrix v2 运行中 | 初步结果显示 host-dependent：SwiGLU host → SwiGLU-like，Bilinear host → pure `a*b`。有效矩阵现为 5 seeds × Bilinear joint/frozen × random/multiply，以及 5 seeds × SwiGLU joint × 4 init；共享 host checkpoint、可续跑，并排除已知不兼容节点。当前 6/10 host 已完成，12/20 probes 已启动，无新增失败。 |
+| **P1** | **表面定量提炼** | ⏳ causal matrix v2 运行中 | 初步结果显示 host-dependent：SwiGLU host → SwiGLU-like，Bilinear host → pure `a*b`。有效矩阵现为 5 seeds × Bilinear joint/frozen × random/multiply，以及 5 seeds × SwiGLU joint × 4 init；共享 host checkpoint、可续跑，并排除已知不兼容节点。当前 6/10 host 已完成，12/20 probes 已启动；664215 的节点级 CUDA 失败已由 664238 替代，无未处理失败。 |
 | **P2** | **Seq-MNIST 功能与稳定性边界** | ✅ 约束实验完成 | 去掉 `W_c` 后 8/9 实际训练成功，98.44±0.22%，1 NaN（另 1 infra OOM），参数从37K降至21K。inner2 gate R² 0.447±0.263，与旧设计约0.43±0.31相同：功能结果增强，机制仍不可辨识。 |
 | **P3** | **结果审计与统计严谨性** | ✅ 工具链完成；等待 P1 新结果 | canonical manifest 已覆盖统一 runner + deploy/Seq-MNIST/warm-start script-native 结果；自动分组/冲突报告、15项预注册核心比较、文档一致性检查及deploy trade-off分析完成（23 tests PASS）。当前208/208科学配置/状态组可汇报，0个同配置seed冲突；RESULTS_CN/EN 的40个已注册 headline cells 与 manifest **40/40一致**。NaN runs 与 success runs 显式分组（SeqMin成功组8 seeds=98.435%，NaN组1 seed）。causal v2 完成并拉回后只需重跑生成链并补注册项。 |
 

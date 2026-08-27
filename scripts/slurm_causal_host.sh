@@ -5,6 +5,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --mem=16GB
 #SBATCH --time=12:00:00
+#SBATCH --exclude=mind-1-19-[1-2],mind-1-24
 #SBATCH --output=/home/yizhouc3/xor/logs/slurm_%j.out
 #SBATCH --error=/home/yizhouc3/xor/logs/slurm_%j.err
 
