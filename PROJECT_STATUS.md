@@ -152,7 +152,7 @@ Bark：启动通知已发送；完成通知 job **664234** 依赖当前矩阵全
 |---|------|------|------|
 | **P1** | **表面定量提炼** | ⏳ causal matrix v2 已提交 | 初步结果显示 host-dependent：SwiGLU host → SwiGLU-like，Bilinear host → pure `a*b`。为补齐旧矩阵的 timeout/不兼容 GPU 缺口，已提交 jobs 664180–664209：5 seeds × Bilinear joint/frozen × random/multiply，以及 5 seeds × SwiGLU joint × 4 init；共享 host checkpoint 并排除 RTX Pro 6000。 |
 | **P2** | **Seq-MNIST 功能与稳定性边界** | ✅ 约束实验完成 | 去掉 `W_c` 后 8/9 实际训练成功，98.44±0.22%，1 NaN（另 1 infra OOM），参数从37K降至21K。inner2 gate R² 0.447±0.263，与旧设计约0.43±0.31相同：功能结果增强，机制仍不可辨识。 |
-| **P3** | **结果审计与统计严谨性** | ⏳ 主体完成 | canonical manifest、paired/unpaired stats、自动分组汇总与冲突报告均已完成（13 tests PASS）。当前 171/171 科学配置组可汇报，0 个同配置 seed 冲突；唯一命名碰撞是 `mlp_mnist_relu` 的 64-width/112-width 两版本。旧 `fig_scaling_law` 使用 sharing 修复前数据，暂不用于论文；四规模 vs GELU paired-t：p=0.00022/0.05095/0.361/0.173。剩余：其余核心 claim 的批量统计表。 |
+| **P3** | **结果审计与统计严谨性** | ⏳ 主体完成 | canonical manifest、自动分组/冲突报告及 15 项预注册核心比较均已完成（15 tests PASS）。当前 171/171 科学配置组可汇报，0 个同配置 seed 冲突；唯一命名碰撞是 `mlp_mnist_relu` 的 64-width/112-width 两版本。四规模 InnerNet vs GELU paired-t：p=0.00022/0.05095/0.361/0.173；CNN/AE/Big-MLP headline paired-t 均 <0.014。n=5 时双侧 Wilcoxon 最低通常为0.0625，正文必须同时报 raw seeds、CI 和 effect size。剩余：把 script-native warm-start/causal 结果纳入统一 manifest，并完成逐表文档一致性报告。 |
 
 ### 🔴 Critical
 

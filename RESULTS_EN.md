@@ -251,7 +251,9 @@ InnerNet wins LunarLander (+18% vs ReLU) with 30 seeds. SwiGLU fails entirely on
 
 All structured local experiment artifacts are indexed by a canonical manifest (`scripts/build_result_manifest.py`) and aggregated by scientific configuration rather than directory name (`scripts/summarize_result_manifest.py`). The current audit contains 960 metric rows from 468 experiment directories, with 373 raw-verified and 95 incomplete experiments. It produces 171 reportable metric groups with raw seed values, both sample and population standard deviations, and no unresolved within-configuration seed conflicts. A single reused experiment name (`mlp_mnist_relu`) was detected and separated into its unmatched 64-width and parameter-matched 112-width configurations.
 
-Audit artifacts: `results/audit/grouped_metric_summary.csv`, `metric_conflicts.csv`, and `experiment_variant_collisions.csv`. Paired comparisons additionally report paired t-tests, Wilcoxon tests, bootstrap confidence intervals, and Cohen's dz.
+Fifteen headline comparisons are registered in `config/audit/core_comparisons.yaml` and regenerated as `results/audit/core_comparisons.csv`. For InnerNet versus GELU at d=64/128/192/256, paired-t p-values are 0.00022/0.05095/0.361/0.173; SwiGLU versus InnerNet at d=128 gives p=0.00917. CNN, autoencoder, and large-MLP headline comparisons have paired-t p<0.014. Because a two-sided Wilcoxon test with n=5 has coarse resolution (typically a minimum p=0.0625), formal reporting includes raw seeds, bootstrap confidence intervals, parametric and non-parametric tests, and Cohen's dz rather than relying on a single threshold.
+
+Audit artifacts: `results/audit/grouped_metric_summary.csv`, `metric_conflicts.csv`, `experiment_variant_collisions.csv`, and `core_comparisons.csv`.
 
 ## Summary
 
