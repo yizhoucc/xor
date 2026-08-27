@@ -7,7 +7,7 @@
 - 原论文协议已核对：原论文按总参数量调整 baseline 宽度；本项目 MLP/CNN 参数匹配思路一致。Transformer 现有比较是 same-width 而非 total-parameter-matched，这只限制性能增益措辞，不影响 SwiGLU-like interaction 的发现结论。
 - 原论文同样没有部署闭环，只通过函数拟合和结构统计汇报发现；当前不新增部署实验。
 - 配对统计工具已完成：新增 paired t-test、Wilcoxon、Cohen's dz、bootstrap CI 和非有限 pair 报告，并保留独立样本模式。5-seed same-width Transformer 示例中，`GELU-InnerNet=+1.558 PPL`（paired-t p=0.05095），`SwiGLU-InnerNet=-2.280 PPL`（p=0.00917）；正式结果需同时报告 raw seeds 和非参数检验。
-- 本地结果 inventory/manifest 已生成：468 个实验、960 行指标；**373 raw-verified、95 incomplete、0 completed-no-result**。自动分组得到 171 个可汇报指标组、0 个同配置 seed 冲突；另检测到 1 个实验命名碰撞（`mlp_mnist_relu` 同名但分别为 64-width 未匹配版与 112-width 参数匹配版）。
+- 本地结果 inventory/manifest 已生成：471 个实验、1096 行指标；**387 raw-verified、84 incomplete、0 completed-no-result**。已纳入统一 runner 之外的 deploy、Seq-MNIST 与 warm-start `results.p/results.json`。自动分组得到 203 个可汇报指标组、0 个同配置 seed 冲突；另检测到 1 个实验命名碰撞（`mlp_mnist_relu` 同名但分别为 64-width 未匹配版与 112-width 参数匹配版）。
 - ✅ **SSH 取证已完成（Claude，2026-07-26）**：
   - CNN CIFAR-10 2-arg seed 42 已从集群拉回，`test_accuracy=0.7969`（**79.69%**，非之前反推的 79.68%），日志确认，现为 **raw-verified**。五个 seed 齐全，mean=78.57%（popSD 0.74 / sampleSD 0.82）。
   - 4 个旧 job 终态：547111 FFN deploy **TIMEOUT**（未完成，innernet 仅 4 seed、distilled 空）；547112 CNN deploy COMPLETED；547208 Seq-MNIST 诊断 COMPLETED；547209 bark COMPLETED。队列现已空。
@@ -152,7 +152,7 @@ Bark：启动通知已发送；完成通知 job **664234** 依赖当前矩阵全
 |---|------|------|------|
 | **P1** | **表面定量提炼** | ⏳ causal matrix v2 已提交 | 初步结果显示 host-dependent：SwiGLU host → SwiGLU-like，Bilinear host → pure `a*b`。为补齐旧矩阵的 timeout/不兼容 GPU 缺口，已提交 jobs 664180–664209：5 seeds × Bilinear joint/frozen × random/multiply，以及 5 seeds × SwiGLU joint × 4 init；共享 host checkpoint 并排除 RTX Pro 6000。 |
 | **P2** | **Seq-MNIST 功能与稳定性边界** | ✅ 约束实验完成 | 去掉 `W_c` 后 8/9 实际训练成功，98.44±0.22%，1 NaN（另 1 infra OOM），参数从37K降至21K。inner2 gate R² 0.447±0.263，与旧设计约0.43±0.31相同：功能结果增强，机制仍不可辨识。 |
-| **P3** | **结果审计与统计严谨性** | ⏳ 主体完成 | canonical manifest、自动分组/冲突报告及 15 项预注册核心比较均已完成（15 tests PASS）。当前 171/171 科学配置组可汇报，0 个同配置 seed 冲突；唯一命名碰撞是 `mlp_mnist_relu` 的 64-width/112-width 两版本。四规模 InnerNet vs GELU paired-t：p=0.00022/0.05095/0.361/0.173；CNN/AE/Big-MLP headline paired-t 均 <0.014。n=5 时双侧 Wilcoxon 最低通常为0.0625，正文必须同时报 raw seeds、CI 和 effect size。剩余：把 script-native warm-start/causal 结果纳入统一 manifest，并完成逐表文档一致性报告。 |
+| **P3** | **结果审计与统计严谨性** | ⏳ 接近完成 | canonical manifest 已覆盖统一 runner + deploy/Seq-MNIST/warm-start script-native 结果；自动分组/冲突报告及15项预注册核心比较完成（18 tests PASS）。当前203/203科学配置/状态组可汇报，0个同配置seed冲突；NaN runs 与 success runs 显式分组（SeqMin成功组8 seeds=98.435%，NaN组1 seed）。四规模 InnerNet vs GELU paired-t：p=0.00022/0.05095/0.361/0.173；CNN/AE/Big-MLP headline paired-t均<0.014。剩余：causal v2 完成后纳入 manifest，并生成逐表文档一致性报告。 |
 
 ### 🔴 Critical
 

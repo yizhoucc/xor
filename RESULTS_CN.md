@@ -392,12 +392,13 @@ GPT v4 (3/5 seeds)、free_init_v2 (Wiki 3/3, MLM 2/3)、scratch_init (2.5/5) 时
 
 ## 统计与可追溯性（2026-08-27）
 
-- `scripts/build_result_manifest.py` 已扫描 468 个实验目录，得到 960 行结构化指标：373 个实验 raw-verified，95 个 incomplete，0 个 completed-no-result。
-- `scripts/summarize_result_manifest.py` 按科学配置签名自动去重并汇总 mean、sample SD、population SD、raw seeds/values；当前 171 个指标组全部可汇报，0 个同配置 seed 数值冲突。
+- `scripts/build_result_manifest.py` 已扫描 471 个实验目录，得到 1096 行结构化指标：387 个实验 raw-verified，84 个 incomplete，0 个 completed-no-result；deploy、Seq-MNIST 和 warm-start 脚本自产的 `results.p/results.json` 也已纳入。
+- `scripts/summarize_result_manifest.py` 按科学配置、condition 与 run status 自动去重并汇总 mean、sample SD、population SD、raw seeds/values；当前 203 个指标组全部可汇报，0 个同配置 seed 数值冲突。
+- NaN run 不再与成功 run 混算：SeqMinGatedRNN 成功组 8 seeds 自动复算为 **98.435%**（sample SD 0.236%，population SD 0.220%），另保留 1 个 NaN seed 的独立记录。
 - 自动发现 1 个同名配置碰撞：`mlp_mnist_relu` 同时指 64-width 未参数匹配版（seed1234=85.63%）和 112-width 参数匹配版（seed1234=91.27%，其余 seeds 同组）。两者现在按配置签名分开，不再混算。
 - 15 项核心比较已由 `config/audit/core_comparisons.yaml` 注册并自动复算。Transformer d=64/128/192/256 的 InnerNet-vs-GELU paired-t p 分别为 **0.00022 / 0.05095 / 0.361 / 0.173**；d=128 SwiGLU-vs-InnerNet p=**0.00917**。CNN、AE、Big-MLP headline 的 paired-t 均 <0.014。
 - 小样本解释：n=5 时双侧 Wilcoxon 的离散最小值通常是 0.0625，因此不单看“p<0.05”；正式报告同时给 raw seeds、bootstrap CI、paired-t/Wilcoxon 和 Cohen's dz。
-- 产物：`results/audit/grouped_metric_summary.csv`、`metric_conflicts.csv`、`experiment_variant_collisions.csv`、`core_comparisons.csv`；15 个 manifest/statistics 单元测试全部通过。
+- 产物：`results/audit/grouped_metric_summary.csv`、`metric_conflicts.csv`、`experiment_variant_collisions.csv`、`core_comparisons.csv`；18 个 manifest/statistics 单元测试全部通过。
 
 ## 总结
 
