@@ -225,6 +225,20 @@ def parse_multiseed_curves(data, metadata, source_file):
                 source_file,
             )
         )
+        if curve_key == "all_scores":
+            tail_values = values[-20:]
+            rows.append(
+                _metric_row(
+                    metadata,
+                    seed,
+                    "mean_last20_eval_score",
+                    sum(tail_values) / len(tail_values),
+                    "mean_last_20_recorded_epochs",
+                    final_index + 1,
+                    len(curve),
+                    source_file,
+                )
+            )
     return rows
 
 

@@ -240,30 +240,32 @@ Replacing ALL activations (including post-skip) shows no benefit. But replacing 
 
 Config: `config/experiments/resnet_cifar_internal_2arg.yaml`, `resnet_cifar100_aug_internal_2arg.yaml`
 
-## 8. PPO Reinforcement Learning (30 seeds)
+## 8. PPO Reinforcement Learning
+
+For each seed, performance is the mean of the final 20 recorded evaluation points; the table reports mean ± population SD across seeds. CartPole and Acrobot use 10 seeds, while LunarLander uses 30.
 
 | Environment | InnerNet | ReLU | SwiGLU |
 |-------------|----------|------|--------|
-| CartPole | 499.9 | 500.0 | 500.0 |
-| Acrobot | **-75.3** | -79.8 | -81.7 |
-| LunarLander | **187.6** | 158.8 | -249.7 |
+| CartPole | 488.6±9.8 | 493.8±4.5 | 476.5±4.0 |
+| Acrobot | **-90.1±15.2** | -111.8±16.0 | -199.1±23.9 |
+| LunarLander | 98.8±94.7 | 101.3±57.8 | -210.4±84.0 |
 
-InnerNet wins LunarLander (+18% vs ReLU) with 30 seeds. SwiGLU fails entirely on LunarLander (-249.7).
+InnerNet improves Acrobot over ReLU by 21.7 return points (paired t-test p=0.0036; Wilcoxon p=0.0195). On LunarLander, InnerNet and ReLU are statistically indistinguishable (-2.6 points, p=0.897), while both substantially outperform SwiGLU. We treat reinforcement learning as supporting rather than central evidence because variance remains high.
 
 ## 9. Where InnerNet Does Not Help
 
 | Experiment | Result | Interpretation |
 |------------|--------|---------------|
 | ResNet (all positions) | Neutral | Post-skip activation redundant with residual path |
-| CNN at very small scale (×0.25) | Worse (-5%) | Channel-pairing overhead dominates when model is tiny |
+| CNN at very small scale (×0.25) | High-variance, no reliable difference | The mean reversal is driven by one failed seed; paired differences are -11.04/+0.74/-0.10 points (p=0.457) |
 
 ## Reproducibility and Statistical Provenance
 
-All structured local experiment artifacts are indexed by a canonical manifest (`scripts/build_result_manifest.py`) and aggregated by scientific configuration, condition, and run outcome rather than directory name (`scripts/summarize_result_manifest.py`). The audit includes unified-runner artifacts and standalone deploy, Sequential-MNIST, and warm-start results, including epoch-wise `ivs_d128_v2` branches: 1,132 metric rows from 474 experiment directories, with 399 raw-verified and 75 incomplete experiments. It produces 209 reportable groups with raw seed values, both sample and population standard deviations, and no unresolved within-configuration seed conflicts. Failed/NaN runs remain explicit rather than being silently removed; for example, the constrained Sequential-MNIST model has an eight-seed successful group at 98.435% (sample SD 0.236%; population SD 0.220%) and a separately retained NaN run. A single reused experiment name (`mlp_mnist_relu`) was detected and separated into its unmatched 64-width and parameter-matched 112-width configurations.
+All structured local experiment artifacts are indexed by a canonical manifest (`scripts/build_result_manifest.py`) and aggregated by scientific configuration, condition, and run outcome rather than directory name (`scripts/summarize_result_manifest.py`). The audit includes unified-runner artifacts and standalone deploy, Sequential-MNIST, warm-start, and PPO results: 1,602 metric rows from 477 experiment directories, with 402 raw-verified and 75 incomplete experiments. It produces 238 reportable groups with raw seed values, both sample and population standard deviations, and no unresolved within-configuration seed conflicts. PPO runs include a per-seed mean over the final 20 recorded evaluation points, preventing a single seed's terminal log value from being mistaken for the cross-seed result. Failed/NaN runs remain explicit rather than being silently removed; for example, the constrained Sequential-MNIST model has an eight-seed successful group at 98.435% (sample SD 0.236%; population SD 0.220%) and a separately retained NaN run. A single reused experiment name (`mlp_mnist_relu`) was detected and separated into its unmatched 64-width and parameter-matched 112-width configurations.
 
-Fifteen headline comparisons are registered in `config/audit/core_comparisons.yaml` and regenerated as `results/audit/core_comparisons.csv`. For InnerNet versus GELU at d=64/128/192/256, paired-t p-values are 0.00022/0.05095/0.361/0.173; SwiGLU versus InnerNet at d=128 gives p=0.00917. CNN, autoencoder, and large-MLP headline comparisons have paired-t p<0.014. Because a two-sided Wilcoxon test with n=5 has coarse resolution (typically a minimum p=0.0625), formal reporting includes raw seeds, bootstrap confidence intervals, parametric and non-parametric tests, and Cohen's dz rather than relying on a single threshold.
+Nineteen headline comparisons are registered in `config/audit/core_comparisons.yaml` and regenerated as `results/audit/core_comparisons.csv`. For InnerNet versus GELU at d=64/128/192/256, paired-t p-values are 0.00022/0.05095/0.361/0.173; SwiGLU versus InnerNet at d=128 gives p=0.00917. CNN, autoencoder, and large-MLP headline comparisons have paired-t p<0.014. PPO Acrobot gives p=0.0036 for InnerNet versus ReLU, whereas LunarLander gives p=0.897. Because a two-sided Wilcoxon test with n=5 has coarse resolution (typically a minimum p=0.0625), formal reporting includes raw seeds, bootstrap confidence intervals, parametric and non-parametric tests, and Cohen's dz rather than relying on a single threshold.
 
-The registered headline cells in RESULTS_CN/EN are also checked directly against the canonical summary; all 40 currently registered cells match. Audit artifacts: `results/audit/grouped_metric_summary.csv`, `metric_conflicts.csv`, `experiment_variant_collisions.csv`, `core_comparisons.csv`, and `document_consistency.csv`.
+The registered headline cells in RESULTS_CN/EN are also checked directly against the canonical summary; all 58 currently registered cells match. Audit artifacts: `results/audit/grouped_metric_summary.csv`, `metric_conflicts.csv`, `experiment_variant_collisions.csv`, `core_comparisons.csv`, and `document_consistency.csv`.
 
 ## Distilled-Operator Deployment
 

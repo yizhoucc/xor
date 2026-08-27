@@ -18,7 +18,7 @@
 
 ### 实验事实速查
 
-确认有效的：CNN、AE、Transformer FFN（d=64~256 全赢 GELU）、LSTM WikiText-2、PPO、ResNet internal-only、Seq-MNIST 加法记忆 + InnerNet（成功 runs ~98%）。
+确认有效的：CNN、AE、Transformer FFN（d=64~256 全赢 GELU）、LSTM WikiText-2、PPO Acrobot、ResNet internal-only、Seq-MNIST 加法记忆 + InnerNet（成功 runs ~98%）。
 不好用的：ResNet 全换（skip connection 冗余）、LSTM PTB、大模型从头训（GPT d=256 反转）、大模型直接替换（Qwen -9%）。
 
 **关键发现**：InnerNet 容量上限 ≥ SwiGLU（warm-start 10/11 赢或持平，ivs_d128 追平），从头训大模型输是优化问题。模型越大差距越大（d=64 赢 3.3%, d=256 输 5.2%）。适合"发现 + warm-start finetune"，不适合大模型从头训或直接部署替换。
@@ -376,13 +376,15 @@ Configs: `config/experiments/resnet_cifar_internal_2arg.yaml`
 
 ## 8. PPO RL
 
+统一指标：先对每个 seed 的最后20个 recorded evaluation points 求均值，再跨 seeds 汇总；表中为 mean±population SD。CartPole/Acrobot 为10 seeds，LunarLander为30 seeds。
+
 | 环境 | InnerNet | ReLU | SwiGLU |
 |------|----------|------|--------|
-| CartPole | 499.9 | 500.0 | 500.0 |
-| Acrobot | **-75.3** | -79.8 | -81.7 |
-| LunarLander 30s | **187.6** | 158.8 | -249.7 |
+| CartPole | 488.6±9.8 | 493.8±4.5 | 476.5±4.0 |
+| Acrobot | **-90.1±15.2** | -111.8±16.0 | -199.1±23.9 |
+| LunarLander | 98.8±94.7 | 101.3±57.8 | -210.4±84.0 |
 
-30 seeds 后 InnerNet 赢了 LunarLander。
+Acrobot 上 InnerNet 比 ReLU 高21.7 return points（paired-t p=0.0036，Wilcoxon p=0.0195）。LunarLander 上 InnerNet 与 ReLU 没有差异（-2.6 points，paired-t p=0.897），但都显著优于 SwiGLU。旧文档中的187.6/158.8/-249.7是三个 run 各自**最后一个 seed**的日志 tail-average，不是30-seed总体均值，已撤回。
 
 ## 9. 不好用的
 
@@ -408,18 +410,18 @@ GPT v4 (3/5 seeds)、free_init_v2 (Wiki 3/3, MLM 2/3)、scratch_init (2.5/5) 时
 
 ## 统计与可追溯性（2026-08-27）
 
-- `scripts/build_result_manifest.py` 已扫描 474 个实验目录，得到 1132 行结构化指标：399 个实验 raw-verified，75 个 incomplete，0 个 completed-no-result；deploy、Seq-MNIST 和 warm-start 脚本自产的 `results.p/results.json` 也已纳入，包括 `ivs_d128_v2` 的逐 epoch 分支。
-- `scripts/summarize_result_manifest.py` 按科学配置、condition 与 run status 自动去重并汇总 mean、sample SD、population SD、raw seeds/values；当前 209 个指标组全部可汇报，0 个同配置 seed 数值冲突。
+- `scripts/build_result_manifest.py` 已扫描 477 个实验目录，得到 1602 行结构化指标：402 个实验 raw-verified，75 个 incomplete，0 个 completed-no-result；deploy、Seq-MNIST、warm-start 与 PPO 脚本自产的结果均已纳入，PPO 额外记录每个 seed 的最后20个评估点均值。
+- `scripts/summarize_result_manifest.py` 按科学配置、condition 与 run status 自动去重并汇总 mean、sample SD、population SD、raw seeds/values；当前 238 个指标组全部可汇报，0 个同配置 seed 数值冲突。
 - NaN run 不再与成功 run 混算：SeqMinGatedRNN 成功组 8 seeds 自动复算为 **98.435%**（sample SD 0.236%，population SD 0.220%），另保留 1 个 NaN seed 的独立记录。
 - 自动发现 1 个同名配置碰撞：`mlp_mnist_relu` 同时指 64-width 未参数匹配版（seed1234=85.63%）和 112-width 参数匹配版（seed1234=91.27%，其余 seeds 同组）。两者现在按配置签名分开，不再混算。
-- 15 项核心比较已由 `config/audit/core_comparisons.yaml` 注册并自动复算。Transformer d=64/128/192/256 的 InnerNet-vs-GELU paired-t p 分别为 **0.00022 / 0.05095 / 0.361 / 0.173**；d=128 SwiGLU-vs-InnerNet p=**0.00917**。CNN、AE、Big-MLP headline 的 paired-t 均 <0.014。
+- 19 项核心比较已由 `config/audit/core_comparisons.yaml` 注册并自动复算。Transformer d=64/128/192/256 的 InnerNet-vs-GELU paired-t p 分别为 **0.00022 / 0.05095 / 0.361 / 0.173**；d=128 SwiGLU-vs-InnerNet p=**0.00917**。CNN、AE、Big-MLP headline 的 paired-t 均 <0.014；PPO Acrobot InnerNet-vs-ReLU p=0.0036，LunarLander p=0.897。
 - 小样本解释：n=5 时双侧 Wilcoxon 的离散最小值通常是 0.0625，因此不单看“p<0.05”；正式报告同时给 raw seeds、bootstrap CI、paired-t/Wilcoxon 和 Cohen's dz。
-- `scripts/check_document_claims.py` 已把 RESULTS_CN/EN 的40个已注册 headline table cells 与 canonical summary 自动对照，当前 **40/40 match**。
-- 产物：`results/audit/grouped_metric_summary.csv`、`metric_conflicts.csv`、`experiment_variant_collisions.csv`、`core_comparisons.csv`、`document_consistency.csv`、`deploy_analysis.json`；24 个审计/统计单元测试全部通过。
+- `scripts/check_document_claims.py` 已把 RESULTS_CN/EN 的58个已注册 headline table cells 与 canonical summary 自动对照，当前 **58/58 match**。
+- 产物：`results/audit/grouped_metric_summary.csv`、`metric_conflicts.csv`、`experiment_variant_collisions.csv`、`core_comparisons.csv`、`document_consistency.csv`、`deploy_analysis.json`；27 个审计/统计单元测试全部通过。
 
 ## 总结
 
-有效的：**CNN (+0.4~4.6%)，AE (-43%)，TF FFN (-0.8~3.3% d=64~256)，LSTM WikiText-2 (-6.2%)，ResNet internal-only (+1.5%)，参数省 55%，PPO LunarLander (+18%)，Warm-start 10/11 赢或持平，Multiply-init MLM -16.6%**。
+有效的：**CNN (+0.4~4.6%)，AE (-43%)，TF FFN (-0.8~3.3% d=64~256)，LSTM WikiText-2 (-6.2%)，ResNet internal-only (+1.5%)，参数省 55%，PPO Acrobot (+21.7 return points)，Warm-start 10/11 赢或持平，Multiply-init MLM -16.6%**。
 
 没用的：ResNet 全换（持平），MLM 从头训（差），LSTM/RNN PTB（差），GPT d=256 从头训（输 5%），Qwen 0.5B 直接替换（-9%），从头训一致输 SwiGLU。
 

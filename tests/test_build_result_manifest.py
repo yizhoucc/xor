@@ -78,6 +78,20 @@ class BuildResultManifestTest(unittest.TestCase):
             self.assertEqual((best["value"], best["selected_epoch"]), (8.0, 2))
             self.assertEqual((final["value"], final["selected_epoch"]), (9.0, 3))
 
+    def test_rl_curves_include_tail_mean(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "exp"
+            run = root / "run_rl"
+            run.mkdir(parents=True)
+            _write_config(run, task_type="ppo")
+            with (run / "rl_results.p").open("wb") as handle:
+                pickle.dump({"seeds": [42], "all_scores": [list(range(21))]}, handle)
+
+            _, metrics = build_manifest(root)
+            tail = next(row for row in metrics if row["metric"] == "mean_last20_eval_score")
+            self.assertEqual(tail["selection"], "mean_last_20_recorded_epochs")
+            self.assertAlmostEqual(tail["value"], 10.5)
+
     def test_completed_directory_without_result_is_flagged(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "exp"

@@ -74,3 +74,23 @@ comparisons:
     reference: {exp_name: mlp_mnist_big_relu, metric: test_accuracy}
     paired: true
     lower_better: false
+  - name: ppo_lunarlander_30s_innernet_vs_relu
+    condition: {exp_name: ppo_lunarlander_2arg_30s, metric: mean_last20_eval_score}
+    reference: {exp_name: ppo_lunarlander_relu_30s, metric: mean_last20_eval_score}
+    paired: true
+    lower_better: false
+  - name: ppo_lunarlander_30s_innernet_vs_swiglu
+    condition: {exp_name: ppo_lunarlander_2arg_30s, metric: mean_last20_eval_score}
+    reference: {exp_name: ppo_lunarlander_swiglu_30s, metric: mean_last20_eval_score}
+    paired: true
+    lower_better: false
+  - name: ppo_acrobot_innernet_vs_relu
+    condition: {exp_name: ppo_acrobot_2arg, metric: mean_last20_eval_score}
+    reference: {exp_name: ppo_acrobot_relu, metric: mean_last20_eval_score}
+    paired: true
+    lower_better: false
+  - name: ppo_cartpole_innernet_vs_relu
+    condition: {exp_name: ppo_cartpole_2arg, metric: mean_last20_eval_score}
+    reference: {exp_name: ppo_cartpole_relu, metric: mean_last20_eval_score}
+    paired: true
+    lower_better: false

@@ -7,7 +7,7 @@
 - 原论文协议已核对：原论文按总参数量调整 baseline 宽度；本项目 MLP/CNN 参数匹配思路一致。Transformer 现有比较是 same-width 而非 total-parameter-matched，这只限制性能增益措辞，不影响 SwiGLU-like interaction 的发现结论。
 - 原论文同样没有部署闭环，只通过函数拟合和结构统计汇报发现；当前不新增部署实验。
 - 配对统计工具已完成：新增 paired t-test、Wilcoxon、Cohen's dz、bootstrap CI 和非有限 pair 报告，并保留独立样本模式。5-seed same-width Transformer 示例中，`GELU-InnerNet=+1.558 PPL`（paired-t p=0.05095），`SwiGLU-InnerNet=-2.280 PPL`（p=0.00917）；正式结果需同时报告 raw seeds 和非参数检验。
-- 本地结果 inventory/manifest 已生成：474 个实验、1132 行指标；**399 raw-verified、75 incomplete、0 completed-no-result**。已纳入统一 runner 之外的 deploy、Seq-MNIST 与 warm-start `results.p/results.json`，包括 `ivs_d128_v2` 的逐 epoch 分支。自动分组得到 209 个可汇报指标组、0 个同配置 seed 冲突；另检测到 1 个实验命名碰撞（`mlp_mnist_relu` 同名但分别为 64-width 未匹配版与 112-width 参数匹配版）。
+- 本地结果 inventory/manifest 已生成：477 个实验、1602 行指标；**402 raw-verified、75 incomplete、0 completed-no-result**。已纳入统一 runner 之外的 deploy、Seq-MNIST、warm-start 与 PPO 结果；PPO 现在显式记录每个 seed 的最后20个评估点均值。自动分组得到 238 个可汇报指标组、0 个同配置 seed 冲突；另检测到 1 个实验命名碰撞（`mlp_mnist_relu` 同名但分别为 64-width 未匹配版与 112-width 参数匹配版）。
 - ✅ **SSH 取证已完成（Claude，2026-07-26）**：
   - CNN CIFAR-10 2-arg seed 42 已从集群拉回，`test_accuracy=0.7969`（**79.69%**，非之前反推的 79.68%），日志确认，现为 **raw-verified**。五个 seed 齐全，mean=78.57%（popSD 0.74 / sampleSD 0.82）。
   - 4 个旧 job 终态：547111 FFN deploy **TIMEOUT**（未完成，innernet 仅 4 seed、distilled 空）；547112 CNN deploy COMPLETED；547208 Seq-MNIST 诊断 COMPLETED；547209 bark COMPLETED。队列现已空。
@@ -165,7 +165,7 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 |---|------|------|------|
 | **P1** | **表面定量提炼** | ⏳ causal matrix v2 运行中 | 初步结果显示 host-dependent：SwiGLU host → SwiGLU-like，Bilinear host → pure `a*b`。有效矩阵现为 5 seeds × Bilinear joint/frozen × random/multiply，以及 5 seeds × SwiGLU joint × 4 init；共享 host checkpoint、可续跑，并排除已知不兼容节点。当前 6/10 host 已完成，12/20 probes 已启动；664215 的节点级 CUDA 失败已由 664238 替代，无未处理失败。`scripts/analyze_causal_matrix.py` 已就绪，结果落盘后自动检查 40/40 conditions 并汇总 PPL、surface R² 与 operator votes。 |
 | **P2** | **Seq-MNIST 功能与稳定性边界** | ✅ 约束实验完成 | 去掉 `W_c` 后 8/9 实际训练成功，98.44±0.22%，1 NaN（另 1 infra OOM），参数从37K降至21K。inner2 gate R² 0.447±0.263，与旧设计约0.43±0.31相同：功能结果增强，机制仍不可辨识。 |
-| **P3** | **结果审计与统计严谨性** | ✅ 工具链完成；等待 P1 新结果 | canonical manifest 已覆盖统一 runner + deploy/Seq-MNIST/warm-start script-native 结果；自动分组/冲突报告、15项预注册核心比较、文档一致性检查及deploy trade-off分析完成（24 tests PASS）。当前209/209科学配置/状态组可汇报，0个同配置seed冲突；RESULTS_CN/EN 的40个已注册 headline cells 与 manifest **40/40一致**。NaN runs 与 success runs 显式分组（SeqMin成功组8 seeds=98.435%，NaN组1 seed）。causal v2 完成并拉回后只需重跑生成链并补注册项。 |
+| **P3** | **结果审计与统计严谨性** | ✅ 工具链完成；等待 P1 新结果 | canonical manifest 已覆盖统一 runner + deploy/Seq-MNIST/warm-start/PPO script-native 结果；自动分组/冲突报告、19项预注册核心比较、文档一致性检查及deploy trade-off分析完成（27 tests PASS）。当前238/238科学配置/状态组可汇报，0个同配置seed冲突；RESULTS_CN/EN 的58个已注册 headline cells 与 manifest **58/58一致**。NaN runs 与 success runs 显式分组。causal v2 完成并拉回后只需重跑生成链并补注册项。 |
 
 ### 🔴 Critical
 
@@ -196,7 +196,7 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 | U12 | GPT Transformer 2arg 卡死 | ✅ 被 U13/GPT v4 取代 |
 | U13 | Transformer 全规模 SwiGLU 对比 | ⏳ d=64/128/192/PTB ✅。GPT d=256: GELU ~72.6 > SwiGLU ~74.5 > InnerNet ~76.2（3/5 seeds, 时间到）。大模型从头训 InnerNet 反转为劣势 |
 | U14 | LSTM 2×2 消融多数据集 | ⏳ PTB ✅。Wiki-103/CNN-DM 时间到未完成，搁置 |
-| U15 | RL 加 seeds + 只报 PPO | ✅ LunarLander 30s: InnerNet 187.6 > ReLU 158.8 > SwiGLU -249.7。InnerNet 赢（10 seeds 时输，30 seeds 翻了） |
+| U15 | RL 加 seeds + 只报 PPO | ✅ 已按30-seed原始曲线纠正 | LunarLander 最后20个评估点均值：InnerNet 98.8±94.7 vs ReLU 101.3±57.8（paired-t p=0.897，持平），两者均显著优于 SwiGLU -210.4±84.0。旧187.6/158.8/-249.7只是各自最后一个 seed 的日志值，已撤回。 |
 | U16 | Masked LM（类 BERT） | ✅ SwiGLU 93.83, GELU 101.39, InnerNet 124.82（差）。warm-start 大幅赢 |
 | U17 | Transformer Classic InnerNet FFN | ✅ Wiki 95.49 ≈ Semantic 95.26, PTB 208.81 ≈ Semantic 207.81。TF 上 Classic ≈ Semantic |
 | U18 | d=64 InnerNet 学到了什么 | ✅ | post-sharing seed42 的 SwiGLU fit R²=0.977（mult R²=0.568，poly3 R²=0.995），主项 `0.321·SiLU(a)·b`；`fig_d64_swiglu_surface.{png,pdf}` 展示 learned / fitted / residual |
@@ -230,9 +230,9 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 | # | 项目 | 状态 |
 |---|------|------|
 | M2 | 2D 激活函数表面可视化 | ✅ `fig2_2d_activation_surfaces.{png,pdf}` 已改为真实 CNN checkpoint；移除原来手写的“learned”示意面，避免把合成函数误作实验结果 |
-| M3 | CNN 小 scale 反转解释 | TODO（论文讨论） |
+| M3 | CNN 小 scale 反转解释 | ✅ n=3 不支持稳定反转：paired差值 -11.04/+0.74/-0.10pp，均值-3.47pp但 p=0.457；由单个 seed1234 崩落驱动，按高方差边界报告，不归因于固定机制 |
 | M4 | 回归 inconsistency 解释 | TODO |
-| M5 | RL inconsistency | TODO（降级 preliminary） |
+| M5 | RL inconsistency | ✅ 已统一指标并降级 | 全部按每 seed 最后20个 recorded eval 的均值汇总；Acrobot InnerNet 显著优于 ReLU，LunarLander 与 ReLU 持平且方差很大，RL 仅作扩展证据 |
 | M6 | PReLU/Swish baseline 对比 | TODO |
 
 ### 🟢 Minor
@@ -243,7 +243,7 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 | m2 | 论文原始数字复现对比表 | TODO |
 | m3 | 更多 LM dataset | ✅ PTB 已完成 |
 | m4 | 计算开销分析（FLOPs + wall-clock） | TODO |
-| m5 | 显著性检验 p-value | TODO |
+| m5 | 显著性检验 p-value | ✅ 19项预注册比较，paired/Welch t、Wilcoxon/Mann–Whitney、bootstrap CI 与效应量均自动生成 |
 | 24 | 参数效率出图 | 数据已有 |
 
 ---
@@ -282,7 +282,7 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 - AE: MNIST -39%, FashionMNIST -12%, CIFAR-10 -26%
 - Housing 回归: -5% MSE
 - Big MLP MNIST: +0.46%
-- PPO Acrobot: +5.6%
+- PPO Acrobot: 最后20个评估点均值 -90.1 vs ReLU -111.8（+21.7 return points，paired-t p=0.0036）
 - 参数效率: MLP w=128 ≈ ReLU w=256 (55% savings)
 - ResNet: InnerNet ≈ ReLU (skip connection 消除优势)
 

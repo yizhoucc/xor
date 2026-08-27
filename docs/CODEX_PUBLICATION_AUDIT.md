@@ -543,3 +543,4 @@ find /home/yizhouc3/xor/exp -type f \
 - 从 cluster 补拉11个已完成但本地缺结果的 CNN run（排除每个2–3GB的 `in2cells.p`，保留 config、日志、训练统计、测试结果和 checkpoints）：FMNIST 2-arg 现5/5 raw-verified，SVHN 1-arg现5/5，SVHN 2-arg现3/5。manifest 更新为474 experiments / 1132 rows / 399 raw-verified / 75 incomplete / 209 reportable groups，40/40文档检查与24 tests通过。
 - U18 完成：post-sharing d=64 seed42 checkpoint 的 scaled-SwiGLU R²=0.9767、mult R²=0.5683、poly3 R²=0.9948，主项系数0.3206；新增 learned/fitted/residual 三联图与机器可读拟合 JSON。
 - M2 证据修复：旧 fig2 的 InnerNet panel 是手写示意函数，却标成 learned；现改为从真实 CNN seed42 checkpoint 直接计算，保留 ReLU/SwiGLU 参照并删除合成表面。
+- PPO 审计纠错：拉回三个 LunarLander 30-seed `rl_results.p` 后确认，旧187.6/158.8/-249.7是各模型最后一个 seed 的日志 tail-average，不是30-seed均值。manifest 新增每-seed最后20个评估点均值；正确汇总为 InnerNet 98.8±94.7、ReLU 101.3±57.8、SwiGLU -210.4±84.0，InnerNet-vs-ReLU p=0.897。文档与核心统计已同步纠正。

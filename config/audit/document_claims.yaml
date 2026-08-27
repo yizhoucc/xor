@@ -105,3 +105,45 @@ checks:
     line_contains: "| **SeqMinGatedRNN"
     cells:
       2: {exp_name: seq_mnist_min_gated, metric: best_test_accuracy, run_status: success, format: mean_pm_pop, scale: 100, decimals: 2}
+  - id: cn_ppo_cartpole
+    file: RESULTS_CN.md
+    line_contains: "| CartPole |"
+    cells:
+      1: {exp_name: ppo_cartpole_2arg, metric: mean_last20_eval_score, format: mean_pm_pop, decimals: 1}
+      2: {exp_name: ppo_cartpole_relu, metric: mean_last20_eval_score, format: mean_pm_pop, decimals: 1}
+      3: {exp_name: ppo_cartpole_swiglu, metric: mean_last20_eval_score, format: mean_pm_pop, decimals: 1}
+  - id: cn_ppo_acrobot
+    file: RESULTS_CN.md
+    line_contains: "| Acrobot |"
+    cells:
+      1: {exp_name: ppo_acrobot_2arg, metric: mean_last20_eval_score, format: mean_pm_pop, decimals: 1}
+      2: {exp_name: ppo_acrobot_relu, metric: mean_last20_eval_score, format: mean_pm_pop, decimals: 1}
+      3: {exp_name: ppo_acrobot_swiglu, metric: mean_last20_eval_score, format: mean_pm_pop, decimals: 1}
+  - id: cn_ppo_lunarlander
+    file: RESULTS_CN.md
+    line_contains: "| LunarLander |"
+    cells:
+      1: {exp_name: ppo_lunarlander_2arg_30s, metric: mean_last20_eval_score, format: mean_pm_pop, decimals: 1}
+      2: {exp_name: ppo_lunarlander_relu_30s, metric: mean_last20_eval_score, format: mean_pm_pop, decimals: 1}
+      3: {exp_name: ppo_lunarlander_swiglu_30s, metric: mean_last20_eval_score, format: mean_pm_pop, decimals: 1}
+  - id: en_ppo_cartpole
+    file: RESULTS_EN.md
+    line_contains: "| CartPole |"
+    cells:
+      1: {exp_name: ppo_cartpole_2arg, metric: mean_last20_eval_score, format: mean_pm_pop, decimals: 1}
+      2: {exp_name: ppo_cartpole_relu, metric: mean_last20_eval_score, format: mean_pm_pop, decimals: 1}
+      3: {exp_name: ppo_cartpole_swiglu, metric: mean_last20_eval_score, format: mean_pm_pop, decimals: 1}
+  - id: en_ppo_acrobot
+    file: RESULTS_EN.md
+    line_contains: "| Acrobot |"
+    cells:
+      1: {exp_name: ppo_acrobot_2arg, metric: mean_last20_eval_score, format: mean_pm_pop, decimals: 1}
+      2: {exp_name: ppo_acrobot_relu, metric: mean_last20_eval_score, format: mean_pm_pop, decimals: 1}
+      3: {exp_name: ppo_acrobot_swiglu, metric: mean_last20_eval_score, format: mean_pm_pop, decimals: 1}
+  - id: en_ppo_lunarlander
+    file: RESULTS_EN.md
+    line_contains: "| LunarLander |"
+    cells:
+      1: {exp_name: ppo_lunarlander_2arg_30s, metric: mean_last20_eval_score, format: mean_pm_pop, decimals: 1}
+      2: {exp_name: ppo_lunarlander_relu_30s, metric: mean_last20_eval_score, format: mean_pm_pop, decimals: 1}
+      3: {exp_name: ppo_lunarlander_swiglu_30s, metric: mean_last20_eval_score, format: mean_pm_pop, decimals: 1}

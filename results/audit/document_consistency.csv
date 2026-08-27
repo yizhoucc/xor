@@ -39,3 +39,21 @@ cn_ae_mnist_innernet,RESULTS_CN.md,| MNIST | **0.0039** | 0.0068,1,0.0039,**0.00
 cn_ae_mnist_innernet,RESULTS_CN.md,| MNIST | **0.0039** | 0.0068,2,0.0068,0.0068,match,ae_mnist_relu,test_mse,5
 cn_ae_mnist_innernet,RESULTS_CN.md,| MNIST | **0.0039** | 0.0068,3,0.0059,0.0059,match,ae_mnist_relu_matched,test_mse,5
 cn_seqmin_success,RESULTS_CN.md,| **SeqMinGatedRNN,2,98.44±0.22,**98.44% ± 0.22%**,match,seq_mnist_min_gated,best_test_accuracy,8
+cn_ppo_cartpole,RESULTS_CN.md,| CartPole |,1,488.6±9.8,488.6±9.8,match,ppo_cartpole_2arg,mean_last20_eval_score,10
+cn_ppo_cartpole,RESULTS_CN.md,| CartPole |,2,493.8±4.5,493.8±4.5,match,ppo_cartpole_relu,mean_last20_eval_score,10
+cn_ppo_cartpole,RESULTS_CN.md,| CartPole |,3,476.5±4.0,476.5±4.0,match,ppo_cartpole_swiglu,mean_last20_eval_score,10
+cn_ppo_acrobot,RESULTS_CN.md,| Acrobot |,1,-90.1±15.2,**-90.1±15.2**,match,ppo_acrobot_2arg,mean_last20_eval_score,10
+cn_ppo_acrobot,RESULTS_CN.md,| Acrobot |,2,-111.8±16.0,-111.8±16.0,match,ppo_acrobot_relu,mean_last20_eval_score,10
+cn_ppo_acrobot,RESULTS_CN.md,| Acrobot |,3,-199.1±23.9,-199.1±23.9,match,ppo_acrobot_swiglu,mean_last20_eval_score,10
+cn_ppo_lunarlander,RESULTS_CN.md,| LunarLander |,1,98.8±94.7,98.8±94.7,match,ppo_lunarlander_2arg_30s,mean_last20_eval_score,30
+cn_ppo_lunarlander,RESULTS_CN.md,| LunarLander |,2,101.3±57.8,101.3±57.8,match,ppo_lunarlander_relu_30s,mean_last20_eval_score,30
+cn_ppo_lunarlander,RESULTS_CN.md,| LunarLander |,3,-210.4±84.0,-210.4±84.0,match,ppo_lunarlander_swiglu_30s,mean_last20_eval_score,30
+en_ppo_cartpole,RESULTS_EN.md,| CartPole |,1,488.6±9.8,488.6±9.8,match,ppo_cartpole_2arg,mean_last20_eval_score,10
+en_ppo_cartpole,RESULTS_EN.md,| CartPole |,2,493.8±4.5,493.8±4.5,match,ppo_cartpole_relu,mean_last20_eval_score,10
+en_ppo_cartpole,RESULTS_EN.md,| CartPole |,3,476.5±4.0,476.5±4.0,match,ppo_cartpole_swiglu,mean_last20_eval_score,10
+en_ppo_acrobot,RESULTS_EN.md,| Acrobot |,1,-90.1±15.2,**-90.1±15.2**,match,ppo_acrobot_2arg,mean_last20_eval_score,10
+en_ppo_acrobot,RESULTS_EN.md,| Acrobot |,2,-111.8±16.0,-111.8±16.0,match,ppo_acrobot_relu,mean_last20_eval_score,10
+en_ppo_acrobot,RESULTS_EN.md,| Acrobot |,3,-199.1±23.9,-199.1±23.9,match,ppo_acrobot_swiglu,mean_last20_eval_score,10
+en_ppo_lunarlander,RESULTS_EN.md,| LunarLander |,1,98.8±94.7,98.8±94.7,match,ppo_lunarlander_2arg_30s,mean_last20_eval_score,30
+en_ppo_lunarlander,RESULTS_EN.md,| LunarLander |,2,101.3±57.8,101.3±57.8,match,ppo_lunarlander_relu_30s,mean_last20_eval_score,30
+en_ppo_lunarlander,RESULTS_EN.md,| LunarLander |,3,-210.4±84.0,-210.4±84.0,match,ppo_lunarlander_swiglu_30s,mean_last20_eval_score,30
