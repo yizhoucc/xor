@@ -6,6 +6,7 @@ missing sources for follow-up. Pickle inputs are trusted project artifacts.
 """
 import argparse
 import csv
+import hashlib
 import json
 import math
 import numbers
@@ -37,6 +38,7 @@ INVENTORY_FIELDS = (
     "dataset",
     "config_seed",
     "config_hash",
+    "config_signature",
     "markers",
     "result_files",
     "audit_status",
@@ -57,8 +59,21 @@ METRIC_FIELDS = (
     "num_epochs",
     "source_file",
     "config_hash",
+    "config_signature",
     "audit_status",
 )
+
+VOLATILE_CONFIG_KEYS = {
+    "best_model",
+    "exp_dir",
+    "gpus",
+    "resume_model",
+    "run_id",
+    "save_dir",
+    "seed",
+    "test_model",
+    "use_gpu",
+}
 
 
 def _nested(mapping, *keys, default=""):
@@ -74,9 +89,32 @@ def _finite_number(value):
     return isinstance(value, numbers.Real) and not isinstance(value, bool) and math.isfinite(value)
 
 
-def _base_metadata(config, experiment_dir, config_hash):
+def _normalized_config(value):
+    if isinstance(value, dict):
+        return {
+            key: _normalized_config(item)
+            for key, item in sorted(value.items())
+            if key not in VOLATILE_CONFIG_KEYS
+        }
+    if isinstance(value, list):
+        return [_normalized_config(item) for item in value]
+    return value
+
+
+def _config_signature(config):
+    payload = json.dumps(_normalized_config(config), sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode()).hexdigest()
+
+
+def _base_metadata(config, experiment_dir, config_hash, config_signature):
     model = _nested(config, "model", "name")
-    dataset = _nested(config, "dataset", "name") or config.get("dataset_name", "")
+    dataset = (
+        _nested(config, "dataset", "name")
+        or _nested(config, "lm", "dataset")
+        or config.get("dataset_name", "")
+    )
+    if not dataset and config.get("task_type") == "language_model":
+        dataset = "wikitext"
     condition = model or config.get("condition", "") or config.get("exp_name", "")
     return {
         "experiment_dir": str(experiment_dir),
@@ -86,6 +124,7 @@ def _base_metadata(config, experiment_dir, config_hash):
         "dataset": dataset,
         "condition": condition,
         "config_hash": config_hash,
+        "config_signature": config_signature,
     }
 
 
@@ -204,7 +243,8 @@ def audit_experiment(config_path, root):
 
     hash_path = experiment_dir / "config_hash.txt"
     config_hash = hash_path.read_text().strip() if hash_path.exists() else ""
-    metadata = _base_metadata(config, relative_dir, config_hash)
+    config_signature = _config_signature(config)
+    metadata = _base_metadata(config, relative_dir, config_hash, config_signature)
     config_seed = config.get("seed", "")
     markers = [marker for marker in STAGE_MARKERS if (experiment_dir / marker).exists()]
     result_paths = [experiment_dir / name for name in KNOWN_RESULT_FILES if (experiment_dir / name).exists()]
@@ -238,6 +278,7 @@ def audit_experiment(config_path, root):
         "dataset": metadata["dataset"],
         "config_seed": config_seed,
         "config_hash": config_hash,
+        "config_signature": config_signature,
         "markers": ";".join(markers),
         "result_files": ";".join(path.name for path in result_paths),
         "audit_status": status,
@@ -258,7 +299,7 @@ def build_manifest(exp_root):
 
 def _write_csv(path, fieldnames, rows):
     with path.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer = csv.DictWriter(handle, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 

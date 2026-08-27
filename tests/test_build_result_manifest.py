@@ -5,7 +5,7 @@ from pathlib import Path
 
 import yaml
 
-from scripts.build_result_manifest import audit_experiment, build_manifest
+from scripts.build_result_manifest import _config_signature, audit_experiment, build_manifest
 
 
 def _write_config(directory, **overrides):
@@ -22,6 +22,26 @@ def _write_config(directory, **overrides):
 
 
 class BuildResultManifestTest(unittest.TestCase):
+    def test_config_signature_ignores_run_metadata_but_tracks_architecture(self):
+        base = {
+            "exp_name": "example",
+            "seed": 42,
+            "run_id": "a",
+            "save_dir": "exp/a",
+            "use_gpu": False,
+            "model": {"name": "MLP", "out_hidden_dim": [64, 64]},
+        }
+        rerun = {
+            **base,
+            "seed": 43,
+            "run_id": "b",
+            "save_dir": "exp/b",
+            "use_gpu": True,
+        }
+        wider = {**rerun, "model": {"name": "MLP", "out_hidden_dim": [112, 112]}}
+        self.assertEqual(_config_signature(base), _config_signature(rerun))
+        self.assertNotEqual(_config_signature(base), _config_signature(wider))
+
     def test_scalar_test_result_is_raw_verified(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "exp"
