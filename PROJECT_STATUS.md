@@ -70,7 +70,7 @@
 | **664224/198/201/204/207** | SwiGLU host seeds 42–46 | 5 | 5 COMPLETED | `/user_data/yizhouc3/xor_causal_v2/hosts/swiglu_seed*.pth` |
 | **664214/238/232/233/220/221/190/191/193/194** | Bilinear joint/frozen × random/multiply × 5 seeds | 10 | 8 COMPLETED / 2 TIMEOUT（joint s46、frozen s44） | `/user_data/yizhouc3/xor_causal_v2/probes/bilinear_*` |
 | **664225/226/236/200/202/203/205/206/208/209** | SwiGLU joint × 4 init × 5 seeds（每 job 2 init） | 10 | 10 COMPLETED | `/user_data/yizhouc3/xor_causal_v2/probes/swiglu_*` |
-| **677668/677669** | Bilinear joint s46 / frozen s44 完整重跑 | 2 | PENDING（Resources/Priority），48h limit | `/user_data/yizhouc3/xor_causal_v2/probes/*_retry` |
+| **677668/677669** | Bilinear joint s46 / frozen s44 完整重跑 | 2 | RUNNING，48h limit | `/user_data/yizhouc3/xor_causal_v2/probes/*_retry` |
 
 提交清单：`/user_data/yizhouc3/xor_causal_v2/submitted_20260827.tsv`。代码提交：`e801536`（host cache/resume/JSON）+ `963ea13`（隔离 worktree 支持）+ `9f82434`（每-job HF cache）。预期在调度后约 12–24h 完成；实际 wall time 取决于兼容 GPU 排队。
 
@@ -84,8 +84,8 @@ Bark：原完成通知 **664237** 已触发；两项补跑已重新发送启动�
 
 | Job IDs | 实验 | Seeds | 状态 | 续跑位置 |
 |---------|------|-------|------|----------|
-| **664241/664242 → 677670/677671** | CNN SVHN 2-arg | 44/45 | 原 jobs 因缺失 pretrain checkpoint 失败；标记已修复并重提，PENDING | `~/xor/exp/cnn_svhn_2arg_*` |
-| **664243–664246 → 677672–677675** | CNN FashionMNIST 1-arg | 42–45 | 原 jobs 同因失败；标记已修复并重提，PENDING | `~/xor/exp/cnn_fmnist_1arg_*` |
+| **664241/664242 → 677670/677671** | CNN SVHN 2-arg | 44/45 | 原 jobs 因缺失 pretrain checkpoint 失败；标记已修复，2/2 RUNNING | `~/xor/exp/cnn_svhn_2arg_*` |
+| **664243–664246 → 677672–677675** | CNN FashionMNIST 1-arg | 42–45 | 原 jobs 同因失败；标记已修复，2 RUNNING / 2 PENDING | `~/xor/exp/cnn_fmnist_1arg_*` |
 | **664254–664258** | CNN CIFAR-10 PReLU+LN | 1234/42–45 | ✅ COMPLETED：**76.76±0.22%** | `~/xor/exp/cnn_cifar_prelu_ln_*` |
 | **664259–664263** | CNN CIFAR-10 Swish+LN | 1234/42–45 | ✅ COMPLETED：**75.14±0.25%** | `~/xor/exp/cnn_cifar_swish_ln_*` |
 
@@ -183,10 +183,10 @@ Bark：原完成通知 **664237** 已触发；两项补跑已重新发送启动�
 
 | # | 项目 | 状态 |
 |---|------|------|
-| C1 | 补齐 5 seeds | ⏳ FMNIST 2arg 已拉回并验证 5/5；SVHN 2arg 仍为3/5。旧补跑因 checkpoint 缺失失败，已从 pretrain 重提（677670/677671） |
+| C1 | 补齐 5 seeds | ⏳ FMNIST 2arg 已拉回并验证 5/5；SVHN 2arg 仍为3/5。旧补跑因 checkpoint 缺失失败，已从 pretrain 重提，677670/677671运行中 |
 | C2 | CNN 参数公平对比 | ✅ ReLU matched 70.67% vs InnerNet 78.29% (同 127K) |
 | C3 | AE 参数匹配 | ✅ ReLU matched 0.0059 vs InnerNet 0.0039 (同 ~660K) |
-| C4 | 1-arg 系统对比 | ⏳ SVHN 1arg 原始结果已拉回并验证 5/5；FMNIST 1arg 仍为1/5。旧补跑因 checkpoint 缺失失败，已从 pretrain 重提（677672–677675） |
+| C4 | 1-arg 系统对比 | ⏳ SVHN 1arg 原始结果已拉回并验证 5/5；FMNIST 1arg 仍为1/5。旧补跑因 checkpoint 缺失失败，已从 pretrain 重提；677672/677673运行，677674/677675排队 |
 | C5 | ReLU+LN ablation | ✅ 4 数据集完成 |
 | M1 | 训练曲线 | ✅ `results/figures/fig_training_curves.{png,pdf}`；4-panel mean±sample-SD 图已生成，并排除同名的旧 MLP-MNIST width-64 baseline，使用参数匹配 width-112 版本 |
 
