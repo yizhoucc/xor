@@ -1,0 +1,44 @@
+{
+  "host": "swiglu",
+  "freeze": false,
+  "seed": 44,
+  "host_checkpoint": "/user_data/yizhouc3/xor_causal_v2/hosts/swiglu_seed44.pth",
+  "host_ppl": 78.25464053585016,
+  "probe_epochs": 10,
+  "conditions": {
+    "random": {
+      "status": "completed",
+      "ppl": [
+        77.37608460982065,
+        76.56538429187167,
+        75.65569495617802,
+        75.50795152168557,
+        74.49473305833855,
+        73.50784899305356,
+        72.9639815378782,
+        72.73796252283411,
+        73.180351752312,
+        72.65662173105642
+      ],
+      "best_ppl": 72.65662173105642,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s44_random_identity/inner_swiglu_joint_random_seed44.pth"
+    },
+    "identity": {
+      "status": "completed",
+      "ppl": [
+        77.25810481034887,
+        76.41998603249796,
+        75.79279386060301,
+        75.66407746742289,
+        74.43332525469982,
+        74.28435431142084,
+        73.38509529403144,
+        73.48736483963403,
+        72.57146142500683,
+        72.49905567364159
+      ],
+      "best_ppl": 72.49905567364159,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s44_random_identity/inner_swiglu_joint_identity_seed44.pth"
+    }
+  }
+}

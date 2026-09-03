@@ -47,6 +47,8 @@
 
 参数公平对比：同样 127K 参数，InnerNet 78.57% vs ReLU 70.67%，差 8 个点。
 
+补充标量激活基线（CIFAR-10 CNN+LN，宽度46/92/92/92，各5 seeds）：**PReLU 76.76±0.22%**，**Swish/SiLU 75.14±0.25%**。PReLU 比 ReLU+LN 高1.62点，但仍低于2-arg InnerNet 1.81点；Swish与ReLU+LN基本相同。这排除了“只要可学习斜率或换成平滑标量激活就能得到同等收益”的简单解释。Configs：`config/experiments/cnn_cifar_prelu_ln.yaml`、`cnn_cifar_swish_ln.yaml`；exp：`exp/cnn_cifar_{prelu,swish}_ln_20260827_*`。
+
 Configs: `config/experiments/cnn_cifar_2arg.yaml` 等，exp: `exp/cnn_cifar_2arg_*`
 
 2026-08-27 原始结果补拉：FashionMNIST 2-arg 已达到 5 seeds（90.91±0.29%，population SD），SVHN 1-arg 已达到 5 seeds（95.16±0.23%）；SVHN 2-arg 当前 3 seeds 为 95.016±0.005%，仍需补 seeds 44/45。对应 config：`config/experiments/cnn_fmnist_2arg.yaml`、`cnn_svhn_1arg.yaml`、`cnn_svhn_2arg.yaml`；exp 模式：`exp/cnn_{fmnist,svhn}_{1arg,2arg}_*`。
@@ -417,9 +419,9 @@ Acrobot 上 InnerNet 比 ReLU 高21.7 return points（paired-t p=0.0036，Wilcox
 
 | 实验 | 进度 |
 |------|------|
-| P1 causal matrix v2 | 10 个可复用 host checkpoint jobs + 20 个依赖 probe jobs 已提交；排除不兼容 RTX Pro 6000，输出到 `/user_data/yizhouc3/xor_causal_v2/` |
-| Critical CNN seeds | SVHN 2-arg seeds 44/45（664241/664242）与 FashionMNIST 1-arg seeds 42–45（664243–664246）已提交；从已有 pretrain checkpoint 续跑，完成通知 664247 |
-| PReLU/Swish baselines | CIFAR-10 CNN+LN 各5 seeds（664254–664263）已提交，依赖 Critical CNN jobs 后启动；完成通知 664264 |
+| P1 causal matrix v2 | 36/40 条件已有结构化结果；joint s46/frozen s44 原 jobs 超时，677668/677669 以48h limit补跑，完成通知677677 |
+| Critical CNN seeds | 原6 jobs 因 `PRETRAIN_DONE` 与缺失 checkpoint 不一致而失败；已保留旧目录、修复标记并从pretrain重提677670–677675，完成通知677676 |
+| PReLU/Swish baselines | ✅ 各5 seeds完成：PReLU+LN 76.76±0.22%，Swish+LN 75.14±0.25%；原始结果与checkpoints已拉回 |
 
 GPT v4 (3/5 seeds)、free_init_v2 (Wiki 3/3, MLM 2/3)、scratch_init (2.5/5) 时间到未完成，数据已够用。
 

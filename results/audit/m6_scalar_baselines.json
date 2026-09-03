@@ -1,0 +1,24 @@
+{
+  "task": "CIFAR-10 CNN scalar activation baselines with LayerNorm",
+  "dispersion": "population_sd",
+  "models": {
+    "prelu_ln": {
+      "config": "config/experiments/cnn_cifar_prelu_ln.yaml",
+      "experiment_pattern": "exp/cnn_cifar_prelu_ln_20260827_*",
+      "seeds": {"42": 0.7686, "43": 0.7661, "44": 0.7656, "45": 0.7662, "1234": 0.7714},
+      "mean_accuracy": 0.76758,
+      "population_sd": 0.002175
+    },
+    "swish_ln": {
+      "config": "config/experiments/cnn_cifar_swish_ln.yaml",
+      "experiment_pattern": "exp/cnn_cifar_swish_ln_20260827_*",
+      "seeds": {"42": 0.7518, "43": 0.7503, "44": 0.7518, "45": 0.7476, "1234": 0.7554},
+      "mean_accuracy": 0.75138,
+      "population_sd": 0.002529
+    }
+  },
+  "reference_results": {
+    "innernet_2arg": {"mean_accuracy": 0.7857, "population_sd": 0.0074},
+    "relu_layernorm": {"mean_accuracy": 0.7514, "population_sd": 0.0034}
+  }
+}

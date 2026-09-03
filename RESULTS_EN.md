@@ -36,6 +36,8 @@ This makes the large-scale behavior a boundary, not a contradiction: from-scratc
 
 **Parameter fairness (CIFAR-10)**: InnerNet (127K params, 78.57%) > ReLU matched (127K params, 70.67%). Same params, **+7.9% accuracy**.
 
+Additional scalar baselines use the same parameter-matched CNN width (46/92/92/92) with LayerNorm and five seeds. PReLU reaches **76.76±0.22%**, and Swish/SiLU reaches **75.14±0.25%**, versus **78.57±0.74%** for the two-argument InnerNet. Thus, neither a learnable scalar slope nor a smooth scalar activation accounts for the full gain. Configs: `config/experiments/cnn_cifar_prelu_ln.yaml`, `config/experiments/cnn_cifar_swish_ln.yaml`; experiment folders: `exp/cnn_cifar_{prelu,swish}_ln_20260827_*`.
+
 Configs: `config/experiments/cnn_cifar_2arg.yaml`, exp: `exp/cnn_cifar_2arg_*`
 
 Raw-result provenance is now complete for FashionMNIST 2-arg (5 seeds) and SVHN 1-arg (5 seeds). Configs: `config/experiments/cnn_fmnist_2arg.yaml` and `config/experiments/cnn_svhn_1arg.yaml`; experiment folders: `exp/cnn_fmnist_2arg_*` and `exp/cnn_svhn_1arg_*`.

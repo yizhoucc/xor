@@ -1,4 +1,4 @@
-# 项目状态 — 2026-08-27
+# 项目状态 — 2026-09-03
 
 ## 执行环境规则
 
@@ -60,7 +60,7 @@
 
 ## 集群状态（2026-08-27）
 
-### 当前运行：P1 causal matrix v2（30 jobs + 依赖）
+### 当前运行：P1 causal matrix v2 补齐（2 retries + Bark）
 
 旧矩阵因单个 job 重复训练 host、串行执行多个 init，出现 24h timeout；另有 8 个 job 落到 PyTorch 不支持的 RTX Pro 6000 节点。现已改成**共享 host checkpoint + probe 拆分 + 可续跑 + 结构化 `results.json`**，并用独立 worktree `/home/yizhouc3/xor-codex-audit` 保护 cluster 上有未提交改动的 `~/xor`。
 
@@ -68,27 +68,28 @@
 |---------|------|------|-----------|------|
 | **664213/231/219/189/192** | Bilinear host seeds 42–46 | 5 | 5 COMPLETED | `/user_data/yizhouc3/xor_causal_v2/hosts/bilinear_seed*.pth` |
 | **664224/198/201/204/207** | SwiGLU host seeds 42–46 | 5 | 5 COMPLETED | `/user_data/yizhouc3/xor_causal_v2/hosts/swiglu_seed*.pth` |
-| **664214/238/232/233/220/221/190/191/193/194** | Bilinear joint/frozen × random/multiply × 5 seeds | 10 | 9 RUNNING / 1 PENDING resources（664233） | `/user_data/yizhouc3/xor_causal_v2/probes/bilinear_*` |
-| **664225/226/236/200/202/203/205/206/208/209** | SwiGLU joint × 4 init × 5 seeds（每 job 2 init） | 10 | 10 RUNNING | `/user_data/yizhouc3/xor_causal_v2/probes/swiglu_*` |
+| **664214/238/232/233/220/221/190/191/193/194** | Bilinear joint/frozen × random/multiply × 5 seeds | 10 | 8 COMPLETED / 2 TIMEOUT（joint s46、frozen s44） | `/user_data/yizhouc3/xor_causal_v2/probes/bilinear_*` |
+| **664225/226/236/200/202/203/205/206/208/209** | SwiGLU joint × 4 init × 5 seeds（每 job 2 init） | 10 | 10 COMPLETED | `/user_data/yizhouc3/xor_causal_v2/probes/swiglu_*` |
+| **677668/677669** | Bilinear joint s46 / frozen s44 完整重跑 | 2 | PENDING（Resources/Priority），48h limit | `/user_data/yizhouc3/xor_causal_v2/probes/*_retry` |
 
 提交清单：`/user_data/yizhouc3/xor_causal_v2/submitted_20260827.tsv`。代码提交：`e801536`（host cache/resume/JSON）+ `963ea13`（隔离 worktree 支持）+ `9f82434`（每-job HF cache）。预期在调度后约 12–24h 完成；实际 wall time 取决于兼容 GPU 排队。
 
-Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前矩阵全部有效 jobs，结束后自动提醒拉取和分析结果。
+Bark：原完成通知 **664237** 已触发；两项补跑已重新发送启动通知，完成通知 job **677677** 已挂。当前已有 **18/20 probe results.json、36/40 条件**；已完成的 host/final checkpoints 与结果已拉回 `exp/causal_matrix_v2/`。
 
 启动异常与处置：首批 host 664180/183/186 在 L40S 上因共享 HuggingFace cache 的 NFS `Stale file handle` 失败；已在 `9f82434` 改为每-job `/tmp` cache。664195/664216、probe 664199 和 frozen probe 664215 在 Titan RTX 节点 `mind-1-24` 出现 CUDA illegal/misaligned address；664236 替代664199，**664238 替代664215**。两个 causal Slurm 脚本现默认排除已知故障节点 `mind-1-19-[1-2],mind-1-24`，失败 job 的依赖均已替换，不影响实验设计。
 
 通用 `slurm_run*.sh` 也已支持 `XOR_CODE_DIR`/`XOR_RUN_DIR`、per-job HuggingFace cache 和故障节点排除；后续补 seed 可用隔离 worktree 的代码，同时复用 `~/xor/exp` 中已有阶段 checkpoint。
 
-### 当前运行：Critical CNN seed 补齐（6 jobs + Bark）
+### 当前运行：Critical CNN seed 补齐重跑（6 jobs + Bark）
 
 | Job IDs | 实验 | Seeds | 状态 | 续跑位置 |
 |---------|------|-------|------|----------|
-| **664241/664242** | CNN SVHN 2-arg | 44/45 | PENDING（Resources/Priority） | `~/xor/exp/cnn_svhn_2arg_*` |
-| **664243–664246** | CNN FashionMNIST 1-arg | 42–45 | PENDING（Priority） | `~/xor/exp/cnn_fmnist_1arg_*` |
-| **664254–664258** | CNN CIFAR-10 PReLU+LN | 1234/42–45 | PENDING；afterany 664241–664246 | `~/xor/exp/cnn_cifar_prelu_ln_*` |
-| **664259–664263** | CNN CIFAR-10 Swish+LN | 1234/42–45 | PENDING；afterany 664241–664246 | `~/xor/exp/cnn_cifar_swish_ln_*` |
+| **664241/664242 → 677670/677671** | CNN SVHN 2-arg | 44/45 | 原 jobs 因缺失 pretrain checkpoint 失败；标记已修复并重提，PENDING | `~/xor/exp/cnn_svhn_2arg_*` |
+| **664243–664246 → 677672–677675** | CNN FashionMNIST 1-arg | 42–45 | 原 jobs 同因失败；标记已修复并重提，PENDING | `~/xor/exp/cnn_fmnist_1arg_*` |
+| **664254–664258** | CNN CIFAR-10 PReLU+LN | 1234/42–45 | ✅ COMPLETED：**76.76±0.22%** | `~/xor/exp/cnn_cifar_prelu_ln_*` |
+| **664259–664263** | CNN CIFAR-10 Swish+LN | 1234/42–45 | ✅ COMPLETED：**75.14±0.25%** | `~/xor/exp/cnn_cifar_swish_ln_*` |
 
-提交清单：`/user_data/yizhouc3/xor_cnn_seed_completion_20260827.tsv` 与 `/user_data/yizhouc3/xor_m6_baselines_20260827.tsv`。使用隔离代码 `/home/yizhouc3/xor-codex-audit`；Critical seed补齐完成通知 job **664247**，M6 baseline完成通知 job **664264**。
+提交清单：`/user_data/yizhouc3/xor_cnn_seed_completion_20260827.tsv` 与 `/user_data/yizhouc3/xor_m6_baselines_20260827.tsv`。旧 CNN 目录错误地保留 `PRETRAIN_DONE`、但 checkpoint 已不存在；标记已可恢复地改名并从 pretrain 重跑。新 CNN 完成通知 job **677676**；M6 原完成通知 **664264** 已触发，10 个结果目录已拉回本地。
 
 ### 当前验证：cluster-only
 
@@ -174,7 +175,7 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 
 | # | 项目 | 状态 | 说明 |
 |---|------|------|------|
-| **P1** | **表面定量提炼** | ⏳ causal matrix v2 运行中 | 初步结果显示 host-dependent：SwiGLU host → SwiGLU-like，Bilinear host → pure `a*b`。有效矩阵现为 5 seeds × Bilinear joint/frozen × random/multiply，以及 5 seeds × SwiGLU joint × 4 init；共享 host checkpoint、可续跑，并排除已知不兼容节点。当前 10/10 host 已完成，19/20 probes 正在运行、1个等待资源；无未处理失败。多个 probe 已完成第一种 init 的10 epochs并开始第二种 init，尚未产出最终 `results.json`。`scripts/analyze_causal_matrix.py` 已就绪，结果落盘后自动检查 40/40 conditions 并汇总 PPL、surface R² 与 operator votes。 |
+| **P1** | **表面定量提炼** | ⏳ 36/40 条件完成；2 jobs 补跑中 | SwiGLU 10/10 probe jobs 全完成；Bilinear 8/10 完成，joint seed46 与 frozen seed44 在24h时限超时。677668/677669 已用独立 retry 目录和48h limit重跑，避免部分 checkpoint 被误判为完成。`scripts/analyze_causal_matrix.py` 将在40/40后统一汇总 PPL、surface R² 与 operator votes。 |
 | **P2** | **Seq-MNIST 功能与稳定性边界** | ✅ 约束实验完成 | 去掉 `W_c` 后 8/9 实际训练成功，98.44±0.22%，1 NaN（另 1 infra OOM），参数从37K降至21K。inner2 gate R² 0.447±0.263，与旧设计约0.43±0.31相同：功能结果增强，机制仍不可辨识。 |
 | **P3** | **结果审计与统计严谨性** | ✅ 工具链完成；等待 P1 新结果 | canonical manifest 已覆盖统一 runner + deploy/Seq-MNIST/warm-start/PPO script-native 结果；自动分组/冲突报告、24项预注册核心比较、文档一致性检查及deploy trade-off分析完成（31 tests PASS）。当前238/238科学配置/状态组可汇报，0个同配置seed冲突；RESULTS_CN/EN 的58个已注册 headline cells 与 manifest **58/58一致**。NaN runs 与 success runs 显式分组。causal v2 完成并拉回后只需重跑生成链并补注册项。 |
 
@@ -182,10 +183,10 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 
 | # | 项目 | 状态 |
 |---|------|------|
-| C1 | 补齐 5 seeds | ⏳ FMNIST 2arg 已拉回并验证 5/5；SVHN 2arg 已拉回 3/5，seeds 44/45 已提交（664241/664242） |
+| C1 | 补齐 5 seeds | ⏳ FMNIST 2arg 已拉回并验证 5/5；SVHN 2arg 仍为3/5。旧补跑因 checkpoint 缺失失败，已从 pretrain 重提（677670/677671） |
 | C2 | CNN 参数公平对比 | ✅ ReLU matched 70.67% vs InnerNet 78.29% (同 127K) |
 | C3 | AE 参数匹配 | ✅ ReLU matched 0.0059 vs InnerNet 0.0039 (同 ~660K) |
-| C4 | 1-arg 系统对比 | ⏳ SVHN 1arg 原始结果已拉回并验证 5/5；FMNIST 1arg 仍为 1/5，seeds 42–45 已提交（664243–664246） |
+| C4 | 1-arg 系统对比 | ⏳ SVHN 1arg 原始结果已拉回并验证 5/5；FMNIST 1arg 仍为1/5。旧补跑因 checkpoint 缺失失败，已从 pretrain 重提（677672–677675） |
 | C5 | ReLU+LN ablation | ✅ 4 数据集完成 |
 | M1 | 训练曲线 | ✅ `results/figures/fig_training_curves.{png,pdf}`；4-panel mean±sample-SD 图已生成，并排除同名的旧 MLP-MNIST width-64 baseline，使用参数匹配 width-112 版本 |
 
@@ -244,7 +245,7 @@ Bark：启动/异常通知已发送；完成通知 job **664237** 依赖当前�
 | M3 | CNN 小 scale 反转解释 | ✅ n=3 不支持稳定反转：paired差值 -11.04/+0.74/-0.10pp，均值-3.47pp但 p=0.457；由单个 seed1234 崩落驱动，按高方差边界报告，不归因于固定机制 |
 | M4 | 回归 inconsistency 解释 | ✅ Housing width sweep 显示容量交叉：w32/64/120 改善5.6/1.6/4.7%，w256/512 反转为-2.2/-4.5%；n=3，仅w64/120 paired-t<0.05，解释为小模型 inductive-bias 收益随容量消失，不作普适回归增益 claim |
 | M5 | RL inconsistency | ✅ 已统一指标并降级 | 全部按每 seed 最后20个 recorded eval 的均值汇总；Acrobot InnerNet 显著优于 ReLU，LunarLander 与 ReLU 持平且方差很大，RL 仅作扩展证据 |
-| M6 | PReLU/Swish baseline 对比 | ⏳ jobs 664254–664263 已提交；cluster验证通过 | CIFAR-10 CNN，参数匹配宽度46/92/92/92 + LayerNorm，PReLU/Swish各5 seeds；664268 已验证两份配置，训练依赖 Critical CNN jobs 完成后启动，Bark job 664264 |
+| M6 | PReLU/Swish baseline 对比 | ✅ 完成（各5 seeds） | CIFAR-10 CNN+LN：PReLU **76.76±0.22%**，Swish **75.14±0.25%**；均低于 InnerNet 78.57±0.74%，PReLU高于ReLU+LN 75.14±0.34%。原始结果/checkpoints已拉回 `exp/cnn_cifar_{prelu,swish}_ln_*`。 |
 
 ### 🟢 Minor
 
