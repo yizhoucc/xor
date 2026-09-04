@@ -55,7 +55,7 @@ Configs: `config/experiments/cnn_cifar_2arg.yaml` 等，exp: `exp/cnn_cifar_2arg
 
 二维激活对比图 `results/figures/fig2_2d_activation_surfaces.{png,pdf}` 的 InnerNet panel 现直接读取 `results/figures/inner_weights_cnn_seed42.pth`，不再使用手写示意函数。
 
-**与原论文 Figure 4d 的正式核对**：原论文仅给曲线、没有分类数字表；按图读近似值比较，我们在 MLP-MNIST、MLP-CIFAR-10、CNN-MNIST 上基本复现其绝对水平和 learned-activation 优于 ReLU 的方向。CNN-CIFAR-10 的方向仍成立，但我们的 2-arg/1-arg/ReLU+LN 为78.57/81.02/75.14%，低于论文图读约85.0/84.5/82.5%，且两边都不支持“2-arg始终优于1-arg”。完整协议、近似值边界和 AutoAttack 原表见 `docs/paper_results.md`。
+**与原论文 Figure 4d 的正式核对**：原论文仅给曲线、没有分类数字表；按图读近似值比较，我们在 MLP-MNIST、MLP-CIFAR-10、CNN-MNIST 上基本复现其绝对水平和 learned-activation 优于 ReLU 的方向。CNN-CIFAR-10 的方向仍成立，但我们的 2-arg/1-arg/ReLU+LN 为78.57/81.02/75.14%，低于论文图读约85.0/84.5/82.5%，且两边都不支持“2-arg始终优于1-arg”。完整协议、近似值边界和 AutoAttack 原表见 `docs/paper_results.md`；对照图见 `results/figures/fig_original_reproduction_comparison.{png,pdf}`。
 
 多 seed 训练曲线见 `results/figures/fig_training_curves.pdf`（MLP/CNN × MNIST/CIFAR-10，mean±sample SD）。图中 MLP-MNIST ReLU 使用参数匹配的 width-112 配置，已排除同名旧 width-64 run，避免把两套架构混入方差带。
 

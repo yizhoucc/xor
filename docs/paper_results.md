@@ -77,6 +77,8 @@ Yoon, Orhan, Kim, Pitkow (2021), arXiv:2110.06871v2
 
 结论：四个设置都保留了 learned activation 相对 ReLU 的方向性优势，但不能声称完整数值复现。最明显的差距是 CNN CIFAR-10，三种模型都比论文曲线低约3.5–7.4个百分点，说明差异主要不只来自 InnerNet 本身，还涉及数据处理、实现或训练协议。原论文 AutoAttack 数字和 CIFAR-10-C mCE 已核对，但当前标准化 pipeline 尚未重跑这两组，因此只作为原论文证据，不标记为本项目复现。
 
+可视化对照：`results/figures/fig_original_reproduction_comparison.{png,pdf}`。黑色横线为论文 Figure 4d 的图读近似值，柱和误差条为本项目 mean±sample SD。
+
 ---
 
 ## Table 1: AutoAttack 对抗鲁棒性
