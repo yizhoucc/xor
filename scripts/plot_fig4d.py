@@ -26,18 +26,20 @@ from plot_utils import (
 
 # Paper reference values (estimated from Figure 4d)
 PAPER_REFERENCE = {
-    'mlp_mnist_2arg': 98.0,
-    'mlp_mnist_1arg': 97.5,
-    'mlp_mnist_relu': 97.0,
-    'mlp_cifar_2arg': 52.5,
-    'mlp_cifar_1arg': 50.0,
-    'mlp_cifar_relu': 48.5,
-    'cnn_mnist_2arg': 99.0,
-    'cnn_mnist_1arg': 98.8,
-    'cnn_mnist_relu': 98.5,
-    'cnn_cifar_2arg': 72.5,
-    'cnn_cifar_1arg': 70.0,
-    'cnn_cifar_relu': 68.5,
+    # Figure 4d provides curves rather than a numeric table. These values are
+    # deliberately rounded visual readings of the end of session III.
+    'mlp_mnist_2arg': 98.1,
+    'mlp_mnist_1arg': 98.2,
+    'mlp_mnist_relu': 97.5,
+    'mlp_cifar_2arg': 53.0,
+    'mlp_cifar_1arg': 54.0,
+    'mlp_cifar_relu': 52.0,
+    'cnn_mnist_2arg': 99.4,
+    'cnn_mnist_1arg': 99.3,
+    'cnn_mnist_relu': 99.2,
+    'cnn_cifar_2arg': 85.0,
+    'cnn_cifar_1arg': 84.5,
+    'cnn_cifar_relu': 82.5,
 }
 
 

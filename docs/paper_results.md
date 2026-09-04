@@ -33,36 +33,49 @@ Yoon, Orhan, Kim, Pitkow (2021), arXiv:2110.06871v2
 ### MLP + MNIST (Session III, ~400 epochs)
 | 激活函数 | 大致 Test Accuracy |
 |---------|-------------------|
-| 2-arg (learned) | ~98% |
-| 1-arg (learned) | ~97.5% |
-| ReLU baseline | ~97% |
+| 2-arg (learned) | ~98.1% |
+| 1-arg (learned) | ~98.2% |
+| ReLU baseline | ~97.5% |
 
 ### MLP + CIFAR-10 (Session III, ~400 epochs)
 | 激活函数 | 大致 Test Accuracy |
 |---------|-------------------|
-| 2-arg (learned) | ~52-53% |
-| 1-arg (learned) | ~50% |
-| ReLU baseline | ~48-49% |
+| 2-arg (learned) | ~53% |
+| 1-arg (learned) | ~54% |
+| ReLU baseline | ~52% |
 
 ### CNN + MNIST (Session III, ~400 epochs)
 | 激活函数 | 大致 Test Accuracy |
 |---------|-------------------|
-| 2-arg (learned) | ~99% |
-| 1-arg (learned) | ~98.8% |
-| ReLU baseline | ~98.5% |
+| 2-arg (learned) | ~99.4% |
+| 1-arg (learned) | ~99.3% |
+| ReLU baseline | ~99.2% |
 
 ### CNN + CIFAR-10 (Session III, ~400 epochs)
 | 激活函数 | 大致 Test Accuracy |
 |---------|-------------------|
-| 2-arg (learned) | ~72-73% |
-| 1-arg (learned) | ~70% |
-| ReLU baseline | ~68-69% |
+| 2-arg (learned) | ~85.0% |
+| 1-arg (learned) | ~84.5% |
+| ReLU baseline | ~82.5% |
 
 > **注意**: 以上数值是从论文 Figure 4d 的图表中目测读出的近似值，不是精确数字。
 > 论文的重点不是绝对精度，而是：
 > 1. **2-arg 学得更快**（training curves 更陡）
 > 2. **2-arg 渐近性能更好**
 > 3. **学到的激活函数收敛为 soft XOR（乘法门控）结构**
+
+### 正式复现对照（2026-09-03 审计）
+
+原论文 Figure 4d 只提供曲线，因此论文值保留到约0.5个百分点精度；我们的值来自 canonical manifest 的原始 `test_results.p`，均为5 seeds、population SD。为贴近论文训练协议，ReLU列使用带 LayerNorm 的 baseline，而不是不带LN的旧版本。
+
+| 任务 | 原论文 2-arg / 1-arg / ReLU（图读） | 我们 2-arg / 1-arg / ReLU+LN（精确） | 复现判断 |
+|------|------------------------------------|--------------------------------------|----------|
+| MLP MNIST | ~98.1 / 98.2 / 97.5 | 97.97±0.11 / 98.33±0.04 / 97.67±0.09 | 基本复现 |
+| MLP CIFAR-10 | ~53.0 / 54.0 / 52.0 | 51.86±0.19 / 54.08±0.36 / 51.25±0.12 | 基本复现；1-arg最佳 |
+| CNN MNIST | ~99.4 / 99.3 / 99.2 | 99.41±0.04 / 99.42±0.06 / 99.18±0.02 | 复现 |
+| CNN CIFAR-10 | ~85.0 / 84.5 / 82.5 | 78.57±0.74 / 81.02±1.02 / 75.14±0.34 | 方向复现、绝对值未复现；1-arg最佳 |
+
+结论：四个设置都保留了 learned activation 相对 ReLU 的方向性优势，但不能声称完整数值复现。最明显的差距是 CNN CIFAR-10，三种模型都比论文曲线低约3.5–7.4个百分点，说明差异主要不只来自 InnerNet 本身，还涉及数据处理、实现或训练协议。原论文 AutoAttack 数字和 CIFAR-10-C mCE 已核对，但当前标准化 pipeline 尚未重跑这两组，因此只作为原论文证据，不标记为本项目复现。
 
 ---
 

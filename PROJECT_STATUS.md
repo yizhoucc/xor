@@ -252,7 +252,7 @@ Bark：原完成通知 **664237** 已触发；两项补跑已重新发送启动�
 | # | 项目 | 状态 |
 |---|------|------|
 | m1 | ResNet baseline 提升 | 被 U2 覆盖 |
-| m2 | 论文原始数字复现对比表 | TODO |
+| m2 | 论文原始数字复现对比表 | ✅ 完成 | Figure 4d仅有曲线，已按约0.5pp精度图读并与canonical 5-seed结果对照：MLP-MNIST、MLP-CIFAR、CNN-MNIST基本复现；CNN-CIFAR仅方向复现、绝对值低3.5–7.4pp。详见`docs/paper_results.md`。 |
 | m3 | 更多 LM dataset | ✅ PTB 已完成 |
 | m4 | 计算开销分析（FLOPs + wall-clock） | TODO |
 | m5 | 显著性检验 p-value | ✅ 19项预注册比较，paired/Welch t、Wilcoxon/Mann–Whitney、bootstrap CI 与效应量均自动生成 |
