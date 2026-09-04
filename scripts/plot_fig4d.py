@@ -70,7 +70,7 @@ def plot_figure_4d(stats, show_paper_ref=True, show_ln=True):
     bar_width = 0.18
     group_width = n_bars * bar_width + 0.1
 
-    fig, ax = plt.subplots(1, 1, figsize=(5.5, 3.0))
+    fig, ax = plt.subplots(1, 1, figsize=(7.2, 3.8))
 
     x_centers = np.arange(n_groups) * (group_width + 0.3)
 
@@ -130,10 +130,13 @@ def plot_figure_4d(stats, show_paper_ref=True, show_ln=True):
     y_min = int(y_min // 10) * 10
     ax.set_ylim(bottom=y_min, top=105)
 
-    ax.legend(loc='lower left', ncol=2 if show_ln else 1)
+    ax.legend(
+        loc='upper center', bbox_to_anchor=(0.5, -0.14),
+        ncol=5 if show_ln else 4, frameon=False,
+    )
     ax.set_title('Classification Accuracy (Figure 4d)')
 
-    fig.tight_layout()
+    fig.tight_layout(rect=[0, 0.10, 1, 1])
     return fig
 
 
