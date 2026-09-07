@@ -60,14 +60,17 @@
 
 ## 集群状态（2026-09-07）
 
-U35 hidden-dim 消融已开始准备并进入 cluster-only 验证；此前 causal、CNN seed补齐、原论文对照图和计算成本profile均已完成。
+U35 hidden-dim 消融已通过 cluster-only 验证，三个 GPU 训练 job 正在运行；此前 causal、CNN seed补齐、原论文对照图和计算成本profile均已完成。
 
-### U35 InnerNet hidden-dim 消融：⏳ cluster-only 验证中
+### U35 InnerNet hidden-dim 消融：⏳ 3 个 GPU jobs RUNNING
 
-- **验证 job 682890**：CPU partition，当前 RUNNING；依次对 h=8/16/64 执行 `run.py --validate`，只检查模型构建与一次 forward/backward，不在本地运行。
+- **验证 job 682890**：✅ COMPLETED（1m42s，CPU partition）；h=8/16/64 均通过模型构建与一次 forward/backward，参数量分别为 1,186,569 / 1,186,601 / 1,186,793。
 - 新配置：`config/experiments/transformer_wikitext_2arg_innerh{8,16,64}.yaml`；均严格复用 canonical WikiText-2 d=128、10 epochs、5 seeds（42–46）协议，只改变共享 InnerNet 的 `inner_hidden`。
 - h=32 直接复用现有 canonical 5-seed 结果 **95.26±1.00 PPL**，不重复训练。
-- 验证通过后提交 3 个独立 GPU jobs；按历史同协议日志估算，每个 job 开始运行后约 11–14 小时，排队时间另计。实验回答“最小探针容量是否足够”；不把 hidden 缩小表述为已解决未融合小 MLP 的 kernel 开销。
+- **训练 jobs**：h=8 **682891**、h=16 **682892**、h=64 **682895**，均在 RTX 2080 Ti 上 RUNNING；输出目录分别匹配 `exp/transformer_wikitext_2arg_innerh{8,16,64}_*`。完成 Bark job **682896** 已用 `afterany` 依赖三项训练。
+- 首次 h=64 job **682893** 在启动 32 秒后取消：旧验证模式把 h=64 config hash 留在 `exp/_validate_tmp`，训练 dedup 因而误认临时目录为可续跑实验。该 62KB 临时目录已可恢复地归档到 `/user_data/yizhouc3/xor_u35_validation_artifacts/validate_tmp_682890_h64_collision`，没有结果纳入分析；清理后重提为 682895。
+- dedup 污染已在提交 **a44195f** 修复：验证目录改用系统临时目录，不再位于 `exp/`。修复验证 job **682897** 当前 RUNNING（CPU partition）。
+- 按历史同协议日志估算，每个训练 job 开始运行后约 11–14 小时。实验回答“最小探针容量是否足够”；不把 hidden 缩小表述为已解决未融合小 MLP 的 kernel 开销。
 
 ### P1 causal matrix v2：✅ 40/40 条件完成
 
@@ -236,7 +239,7 @@ Bark：原完成通知 **664237** 与补跑通知 **677677** 均已触发。当�
 | U32 | 参数量和推理速度 | ✅ | `deploy_analysis.json`：CNN InnerNet只比SwiGLU多129参数但慢6.59×；distilled快2.68×但仍比SwiGLU慢2.46×。FFN InnerNet约比SwiGLU慢6.03×（4 seeds；distilled未跑到） |
 | U33 | 提炼 InnerNet 为简单公式 | ✅ | d=128 poly3 R²=0.997；SwiGLU family R²=0.942。CNN poly3 R²=0.974、SwiGLU family R²=0.908。causal结果说明具体算子依赖host/basin，不能称普适SwiGLU吸引子 |
 | U34 | Qwen2.5-0.5B finetune | ✅ **负面结果** | 3 seeds: InnerNet ~80% vs SwiGLU ~89%。替换瞬间崩到 52-66%，恢复不回来。大模型直接替换不可行 |
-| U35 | InnerNet hidden dim 消融 | ⏳ 验证 job 682890 RUNNING | WikiText-2 d=128、5 seeds；h=8/16/64 新跑，h=32 复用 canonical 95.26±1.00 PPL。验证通过后提交三个独立 GPU jobs。 |
+| U35 | InnerNet hidden dim 消融 | ⏳ 682891/682892/682895 RUNNING | WikiText-2 d=128、5 seeds；h=8/16/64 新跑，h=32 复用 canonical 95.26±1.00 PPL。完成通知 682896；验证临时目录 dedup 修复验证 682897。 |
 | U36 | Non-shared warm-start | ⏳ PTB ✅ MLM ✅ | PTB 5/5 赢, CNN +3.12%, **MLM non-shared 15.63 vs SwiGLU 18.91 (-3.28)**。Wiki d=128 不在当前队列，本地无最终原始结果，不再标记为运行中。 |
 | U37 | Free-init (不同初始化) | ✅ Wiki 3/3, MLM 2/3 | Wiki: 4 种初始化全收敛到 ~71.7-72.6 vs SwiGLU ~77.3。MLM: random/multiply/swiglu_fitted/identity 都 ~15.7-16.1。**初始化不影响终点** |
 | U38 | Multiply-init 多任务 | ✅ 5/5 seeds | d=64 持平, d=128 -0.24, PTB -1.08, **MLM MultInit 15.93±0.21 vs SwiGLU 19.09±0.27 (-16.6%)** |
