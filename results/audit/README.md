@@ -37,6 +37,11 @@ observed cell, raw-source experiment, seed count, and match status.
 differences, paired tests, and same-GPU throughput ratios for the CNN and FFN
 deployment experiments.
 
+`causal_matrix_summary.json` and `causal_matrix_conditions.csv` contain the
+complete 40-condition host-basin causal matrix and closed-form surface fits.
+`compute_cost_profile.json` records same-process GPU FLOPs, latency, throughput,
+and peak-memory measurements for CNN and Transformer operators.
+
 Regenerate with:
 
 ```bash

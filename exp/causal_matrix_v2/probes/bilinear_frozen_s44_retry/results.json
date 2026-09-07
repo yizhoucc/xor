@@ -1,0 +1,44 @@
+{
+  "host": "bilinear",
+  "freeze": true,
+  "seed": 44,
+  "host_checkpoint": "/user_data/yizhouc3/xor_causal_v2/hosts/bilinear_seed44.pth",
+  "host_ppl": 80.78801031921678,
+  "probe_epochs": 10,
+  "conditions": {
+    "random": {
+      "status": "completed",
+      "ppl": [
+        80.77467718512807,
+        80.82835120289549,
+        80.80548671449468,
+        80.78675019099231,
+        80.82296456090764,
+        80.80287423104531,
+        80.78213970147296,
+        80.80657692483382,
+        80.82617287334953,
+        80.91405275806848
+      ],
+      "best_ppl": 80.77467718512807,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s44_retry/inner_bilinear_frozen_random_seed44.pth"
+    },
+    "multiply": {
+      "status": "completed",
+      "ppl": [
+        80.8571687613908,
+        80.8123850023034,
+        80.88565886404896,
+        80.88614556329945,
+        80.76391110275654,
+        80.79509874245764,
+        80.94286502362986,
+        80.78227721841716,
+        80.83957231702654,
+        80.81488614157591
+      ],
+      "best_ppl": 80.76391110275654,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s44_retry/inner_bilinear_frozen_multiply_seed44.pth"
+    }
+  }
+}

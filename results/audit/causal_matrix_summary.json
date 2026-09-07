@@ -1,0 +1,3355 @@
+{
+  "root": "/user_data/yizhouc3/xor_causal_v2",
+  "result_files": [
+    "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s42/results.json",
+    "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s43/results.json",
+    "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s44_retry/results.json",
+    "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s45/results.json",
+    "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s46/results.json",
+    "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s42/results.json",
+    "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s43/results.json",
+    "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s44/results.json",
+    "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s45/results.json",
+    "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s46_retry/results.json",
+    "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s42_multiply_swiglu/results.json",
+    "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s42_random_identity/results.json",
+    "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s43_multiply_swiglu/results.json",
+    "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s43_random_identity/results.json",
+    "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s44_multiply_swiglu/results.json",
+    "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s44_random_identity/results.json",
+    "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s45_multiply_swiglu/results.json",
+    "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s45_random_identity/results.json",
+    "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s46_multiply_swiglu/results.json",
+    "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s46_random_identity/results.json"
+  ],
+  "conditions": [
+    {
+      "host": "bilinear",
+      "mode": "frozen",
+      "seed": 42,
+      "init": "multiply",
+      "status": "completed",
+      "host_ppl": 79.20046176408975,
+      "best_ppl": 79.01093669923411,
+      "final_ppl": 79.12306460705942,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s42/inner_bilinear_frozen_multiply_seed42.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s42/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.9974099862737621,
+          "rmse": 0.42148470878601074,
+          "terms": {
+            "1": -0.046486951410770416,
+            "a*b": 0.982666015625
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.5615419311453362,
+          "rmse": 5.483966827392578,
+          "terms": {
+            "1": -0.046486951410770416,
+            "silu(a)*b": 1.0790976285934448
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.691354486159633,
+          "rmse": 4.601090431213379,
+          "terms": {
+            "1": -0.046486951410770416,
+            "silu(a)*b": 0.7501370310783386,
+            "silu(b)*a": 0.6143314242362976
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.9994971947851943,
+          "rmse": 0.18570803105831146,
+          "terms": {
+            "1": -0.18826964497566223,
+            "a": -0.10383326560258865,
+            "b": 0.071944460272789,
+            "a^2": 0.005753854289650917,
+            "a*b": 0.982666015625,
+            "b^2": 0.0110907768830657
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9997732979211543,
+          "rmse": 0.1246977299451828,
+          "terms": {
+            "1": -0.18826964497566223,
+            "a": -0.05961304530501366,
+            "b": 0.034301161766052246,
+            "a^2": 0.005753854289650917,
+            "a*b": 0.982666015625,
+            "b^2": 0.0110907768830657,
+            "a^3": -0.00026714944397099316,
+            "a^2*b": 0.004102818667888641,
+            "a*b^2": -0.00477277347818017,
+            "b^3": 0.00020524580031633377
+          }
+        }
+      },
+      "mult_r2": 0.9974099862737621,
+      "swiglu_r2": 0.5615419311453362,
+      "poly3_r2": 0.9997732979211543,
+      "operator": "multiply",
+      "operator_r2_margin": 0.43586805512842586
+    },
+    {
+      "host": "bilinear",
+      "mode": "frozen",
+      "seed": 42,
+      "init": "random",
+      "status": "completed",
+      "host_ppl": 79.20046176408975,
+      "best_ppl": 78.99169754603328,
+      "final_ppl": 79.0614386699521,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s42/inner_bilinear_frozen_random_seed42.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s42/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.9990653127195062,
+          "rmse": 0.2496500462293625,
+          "terms": {
+            "1": -0.026844114065170288,
+            "a*b": 0.9696917533874512
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.5497103526027305,
+          "rmse": 5.479544639587402,
+          "terms": {
+            "1": -0.026844114065170288,
+            "silu(a)*b": 1.052699089050293
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.6995697233643339,
+          "rmse": 4.475796699523926,
+          "terms": {
+            "1": -0.026844114065170288,
+            "silu(a)*b": 0.7042051553726196,
+            "silu(b)*a": 0.6508098840713501
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.9992367752864617,
+          "rmse": 0.22559252381324768,
+          "terms": {
+            "1": -0.11888832598924637,
+            "a": -0.018654953688383102,
+            "b": 0.024554796516895294,
+            "a^2": 0.004870858509093523,
+            "a*b": 0.9696917533874512,
+            "b^2": 0.006064543500542641
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9994852029127111,
+          "rmse": 0.1852748841047287,
+          "terms": {
+            "1": -0.11888832598924637,
+            "a": 0.01560689602047205,
+            "b": -0.0004466241807676852,
+            "a^2": 0.004870858509093523,
+            "a*b": 0.9696917533874512,
+            "b^2": 0.006064543500542641,
+            "a^3": -0.0001770065864548087,
+            "a^2*b": 0.004481240641325712,
+            "a*b^2": -0.0037519109901040792,
+            "b^3": -0.0008394295000471175
+          }
+        }
+      },
+      "mult_r2": 0.9990653127195062,
+      "swiglu_r2": 0.5497103526027305,
+      "poly3_r2": 0.9994852029127111,
+      "operator": "multiply",
+      "operator_r2_margin": 0.44935496011677567
+    },
+    {
+      "host": "bilinear",
+      "mode": "frozen",
+      "seed": 43,
+      "init": "multiply",
+      "status": "completed",
+      "host_ppl": 79.0895718948231,
+      "best_ppl": 79.00195879678841,
+      "final_ppl": 79.10628013456663,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s43/inner_bilinear_frozen_multiply_seed43.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s43/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.9994685696235353,
+          "rmse": 0.1901315301656723,
+          "terms": {
+            "1": -0.012543994002044201,
+            "a*b": 0.979611337184906
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.5400923516474065,
+          "rmse": 5.593276500701904,
+          "terms": {
+            "1": -0.012543994002044201,
+            "silu(a)*b": 1.0539106130599976
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.6945786751249605,
+          "rmse": 4.558066368103027,
+          "terms": {
+            "1": -0.012543994002044201,
+            "silu(a)*b": 0.6965302228927612,
+            "silu(b)*a": 0.6674052476882935
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.9996618781569326,
+          "rmse": 0.1516587883234024,
+          "terms": {
+            "1": 0.020634355023503304,
+            "a": -0.03613431006669998,
+            "b": 0.012312372215092182,
+            "a^2": 6.670481980108889e-06,
+            "a*b": 0.979611337184906,
+            "b^2": -0.003948456607758999
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9997156829594557,
+          "rmse": 0.13906966149806976,
+          "terms": {
+            "1": 0.020634355023503304,
+            "a": -0.07925725728273392,
+            "b": -0.016292931511998177,
+            "a^2": 6.670481980108889e-06,
+            "a*b": 0.979611337184906,
+            "b^2": -0.003948456607758999,
+            "a^3": 0.0021203262731432915,
+            "a^2*b": 0.00112601846922189,
+            "a*b^2": 0.00130680319853127,
+            "b^3": 0.0012625211384147406
+          }
+        }
+      },
+      "mult_r2": 0.9994685696235353,
+      "swiglu_r2": 0.5400923516474065,
+      "poly3_r2": 0.9997156829594557,
+      "operator": "multiply",
+      "operator_r2_margin": 0.4593762179761287
+    },
+    {
+      "host": "bilinear",
+      "mode": "frozen",
+      "seed": 43,
+      "init": "random",
+      "status": "completed",
+      "host_ppl": 79.0895718948231,
+      "best_ppl": 79.02394174019487,
+      "final_ppl": 79.04759376769347,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s43/inner_bilinear_frozen_random_seed43.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s43/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.9995738747810611,
+          "rmse": 0.16993121802806854,
+          "terms": {
+            "1": -0.13462217152118683,
+            "a*b": 0.9778006076812744
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.5299137412321817,
+          "rmse": 5.644082546234131,
+          "terms": {
+            "1": -0.13462217152118683,
+            "silu(a)*b": 1.0419479608535767
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.6969612474696776,
+          "rmse": 4.53162145614624,
+          "terms": {
+            "1": -0.13462217152118683,
+            "silu(a)*b": 0.6710288524627686,
+            "silu(b)*a": 0.6926887631416321
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.9996605120609108,
+          "rmse": 0.15167595446109772,
+          "terms": {
+            "1": -0.04463071748614311,
+            "a": 0.015155394561588764,
+            "b": -0.00910962000489235,
+            "a^2": -0.005379093810915947,
+            "a*b": 0.9778006076812744,
+            "b^2": -0.005312428809702396
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9996882280599677,
+          "rmse": 0.14535269141197205,
+          "terms": {
+            "1": -0.04463071748614311,
+            "a": 0.01319480687379837,
+            "b": 0.006532073020935059,
+            "a^2": -0.005379093810915947,
+            "a*b": 0.9778006076812744,
+            "b^2": -0.005312428809702396,
+            "a^3": -0.00011096918024122715,
+            "a^2*b": -0.0019337028497830033,
+            "a*b^2": 0.00043266740976832807,
+            "b^3": 4.1877163312165067e-05
+          }
+        }
+      },
+      "mult_r2": 0.9995738747810611,
+      "swiglu_r2": 0.5299137412321817,
+      "poly3_r2": 0.9996882280599677,
+      "operator": "multiply",
+      "operator_r2_margin": 0.46966013354887937
+    },
+    {
+      "host": "bilinear",
+      "mode": "frozen",
+      "seed": 44,
+      "init": "multiply",
+      "status": "completed",
+      "host_ppl": 80.78801031921678,
+      "best_ppl": 80.76391110275654,
+      "final_ppl": 80.81488614157591,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s44_retry/inner_bilinear_frozen_multiply_seed44.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s44_retry/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.9993230070752648,
+          "rmse": 0.2148696929216385,
+          "terms": {
+            "1": -0.11222723871469498,
+            "a*b": 0.980786144733429
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.5382959093598486,
+          "rmse": 5.611319065093994,
+          "terms": {
+            "1": -0.11222723871469498,
+            "silu(a)*b": 1.053494930267334
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.7032308626533513,
+          "rmse": 4.498756408691406,
+          "terms": {
+            "1": -0.11222723871469498,
+            "silu(a)*b": 0.683756947517395,
+            "silu(b)*a": 0.6904830932617188
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.9995412949646924,
+          "rmse": 0.1768682450056076,
+          "terms": {
+            "1": -0.13589435815811157,
+            "a": 0.030262252315878868,
+            "b": 0.006200831849128008,
+            "a^2": -0.006242493633180857,
+            "a*b": 0.980786144733429,
+            "b^2": 0.009054289199411869
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9995861964319767,
+          "rmse": 0.16798876225948334,
+          "terms": {
+            "1": -0.13589435815811157,
+            "a": 0.06393282115459442,
+            "b": -0.021376322954893112,
+            "a^2": -0.006242493633180857,
+            "a*b": 0.980786144733429,
+            "b^2": 0.009054289199411869,
+            "a^3": -0.0013373567489907146,
+            "a^2*b": 0.0012246300466358662,
+            "a*b^2": -0.0015931029338389635,
+            "b^3": 0.0011398716596886516
+          }
+        }
+      },
+      "mult_r2": 0.9993230070752648,
+      "swiglu_r2": 0.5382959093598486,
+      "poly3_r2": 0.9995861964319767,
+      "operator": "multiply",
+      "operator_r2_margin": 0.46102709771541617
+    },
+    {
+      "host": "bilinear",
+      "mode": "frozen",
+      "seed": 44,
+      "init": "random",
+      "status": "completed",
+      "host_ppl": 80.78801031921678,
+      "best_ppl": 80.77467718512807,
+      "final_ppl": 80.91405275806848,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s44_retry/inner_bilinear_frozen_random_seed44.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s44_retry/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.999309755191025,
+          "rmse": 0.21721024811267853,
+          "terms": {
+            "1": -0.2569652795791626,
+            "a*b": 0.981899619102478
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.5423656500749144,
+          "rmse": 5.5929131507873535,
+          "terms": {
+            "1": -0.2569652795791626,
+            "silu(a)*b": 1.0586774349212646
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.7014240096308885,
+          "rmse": 4.517583847045898,
+          "terms": {
+            "1": -0.2569652795791626,
+            "silu(a)*b": 0.6951714754104614,
+            "silu(b)*a": 0.6788448691368103
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.9996530226007533,
+          "rmse": 0.1540030539035797,
+          "terms": {
+            "1": -0.08218815177679062,
+            "a": -0.004210335202515125,
+            "b": 0.03262968733906746,
+            "a^2": -0.014721943996846676,
+            "a*b": 0.981899619102478,
+            "b^2": -0.006042621564120054
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9996782040831752,
+          "rmse": 0.14830951392650604,
+          "terms": {
+            "1": -0.08218815177679062,
+            "a": -0.008621317334473133,
+            "b": 0.062754787504673,
+            "a^2": -0.014721943996846676,
+            "a*b": 0.981899619102478,
+            "b^2": -0.006042621564120054,
+            "a^3": -0.00010692248906707391,
+            "a^2*b": -0.0013975328765809536,
+            "a*b^2": 0.0007165051647461951,
+            "b^3": -0.0012119897874072194
+          }
+        }
+      },
+      "mult_r2": 0.999309755191025,
+      "swiglu_r2": 0.5423656500749144,
+      "poly3_r2": 0.9996782040831752,
+      "operator": "multiply",
+      "operator_r2_margin": 0.4569441051161106
+    },
+    {
+      "host": "bilinear",
+      "mode": "frozen",
+      "seed": 45,
+      "init": "multiply",
+      "status": "completed",
+      "host_ppl": 79.4992149602356,
+      "best_ppl": 79.43182656229186,
+      "final_ppl": 79.43341773484673,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s45/inner_bilinear_frozen_multiply_seed45.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s45/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.9996283953063265,
+          "rmse": 0.1615859866142273,
+          "terms": {
+            "1": 0.001890699495561421,
+            "a*b": 0.9956819415092468
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.533551350792639,
+          "rmse": 5.7248616218566895,
+          "terms": {
+            "1": 0.001890699495561421,
+            "silu(a)*b": 1.0646085739135742
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.6973263855593803,
+          "rmse": 4.611586570739746,
+          "terms": {
+            "1": 0.001890699495561421,
+            "silu(a)*b": 0.6906344294548035,
+            "silu(b)*a": 0.6983941793441772
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.9996676532445053,
+          "rmse": 0.15281246602535248,
+          "terms": {
+            "1": 0.012939383275806904,
+            "a": 0.009138563647866249,
+            "b": 0.011895252391695976,
+            "a^2": 0.002026163972914219,
+            "a*b": 0.9956819415092468,
+            "b^2": -0.0033388137817382812
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9997573129174638,
+          "rmse": 0.13058292865753174,
+          "terms": {
+            "1": 0.012939383275806904,
+            "a": 0.005406707059592009,
+            "b": 0.03624443709850311,
+            "a^2": 0.002026163972914219,
+            "a*b": 0.9956819415092468,
+            "b^2": -0.0033388137817382812,
+            "a^3": 0.0004027556860819459,
+            "a^2*b": -0.0035897456109523773,
+            "a*b^2": -0.0002815692569129169,
+            "b^3": 0.00038718903670087457
+          }
+        }
+      },
+      "mult_r2": 0.9996283953063265,
+      "swiglu_r2": 0.533551350792639,
+      "poly3_r2": 0.9997573129174638,
+      "operator": "multiply",
+      "operator_r2_margin": 0.4660770445136875
+    },
+    {
+      "host": "bilinear",
+      "mode": "frozen",
+      "seed": 45,
+      "init": "random",
+      "status": "completed",
+      "host_ppl": 79.4992149602356,
+      "best_ppl": 79.43344084400802,
+      "final_ppl": 79.49320875969083,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s45/inner_bilinear_frozen_random_seed45.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s45/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.9994252596280669,
+          "rmse": 0.20224809646606445,
+          "terms": {
+            "1": 0.07560478895902634,
+            "a*b": 1.0019868612289429
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.5298704528573559,
+          "rmse": 5.784387111663818,
+          "terms": {
+            "1": 0.07560478895902634,
+            "silu(a)*b": 1.0677565336227417
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.7027908558078251,
+          "rmse": 4.599172115325928,
+          "terms": {
+            "1": 0.07560478895902634,
+            "silu(a)*b": 0.6810099482536316,
+            "silu(b)*a": 0.7222463488578796
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.9995783065095571,
+          "rmse": 0.1732395440340042,
+          "terms": {
+            "1": 0.07112929970026016,
+            "a": 0.03202887624502182,
+            "b": -0.014014692977070808,
+            "a^2": -0.002028086921200156,
+            "a*b": 1.0019868612289429,
+            "b^2": 0.002559801796451211
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.999674768569663,
+          "rmse": 0.1521405130624771,
+          "terms": {
+            "1": 0.07112929970026016,
+            "a": -0.019183563068509102,
+            "b": -0.004115134011954069,
+            "a^2": -0.002028086921200156,
+            "a*b": 1.0019868612289429,
+            "b^2": 0.002559801796451211,
+            "a^3": 0.0014830882428213954,
+            "a^2*b": -0.0010136888595297933,
+            "a*b^2": 0.003414873732253909,
+            "b^3": -9.024625614983961e-05
+          }
+        }
+      },
+      "mult_r2": 0.9994252596280669,
+      "swiglu_r2": 0.5298704528573559,
+      "poly3_r2": 0.999674768569663,
+      "operator": "multiply",
+      "operator_r2_margin": 0.46955480677071104
+    },
+    {
+      "host": "bilinear",
+      "mode": "frozen",
+      "seed": 46,
+      "init": "multiply",
+      "status": "completed",
+      "host_ppl": 79.74654853625364,
+      "best_ppl": 79.615541981169,
+      "final_ppl": 79.69408443423077,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s46/inner_bilinear_frozen_multiply_seed46.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s46/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.9992933075121888,
+          "rmse": 0.2202586978673935,
+          "terms": {
+            "1": 0.05312855914235115,
+            "a*b": 0.9840169548988342
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.5493498378896484,
+          "rmse": 5.562084674835205,
+          "terms": {
+            "1": 0.05312855914235115,
+            "silu(a)*b": 1.067778468132019
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.7075683938893702,
+          "rmse": 4.480535984039307,
+          "terms": {
+            "1": 0.05312855914235115,
+            "silu(a)*b": 0.7044485211372375,
+            "silu(b)*a": 0.6785160303115845
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.999551177601576,
+          "rmse": 0.1755315065383911,
+          "terms": {
+            "1": -0.025705717504024506,
+            "a": 0.004490739665925503,
+            "b": 0.04226446896791458,
+            "a^2": 0.005005072336643934,
+            "a*b": 0.9840169548988342,
+            "b^2": 0.004360910505056381
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9995659847287174,
+          "rmse": 0.17261174321174622,
+          "terms": {
+            "1": -0.025705717504024506,
+            "a": 0.007630269043147564,
+            "b": 0.028852611780166626,
+            "a^2": 0.005005072336643934,
+            "a*b": 0.9840169548988342,
+            "b^2": 0.004360910505056381,
+            "a^3": -0.0003216185432393104,
+            "a^2*b": 0.0014145919121801853,
+            "a*b^2": 0.00020589925406966358,
+            "b^3": 9.93460271274671e-05
+          }
+        }
+      },
+      "mult_r2": 0.9992933075121888,
+      "swiglu_r2": 0.5493498378896484,
+      "poly3_r2": 0.9995659847287174,
+      "operator": "multiply",
+      "operator_r2_margin": 0.4499434696225404
+    },
+    {
+      "host": "bilinear",
+      "mode": "frozen",
+      "seed": 46,
+      "init": "random",
+      "status": "completed",
+      "host_ppl": 79.74654853625364,
+      "best_ppl": 79.61295288424598,
+      "final_ppl": 79.69607762939785,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s46/inner_bilinear_frozen_random_seed46.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_frozen_s46/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.9991256551278647,
+          "rmse": 0.24482689797878265,
+          "terms": {
+            "1": 0.09375036507844925,
+            "a*b": 0.9832547903060913
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.5471095593027,
+          "rmse": 5.572041034698486,
+          "terms": {
+            "1": 0.09375036507844925,
+            "silu(a)*b": 1.0648629665374756
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.7102853408076868,
+          "rmse": 4.456593036651611,
+          "terms": {
+            "1": 0.09375036507844925,
+            "silu(a)*b": 0.6961400508880615,
+            "silu(b)*a": 0.688587486743927
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.9992979854707763,
+          "rmse": 0.2193768471479416,
+          "terms": {
+            "1": 0.06459812819957733,
+            "a": 0.01722637377679348,
+            "b": 0.027416590601205826,
+            "a^2": -0.003103025956079364,
+            "a*b": 0.9832547903060913,
+            "b^2": 0.006566485855728388
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9993967349585806,
+          "rmse": 0.20336294174194336,
+          "terms": {
+            "1": 0.06459812819957733,
+            "a": -0.009268970228731632,
+            "b": 0.011679592542350292,
+            "a^2": -0.003103025956079364,
+            "a*b": 0.9832547903060913,
+            "b^2": 0.006566485855728388,
+            "a^3": 0.0002431769680697471,
+            "a^2*b": 0.0025844865012913942,
+            "a*b^2": 0.002710101194679737,
+            "b^3": -0.00039714499143883586
+          }
+        }
+      },
+      "mult_r2": 0.9991256551278647,
+      "swiglu_r2": 0.5471095593027,
+      "poly3_r2": 0.9993967349585806,
+      "operator": "multiply",
+      "operator_r2_margin": 0.45201609582516467
+    },
+    {
+      "host": "bilinear",
+      "mode": "joint",
+      "seed": 42,
+      "init": "multiply",
+      "status": "completed",
+      "host_ppl": 79.20046176408975,
+      "best_ppl": 73.2281862420701,
+      "final_ppl": 73.41749905373365,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s42/inner_bilinear_joint_multiply_seed42.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s42/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.9979932062875052,
+          "rmse": 0.12815675139427185,
+          "terms": {
+            "1": 0.034251149743795395,
+            "a*b": 0.339540958404541
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.5652149529891164,
+          "rmse": 1.8863723278045654,
+          "terms": {
+            "1": 0.034251149743795395,
+            "silu(a)*b": 0.37396910786628723
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.7057227789724807,
+          "rmse": 1.5519167184829712,
+          "terms": {
+            "1": 0.034251149743795395,
+            "silu(a)*b": 0.2557479739189148,
+            "silu(b)*a": 0.22077713906764984
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.9996794599277675,
+          "rmse": 0.051219020038843155,
+          "terms": {
+            "1": 0.036180224269628525,
+            "a": -0.01790931634604931,
+            "b": 0.03624642640352249,
+            "a^2": -0.0007171463803388178,
+            "a*b": 0.339540958404541,
+            "b^2": 0.00048796102055348456
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9997048781532071,
+          "rmse": 0.049146294593811035,
+          "terms": {
+            "1": 0.036180224269628525,
+            "a": -0.014622366055846214,
+            "b": 0.03775002434849739,
+            "a^2": -0.0007171463803388178,
+            "a*b": 0.339540958404541,
+            "b^2": 0.00048796102055348456,
+            "a^3": 0.0001343639742117375,
+            "a^2*b": 7.989972073119134e-05,
+            "a*b^2": -0.00063235656125471,
+            "b^3": -0.00014363617810886353
+          }
+        }
+      },
+      "mult_r2": 0.9979932062875052,
+      "swiglu_r2": 0.5652149529891164,
+      "poly3_r2": 0.9997048781532071,
+      "operator": "multiply",
+      "operator_r2_margin": 0.4327782532983888
+    },
+    {
+      "host": "bilinear",
+      "mode": "joint",
+      "seed": 42,
+      "init": "random",
+      "status": "completed",
+      "host_ppl": 79.20046176408975,
+      "best_ppl": 73.05234910335707,
+      "final_ppl": 73.05234910335707,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s42/inner_bilinear_joint_random_seed42.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s42/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.9981688898103459,
+          "rmse": 0.09052416682243347,
+          "terms": {
+            "1": 0.0007623207638971508,
+            "a*b": 0.2511005103588104
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.5292313082564248,
+          "rmse": 1.4514801502227783,
+          "terms": {
+            "1": 0.0007623207638971508,
+            "silu(a)*b": 0.26758939027786255
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.7011995257917095,
+          "rmse": 1.1563730239868164,
+          "terms": {
+            "1": 0.0007623207638971508,
+            "silu(a)*b": 0.1708761304616928,
+            "silu(b)*a": 0.18061132729053497
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.9990156405608052,
+          "rmse": 0.06637188792228699,
+          "terms": {
+            "1": 0.0013007648522034287,
+            "a": 0.015523659065365791,
+            "b": -0.004214930813759565,
+            "a^2": -0.0038024201057851315,
+            "a*b": 0.2511005103588104,
+            "b^2": 0.0037384498864412308
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9990873723161576,
+          "rmse": 0.06390783935785294,
+          "terms": {
+            "1": 0.0013007648522034287,
+            "a": 0.017332762479782104,
+            "b": -0.004756799433380365,
+            "a^2": -0.0038024201057851315,
+            "a*b": 0.2511005103588104,
+            "b^2": 0.0037384498864412308,
+            "a^3": 0.00030813791090622544,
+            "a^2*b": -6.11625291639939e-05,
+            "a*b^2": -0.0007695620297454298,
+            "b^3": 6.974663847358897e-05
+          }
+        }
+      },
+      "mult_r2": 0.9981688898103459,
+      "swiglu_r2": 0.5292313082564248,
+      "poly3_r2": 0.9990873723161576,
+      "operator": "multiply",
+      "operator_r2_margin": 0.46893758155392107
+    },
+    {
+      "host": "bilinear",
+      "mode": "joint",
+      "seed": 43,
+      "init": "multiply",
+      "status": "completed",
+      "host_ppl": 79.0895718948231,
+      "best_ppl": 73.78395167090345,
+      "final_ppl": 74.16675318742777,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s43/inner_bilinear_joint_multiply_seed43.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s43/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.9988454967621533,
+          "rmse": 0.09736386686563492,
+          "terms": {
+            "1": 0.011778066866099834,
+            "a*b": 0.34024181962013245
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.517049744214827,
+          "rmse": 1.9913675785064697,
+          "terms": {
+            "1": 0.011778066866099834,
+            "silu(a)*b": 0.3582657277584076
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.6788967218185556,
+          "rmse": 1.6237629652023315,
+          "terms": {
+            "1": 0.011778066866099834,
+            "silu(a)*b": 0.2311769723892212,
+            "silu(b)*a": 0.23733733594417572
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.9996435123415859,
+          "rmse": 0.05410313978791237,
+          "terms": {
+            "1": 0.04520166292786598,
+            "a": -0.01033160649240017,
+            "b": -0.022024696692824364,
+            "a^2": -0.005134884268045425,
+            "a*b": 0.34024181962013245,
+            "b^2": 0.0011639614822342992
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.999655905893187,
+          "rmse": 0.0531543530523777,
+          "terms": {
+            "1": 0.04520166292786598,
+            "a": -0.015579251572489738,
+            "b": -0.025874845683574677,
+            "a^2": -0.005134884268045425,
+            "a*b": 0.34024181962013245,
+            "b^2": 0.0011639614822342992,
+            "a^3": 0.00042631375254131854,
+            "a^2*b": -1.13969990707119e-05,
+            "a*b^2": -0.00014388756244443357,
+            "b^3": 0.0002604629553388804
+          }
+        }
+      },
+      "mult_r2": 0.9988454967621533,
+      "swiglu_r2": 0.517049744214827,
+      "poly3_r2": 0.999655905893187,
+      "operator": "multiply",
+      "operator_r2_margin": 0.4817957525473263
+    },
+    {
+      "host": "bilinear",
+      "mode": "joint",
+      "seed": 43,
+      "init": "random",
+      "status": "completed",
+      "host_ppl": 79.0895718948231,
+      "best_ppl": 73.59608425235638,
+      "final_ppl": 73.59608425235638,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s43/inner_bilinear_joint_random_seed43.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s43/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.9983278068181446,
+          "rmse": 0.08699209243059158,
+          "terms": {
+            "1": -0.04690596088767052,
+            "a*b": 0.2525290846824646
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.5437430850789274,
+          "rmse": 1.4369487762451172,
+          "terms": {
+            "1": -0.04690596088767052,
+            "silu(a)*b": 0.2727546989917755
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.7158483172088034,
+          "rmse": 1.1339963674545288,
+          "terms": {
+            "1": -0.04690596088767052,
+            "silu(a)*b": 0.17546020448207855,
+            "silu(b)*a": 0.18169677257537842
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.9989439278602882,
+          "rmse": 0.06913267076015472,
+          "terms": {
+            "1": -0.0018280885415151715,
+            "a": 0.012655419297516346,
+            "b": 0.008263095282018185,
+            "a^2": -0.001995454076677561,
+            "a*b": 0.2525290846824646,
+            "b^2": -0.003360066330060363
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.99906897800466,
+          "rmse": 0.06491073220968246,
+          "terms": {
+            "1": -0.0018280885415151715,
+            "a": 0.0010847881203517318,
+            "b": 0.009161639027297497,
+            "a^2": -0.001995454076677561,
+            "a*b": 0.2525290846824646,
+            "b^2": -0.003360066330060363,
+            "a^3": 0.00016489156405441463,
+            "a^2*b": 1.3098196177452337e-05,
+            "a*b^2": 0.0010778651339933276,
+            "b^3": -6.658587517449632e-05
+          }
+        }
+      },
+      "mult_r2": 0.9983278068181446,
+      "swiglu_r2": 0.5437430850789274,
+      "poly3_r2": 0.99906897800466,
+      "operator": "multiply",
+      "operator_r2_margin": 0.45458472173921716
+    },
+    {
+      "host": "bilinear",
+      "mode": "joint",
+      "seed": 44,
+      "init": "multiply",
+      "status": "completed",
+      "host_ppl": 80.78801031921678,
+      "best_ppl": 74.49024632164895,
+      "final_ppl": 74.49024632164895,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s44/inner_bilinear_joint_multiply_seed44.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s44/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.9994764309333088,
+          "rmse": 0.06293396651744843,
+          "terms": {
+            "1": 0.02884163334965706,
+            "a*b": 0.326680064201355
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.5412696960295844,
+          "rmse": 1.8628454208374023,
+          "terms": {
+            "1": 0.02884163334965706,
+            "silu(a)*b": 0.3518387973308563
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.7006205826839766,
+          "rmse": 1.504904866218567,
+          "terms": {
+            "1": 0.02884163334965706,
+            "silu(a)*b": 0.23079843819141388,
+            "silu(b)*a": 0.2260419726371765
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.9995722449204448,
+          "rmse": 0.056884728372097015,
+          "terms": {
+            "1": 0.037556517869234085,
+            "a": -0.005981501191854477,
+            "b": 0.005470728501677513,
+            "a^2": -0.0016344869509339333,
+            "a*b": 0.326680064201355,
+            "b^2": 0.0005991066573187709
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9996509491481569,
+          "rmse": 0.05138571932911873,
+          "terms": {
+            "1": 0.037556517869234085,
+            "a": -0.006676823832094669,
+            "b": 0.0033288223203271627,
+            "a^2": -0.0016344869509339333,
+            "a*b": 0.326680064201355,
+            "b^2": 0.0005991066573187709,
+            "a^3": -0.000497707980684936,
+            "a^2*b": 0.00031436444260179996,
+            "a*b^2": 0.0009784529684111476,
+            "b^3": -3.32751042151358e-05
+          }
+        }
+      },
+      "mult_r2": 0.9994764309333088,
+      "swiglu_r2": 0.5412696960295844,
+      "poly3_r2": 0.9996509491481569,
+      "operator": "multiply",
+      "operator_r2_margin": 0.45820673490372443
+    },
+    {
+      "host": "bilinear",
+      "mode": "joint",
+      "seed": 44,
+      "init": "random",
+      "status": "completed",
+      "host_ppl": 80.78801031921678,
+      "best_ppl": 74.66371819595415,
+      "final_ppl": 74.66371819595415,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s44/inner_bilinear_joint_random_seed44.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s44/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.994910177763709,
+          "rmse": 0.14869612455368042,
+          "terms": {
+            "1": -0.06868047267198563,
+            "a*b": 0.24698953330516815
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.5863804868275853,
+          "rmse": 1.340444564819336,
+          "terms": {
+            "1": -0.06868047267198563,
+            "silu(a)*b": 0.2775088846683502
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.7332333121957957,
+          "rmse": 1.0765002965927124,
+          "terms": {
+            "1": -0.06868047267198563,
+            "silu(a)*b": 0.18945588171482086,
+            "silu(b)*a": 0.16443835198879242
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.9987493633911958,
+          "rmse": 0.07370787858963013,
+          "terms": {
+            "1": -0.036279160529375076,
+            "a": 0.004286752548068762,
+            "b": 0.04365813359618187,
+            "a^2": -0.002651496324688196,
+            "a*b": 0.24698953330516815,
+            "b^2": -0.0011979732662439346
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9987812935880223,
+          "rmse": 0.07276087254285812,
+          "terms": {
+            "1": -0.036279160529375076,
+            "a": 0.0043074823915958405,
+            "b": 0.04261593148112297,
+            "a^2": -0.002651496324688196,
+            "a*b": 0.24698953330516815,
+            "b^2": -0.0011979732662439346,
+            "a^3": -9.604973456589505e-05,
+            "a^2*b": 0.0004746696213260293,
+            "a*b^2": 0.00017042089893948287,
+            "b^3": -0.00019492305000312626
+          }
+        }
+      },
+      "mult_r2": 0.994910177763709,
+      "swiglu_r2": 0.5863804868275853,
+      "poly3_r2": 0.9987812935880223,
+      "operator": "multiply",
+      "operator_r2_margin": 0.4085296909361238
+    },
+    {
+      "host": "bilinear",
+      "mode": "joint",
+      "seed": 45,
+      "init": "multiply",
+      "status": "completed",
+      "host_ppl": 79.4992149602356,
+      "best_ppl": 73.66895401628632,
+      "final_ppl": 73.66895401628632,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s45/inner_bilinear_joint_multiply_seed45.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s45/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.9991159358147541,
+          "rmse": 0.08531451970338821,
+          "terms": {
+            "1": -0.033736858516931534,
+            "a*b": 0.3407432436943054
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.5475273800341913,
+          "rmse": 1.9300882816314697,
+          "terms": {
+            "1": -0.033736858516931534,
+            "silu(a)*b": 0.36916691064834595
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.6968640495045897,
+          "rmse": 1.5797914266586304,
+          "terms": {
+            "1": -0.033736858516931534,
+            "silu(a)*b": 0.24692530930042267,
+            "silu(b)*a": 0.2282852977514267
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.9996393525483115,
+          "rmse": 0.05449071153998375,
+          "terms": {
+            "1": -0.017560726031661034,
+            "a": -0.015028003603219986,
+            "b": 0.015942422673106194,
+            "a^2": 0.00024361623218283057,
+            "a*b": 0.3407432436943054,
+            "b^2": -0.0021654374431818724
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9996505668823318,
+          "rmse": 0.0536368265748024,
+          "terms": {
+            "1": -0.017560726031661034,
+            "a": -0.007285064551979303,
+            "b": 0.01830502226948738,
+            "a^2": 0.00024361623218283057,
+            "a*b": 0.3407432436943054,
+            "b^2": -0.0021654374431818724,
+            "a^3": -0.0004352042160462588,
+            "a^2*b": -0.00015904533211141825,
+            "a*b^2": -0.00013656597002409399,
+            "b^3": -6.758313247701153e-05
+          }
+        }
+      },
+      "mult_r2": 0.9991159358147541,
+      "swiglu_r2": 0.5475273800341913,
+      "poly3_r2": 0.9996505668823318,
+      "operator": "multiply",
+      "operator_r2_margin": 0.4515885557805628
+    },
+    {
+      "host": "bilinear",
+      "mode": "joint",
+      "seed": 45,
+      "init": "random",
+      "status": "completed",
+      "host_ppl": 79.4992149602356,
+      "best_ppl": 73.54313994616841,
+      "final_ppl": 73.54313994616841,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s45/inner_bilinear_joint_random_seed45.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s45/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.9982865475797681,
+          "rmse": 0.0889400839805603,
+          "terms": {
+            "1": 0.017901591956615448,
+            "a*b": 0.2550511956214905
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.5335581472326982,
+          "rmse": 1.4674396514892578,
+          "terms": {
+            "1": 0.017901591956615448,
+            "silu(a)*b": 0.2728922367095947
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.6990997008423054,
+          "rmse": 1.178617238998413,
+          "terms": {
+            "1": 0.017901591956615448,
+            "silu(a)*b": 0.1765160709619522,
+            "silu(b)*a": 0.1799817979335785
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.998502998851019,
+          "rmse": 0.08313282579183578,
+          "terms": {
+            "1": -0.01501553412526846,
+            "a": -0.0015102787874639034,
+            "b": 0.0005569145432673395,
+            "a^2": 0.004146286752074957,
+            "a*b": 0.2550511956214905,
+            "b^2": -0.00023553543724119663
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9986764424291404,
+          "rmse": 0.07816870510578156,
+          "terms": {
+            "1": -0.01501553412526846,
+            "a": -0.016383543610572815,
+            "b": -0.0006216316251084208,
+            "a^2": 0.004146286752074957,
+            "a*b": 0.2550511956214905,
+            "b^2": -0.00023553543724119663,
+            "a^3": 0.0003013558452948928,
+            "a^2*b": -0.00026441444060765207,
+            "a*b^2": 0.0012246102560311556,
+            "b^3": 0.0002246923540951684
+          }
+        }
+      },
+      "mult_r2": 0.9982865475797681,
+      "swiglu_r2": 0.5335581472326982,
+      "poly3_r2": 0.9986764424291404,
+      "operator": "multiply",
+      "operator_r2_margin": 0.46472840034706986
+    },
+    {
+      "host": "bilinear",
+      "mode": "joint",
+      "seed": 46,
+      "init": "multiply",
+      "status": "completed",
+      "host_ppl": 79.74654853625364,
+      "best_ppl": 73.76003064124869,
+      "final_ppl": 74.02716681827465,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s46_retry/inner_bilinear_joint_multiply_seed46.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s46_retry/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.9992222922829757,
+          "rmse": 0.07865088433027267,
+          "terms": {
+            "1": 0.05076991394162178,
+            "a*b": 0.33493825793266296
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.5208306097791793,
+          "rmse": 1.952270269393921,
+          "terms": {
+            "1": 0.05076991394162178,
+            "silu(a)*b": 0.35390156507492065
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.6827151655254668,
+          "rmse": 1.5886201858520508,
+          "terms": {
+            "1": 0.05076991394162178,
+            "silu(a)*b": 0.2288028448820114,
+            "silu(b)*a": 0.23362094163894653
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.9996315222010005,
+          "rmse": 0.054137859493494034,
+          "terms": {
+            "1": 0.03283599019050598,
+            "a": -0.007109432015568018,
+            "b": -0.017833778634667397,
+            "a^2": 0.0015252622542902827,
+            "a*b": 0.33493825793266296,
+            "b^2": 0.0006053947727195919
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9996528454488562,
+          "rmse": 0.05254808068275452,
+          "terms": {
+            "1": 0.03283599019050598,
+            "a": -0.0022638740483671427,
+            "b": -0.011395912617444992,
+            "a^2": 0.0015252622542902827,
+            "a*b": 0.33493825793266296,
+            "b^2": 0.0006053947727195919,
+            "a^3": -9.581899939803407e-05,
+            "a^2*b": 9.641618089517578e-05,
+            "a*b^2": -0.0004032128199469298,
+            "b^3": -0.00047850096598267555
+          }
+        }
+      },
+      "mult_r2": 0.9992222922829757,
+      "swiglu_r2": 0.5208306097791793,
+      "poly3_r2": 0.9996528454488562,
+      "operator": "multiply",
+      "operator_r2_margin": 0.4783916825037964
+    },
+    {
+      "host": "bilinear",
+      "mode": "joint",
+      "seed": 46,
+      "init": "random",
+      "status": "completed",
+      "host_ppl": 79.74654853625364,
+      "best_ppl": 73.65143490612645,
+      "final_ppl": 73.65143490612645,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s46_retry/inner_bilinear_joint_random_seed46.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/bilinear_joint_s46_retry/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.998338000574778,
+          "rmse": 0.08607738465070724,
+          "terms": {
+            "1": 0.022959979251027107,
+            "a*b": 0.2506401836872101
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.5449480787489831,
+          "rmse": 1.4243085384368896,
+          "terms": {
+            "1": 0.022959979251027107,
+            "silu(a)*b": 0.27101290225982666
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.7002416963325315,
+          "rmse": 1.156003713607788,
+          "terms": {
+            "1": 0.022959979251027107,
+            "silu(a)*b": 0.1792842298746109,
+            "silu(b)*a": 0.17130263149738312
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.9988842321799501,
+          "rmse": 0.0705278292298317,
+          "terms": {
+            "1": 0.007757895160466433,
+            "a": -0.004905328620225191,
+            "b": 0.009193175472319126,
+            "a^2": -0.002647384302690625,
+            "a*b": 0.2506401836872101,
+            "b^2": 0.004453482571989298
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9988903416703812,
+          "rmse": 0.07033447176218033,
+          "terms": {
+            "1": 0.007757895160466433,
+            "a": -0.0075736455619335175,
+            "b": 0.007932337932288647,
+            "a^2": -0.002647384302690625,
+            "a*b": 0.2506401836872101,
+            "b^2": 0.004453482571989298,
+            "a^3": 5.280697951093316e-05,
+            "a^2*b": -4.395733412820846e-06,
+            "a*b^2": 0.00022196260397322476,
+            "b^3": 8.566440374124795e-05
+          }
+        }
+      },
+      "mult_r2": 0.998338000574778,
+      "swiglu_r2": 0.5449480787489831,
+      "poly3_r2": 0.9988903416703812,
+      "operator": "multiply",
+      "operator_r2_margin": 0.45338992182579485
+    },
+    {
+      "host": "swiglu",
+      "mode": "joint",
+      "seed": 42,
+      "init": "multiply",
+      "status": "completed",
+      "host_ppl": 76.94845517407884,
+      "best_ppl": 71.23454906446835,
+      "final_ppl": 71.48082385075921,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s42_multiply_swiglu/inner_swiglu_joint_multiply_seed42.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s42_multiply_swiglu/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.564177553058308,
+          "rmse": 1.6703851222991943,
+          "terms": {
+            "1": -0.024895301088690758,
+            "a*b": 0.22579172253608704
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.989715274698217,
+          "rmse": 0.25660088658332825,
+          "terms": {
+            "1": -0.024895301088690758,
+            "silu(a)*b": 0.43767908215522766
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.9897495212537086,
+          "rmse": 0.256173312664032,
+          "terms": {
+            "1": -0.024895301088690758,
+            "silu(a)*b": 0.4360467195510864,
+            "silu(b)*a": 0.003048431361094117
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.8008760772649579,
+          "rmse": 1.1290769577026367,
+          "terms": {
+            "1": -0.024030065163969994,
+            "a": -0.012696466408669949,
+            "b": 0.42404332756996155,
+            "a^2": 0.002081323182210326,
+            "a*b": 0.22579172253608704,
+            "b^2": -0.002184118377044797
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9960879912360546,
+          "rmse": 0.15825657546520233,
+          "terms": {
+            "1": -0.024030065163969994,
+            "a": -0.010806438513100147,
+            "b": 0.0344652496278286,
+            "a^2": 0.002081323182210326,
+            "a*b": 0.22579172253608704,
+            "b^2": -0.002184118377044797,
+            "a^3": 0.000498306006193161,
+            "a^2*b": 0.05111660808324814,
+            "a*b^2": -0.0011214675614610314,
+            "b^3": -0.0026847589761018753
+          }
+        }
+      },
+      "mult_r2": 0.564177553058308,
+      "swiglu_r2": 0.989715274698217,
+      "poly3_r2": 0.9960879912360546,
+      "operator": "swiglu",
+      "operator_r2_margin": 0.425537721639909
+    },
+    {
+      "host": "swiglu",
+      "mode": "joint",
+      "seed": 42,
+      "init": "swiglu",
+      "status": "completed",
+      "host_ppl": 76.94845517407884,
+      "best_ppl": 71.35536027284395,
+      "final_ppl": 71.35536027284395,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s42_multiply_swiglu/inner_swiglu_joint_swiglu_seed42.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s42_multiply_swiglu/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.5572072311454647,
+          "rmse": 1.3524638414382935,
+          "terms": {
+            "1": -0.03104856051504612,
+            "a*b": 0.1802486628293991
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.9892555764795342,
+          "rmse": 0.21067693829536438,
+          "terms": {
+            "1": -0.03104856051504612,
+            "silu(a)*b": 0.3514944612979889
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.9899612502806079,
+          "rmse": 0.20364101231098175,
+          "terms": {
+            "1": -0.03104856051504612,
+            "silu(a)*b": 0.34554219245910645,
+            "silu(b)*a": 0.011115802451968193
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.7985393069518708,
+          "rmse": 0.9122641086578369,
+          "terms": {
+            "1": -0.06636013090610504,
+            "a": 0.01477198489010334,
+            "b": 0.3435083329677582,
+            "a^2": 0.005610129330307245,
+            "a*b": 0.1802486628293991,
+            "b^2": -0.0014149037888273597
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9931985927359286,
+          "rmse": 0.16761960089206696,
+          "terms": {
+            "1": -0.06636013090610504,
+            "a": 0.004284237511456013,
+            "b": 0.007669979706406593,
+            "a^2": 0.005610129330307245,
+            "a*b": 0.1802486628293991,
+            "b^2": -0.0014149037888273597,
+            "a^3": 0.0010811079991981387,
+            "a^2*b": 0.04103672504425049,
+            "a*b^2": -0.0006999225588515401,
+            "b^3": -0.0006317562074400485
+          }
+        }
+      },
+      "mult_r2": 0.5572072311454647,
+      "swiglu_r2": 0.9892555764795342,
+      "poly3_r2": 0.9931985927359286,
+      "operator": "swiglu",
+      "operator_r2_margin": 0.43204834533406955
+    },
+    {
+      "host": "swiglu",
+      "mode": "joint",
+      "seed": 42,
+      "init": "identity",
+      "status": "completed",
+      "host_ppl": 76.94845517407884,
+      "best_ppl": 70.89927526650412,
+      "final_ppl": 70.89927526650412,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s42_random_identity/inner_swiglu_joint_identity_seed42.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s42_random_identity/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.6048272586588785,
+          "rmse": 1.1897236108779907,
+          "terms": {
+            "1": -0.00256896554492414,
+            "a*b": 0.1748664826154709
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.9919043028497223,
+          "rmse": 0.17028631269931793,
+          "terms": {
+            "1": -0.00256896554492414,
+            "silu(a)*b": 0.32773762941360474
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.9930855976756886,
+          "rmse": 0.15737289190292358,
+          "terms": {
+            "1": -0.00256896554492414,
+            "silu(a)*b": 0.3205665349960327,
+            "silu(b)*a": 0.013391993939876556
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.850972164209787,
+          "rmse": 0.7306111454963684,
+          "terms": {
+            "1": -0.011897237040102482,
+            "a": -0.0059937527403235435,
+            "b": 0.32356882095336914,
+            "a^2": 0.001344083109870553,
+            "a*b": 0.1748664826154709,
+            "b^2": -0.00023582873109262437
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9953704959156671,
+          "rmse": 0.12877152860164642,
+          "terms": {
+            "1": -0.011897237040102482,
+            "a": -0.005143816117197275,
+            "b": 0.056340813636779785,
+            "a^2": 0.001344083109870553,
+            "a*b": 0.1748664826154709,
+            "b^2": -0.00023582873109262437,
+            "a^3": 0.00018352657207287848,
+            "a^2*b": 0.032919593155384064,
+            "a*b^2": -0.00043131434358656406,
+            "b^3": -0.0006507505313493311
+          }
+        }
+      },
+      "mult_r2": 0.6048272586588785,
+      "swiglu_r2": 0.9919043028497223,
+      "poly3_r2": 0.9953704959156671,
+      "operator": "swiglu",
+      "operator_r2_margin": 0.38707704419084377
+    },
+    {
+      "host": "swiglu",
+      "mode": "joint",
+      "seed": 42,
+      "init": "random",
+      "status": "completed",
+      "host_ppl": 76.94845517407884,
+      "best_ppl": 71.16647715278175,
+      "final_ppl": 71.60350924934642,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s42_random_identity/inner_swiglu_joint_random_seed42.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s42_random_identity/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.6197860092739438,
+          "rmse": 1.0582554340362549,
+          "terms": {
+            "1": -0.013332328759133816,
+            "a*b": 0.16052238643169403
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.9887436641484006,
+          "rmse": 0.1820853352546692,
+          "terms": {
+            "1": -0.013332328759133816,
+            "silu(a)*b": 0.2967270314693451
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.992220604605992,
+          "rmse": 0.15137332677841187,
+          "terms": {
+            "1": -0.013332328759133816,
+            "silu(a)*b": 0.2855704724788666,
+            "silu(b)*a": 0.020834768190979958
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.864706900792116,
+          "rmse": 0.6312687397003174,
+          "terms": {
+            "1": -0.005302478559315205,
+            "a": 0.00567288463935256,
+            "b": 0.292643666267395,
+            "a^2": -0.0020081924740225077,
+            "a*b": 0.16052238643169403,
+            "b^2": 0.0010541982483118773
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9965288119099803,
+          "rmse": 0.10111498087644577,
+          "terms": {
+            "1": -0.005302478559315205,
+            "a": 0.0012256498448550701,
+            "b": 0.07589870691299438,
+            "a^2": -0.0020081924740225077,
+            "a*b": 0.16052238643169403,
+            "b^2": 0.0010541982483118773,
+            "a^3": 0.00018196793098468333,
+            "a^2*b": 0.02849716879427433,
+            "a*b^2": 0.00020082670380361378,
+            "b^3": -0.001525923958979547
+          }
+        }
+      },
+      "mult_r2": 0.6197860092739438,
+      "swiglu_r2": 0.9887436641484006,
+      "poly3_r2": 0.9965288119099803,
+      "operator": "swiglu",
+      "operator_r2_margin": 0.36895765487445686
+    },
+    {
+      "host": "swiglu",
+      "mode": "joint",
+      "seed": 43,
+      "init": "multiply",
+      "status": "completed",
+      "host_ppl": 76.23250478919181,
+      "best_ppl": 71.32331237311719,
+      "final_ppl": 71.32331237311719,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s43_multiply_swiglu/inner_swiglu_joint_multiply_seed43.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s43_multiply_swiglu/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.5536037122686764,
+          "rmse": 1.6251860857009888,
+          "terms": {
+            "1": -0.009249355643987656,
+            "a*b": 0.21502086520195007
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.9928818491283138,
+          "rmse": 0.2052231729030609,
+          "terms": {
+            "1": -0.009249355643987656,
+            "silu(a)*b": 0.42143481969833374
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.992928990382165,
+          "rmse": 0.20454248785972595,
+          "terms": {
+            "1": -0.009249355643987656,
+            "silu(a)*b": 0.4195936322212219,
+            "silu(b)*a": 0.003438396379351616
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.8053543271113603,
+          "rmse": 1.0731617212295532,
+          "terms": {
+            "1": 0.04617822542786598,
+            "a": -0.007273572031408548,
+            "b": 0.42035916447639465,
+            "a^2": -0.005525550805032253,
+            "a*b": 0.21502086520195007,
+            "b^2": -0.0010595767525956035
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9946400696618147,
+          "rmse": 0.17808297276496887,
+          "terms": {
+            "1": 0.04617822542786598,
+            "a": 0.00578322634100914,
+            "b": 0.038096215575933456,
+            "a^2": -0.005525550805032253,
+            "a*b": 0.21502086520195007,
+            "b^2": -0.0010595767525956035,
+            "a^3": -0.0008691204711794853,
+            "a^2*b": 0.04842580482363701,
+            "a*b^2": 1.3139163456798997e-05,
+            "b^3": -0.0016726572066545486
+          }
+        }
+      },
+      "mult_r2": 0.5536037122686764,
+      "swiglu_r2": 0.9928818491283138,
+      "poly3_r2": 0.9946400696618147,
+      "operator": "swiglu",
+      "operator_r2_margin": 0.43927813685963735
+    },
+    {
+      "host": "swiglu",
+      "mode": "joint",
+      "seed": 43,
+      "init": "swiglu",
+      "status": "completed",
+      "host_ppl": 76.23250478919181,
+      "best_ppl": 71.57807198663171,
+      "final_ppl": 71.57807198663171,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s43_multiply_swiglu/inner_swiglu_joint_swiglu_seed43.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s43_multiply_swiglu/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.5819434064126544,
+          "rmse": 1.316987156867981,
+          "terms": {
+            "1": 0.03307151421904564,
+            "a*b": 0.18460462987422943
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.98296276922449,
+          "rmse": 0.2658664286136627,
+          "terms": {
+            "1": 0.03307151421904564,
+            "silu(a)*b": 0.35113272070884705
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.9859371275090005,
+          "rmse": 0.2415466457605362,
+          "terms": {
+            "1": 0.03307151421904564,
+            "silu(a)*b": 0.3388861417770386,
+            "silu(b)*a": 0.022870425134897232
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.793128220134672,
+          "rmse": 0.9264342784881592,
+          "terms": {
+            "1": -0.015837427228689194,
+            "a": 0.020279206335544586,
+            "b": 0.32166972756385803,
+            "a^2": 0.0056093595921993256,
+            "a*b": 0.18460462987422943,
+            "b^2": 0.00020131473138462752
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9958790005533344,
+          "rmse": 0.13075709342956543,
+          "terms": {
+            "1": -0.015837427228689194,
+            "a": 0.01287867408245802,
+            "b": -0.014095768332481384,
+            "a^2": 0.0056093595921993256,
+            "a*b": 0.18460462987422943,
+            "b^2": 0.00020131473138462752,
+            "a^3": 0.00014751784328836948,
+            "a^2*b": 0.041975706815719604,
+            "a*b^2": 0.000613704149145633,
+            "b^3": -0.0011582396691665053
+          }
+        }
+      },
+      "mult_r2": 0.5819434064126544,
+      "swiglu_r2": 0.98296276922449,
+      "poly3_r2": 0.9958790005533344,
+      "operator": "swiglu",
+      "operator_r2_margin": 0.4010193628118356
+    },
+    {
+      "host": "swiglu",
+      "mode": "joint",
+      "seed": 43,
+      "init": "identity",
+      "status": "completed",
+      "host_ppl": 76.23250478919181,
+      "best_ppl": 71.45712474874405,
+      "final_ppl": 71.59718819123005,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s43_random_identity/inner_swiglu_joint_identity_seed43.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s43_random_identity/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.6125474137086095,
+          "rmse": 1.1657063961029053,
+          "terms": {
+            "1": 0.010477985255420208,
+            "a*b": 0.17413577437400818
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.9884812713623428,
+          "rmse": 0.20099356770515442,
+          "terms": {
+            "1": 0.010477985255420208,
+            "silu(a)*b": 0.32374486327171326
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.9924961708167677,
+          "rmse": 0.1622263342142105,
+          "terms": {
+            "1": 0.010477985255420208,
+            "silu(a)*b": 0.3106629252433777,
+            "silu(b)*a": 0.024430418387055397
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.8414120458441667,
+          "rmse": 0.7457872629165649,
+          "terms": {
+            "1": 0.01157789770513773,
+            "a": 0.01610485464334488,
+            "b": 0.3083702325820923,
+            "a^2": 0.0008253608830273151,
+            "a*b": 0.17413577437400818,
+            "b^2": -0.0009560370235703886
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9965687226402881,
+          "rmse": 0.1097002923488617,
+          "terms": {
+            "1": 0.01157789770513773,
+            "a": 0.010717038996517658,
+            "b": 0.03543773293495178,
+            "a^2": 0.0008253608830273151,
+            "a*b": 0.17413577437400818,
+            "b^2": -0.0009560370235703886,
+            "a^3": 0.000431028165621683,
+            "a^2*b": 0.03376615419983864,
+            "a*b^2": -0.00013572018360719085,
+            "b^3": -0.0007445497903972864
+          }
+        }
+      },
+      "mult_r2": 0.6125474137086095,
+      "swiglu_r2": 0.9884812713623428,
+      "poly3_r2": 0.9965687226402881,
+      "operator": "swiglu",
+      "operator_r2_margin": 0.3759338576537332
+    },
+    {
+      "host": "swiglu",
+      "mode": "joint",
+      "seed": 43,
+      "init": "random",
+      "status": "completed",
+      "host_ppl": 76.23250478919181,
+      "best_ppl": 71.10767802406296,
+      "final_ppl": 71.10767802406296,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s43_random_identity/inner_swiglu_joint_random_seed43.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s43_random_identity/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.6168634343316968,
+          "rmse": 1.076644778251648,
+          "terms": {
+            "1": 0.006051862146705389,
+            "a*b": 0.16230370104312897
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.9890532432288489,
+          "rmse": 0.18198616802692413,
+          "terms": {
+            "1": 0.006051862146705389,
+            "silu(a)*b": 0.30077674984931946
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.9903392172384743,
+          "rmse": 0.1709628701210022,
+          "terms": {
+            "1": 0.006051862146705389,
+            "silu(a)*b": 0.2939002811908722,
+            "silu(b)*a": 0.012841787189245224
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.8551640214714322,
+          "rmse": 0.6619632244110107,
+          "terms": {
+            "1": -0.00521831214427948,
+            "a": -0.006995749194175005,
+            "b": 0.2923804223537445,
+            "a^2": 0.0035804198123514652,
+            "a*b": 0.16230370104312897,
+            "b^2": -0.002241455717012286
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9971843743140891,
+          "rmse": 0.0922960415482521,
+          "terms": {
+            "1": -0.00521831214427948,
+            "a": -0.0036477018147706985,
+            "b": 0.052751969546079636,
+            "a^2": 0.0035804198123514652,
+            "a*b": 0.16230370104312897,
+            "b^2": -0.002241455717012286,
+            "a^3": 0.00037476117722690105,
+            "a^2*b": 0.029982268810272217,
+            "a*b^2": -0.0010723157320171595,
+            "b^3": -0.0008405723492614925
+          }
+        }
+      },
+      "mult_r2": 0.6168634343316968,
+      "swiglu_r2": 0.9890532432288489,
+      "poly3_r2": 0.9971843743140891,
+      "operator": "swiglu",
+      "operator_r2_margin": 0.37218980889715214
+    },
+    {
+      "host": "swiglu",
+      "mode": "joint",
+      "seed": 44,
+      "init": "multiply",
+      "status": "completed",
+      "host_ppl": 78.25464053585016,
+      "best_ppl": 72.28879698782974,
+      "final_ppl": 72.72590004524513,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s44_multiply_swiglu/inner_swiglu_joint_multiply_seed44.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s44_multiply_swiglu/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.5589241416845576,
+          "rmse": 1.59695565700531,
+          "terms": {
+            "1": 0.05492010712623596,
+            "a*b": 0.21357524394989014
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.9897085143989289,
+          "rmse": 0.24393562972545624,
+          "terms": {
+            "1": 0.05492010712623596,
+            "silu(a)*b": 0.41593804955482483
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.9897085270663705,
+          "rmse": 0.2439354807138443,
+          "terms": {
+            "1": 0.05492010712623596,
+            "silu(a)*b": 0.4159676432609558,
+            "silu(b)*a": -5.5234911997104064e-05
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.797801486123983,
+          "rmse": 1.0812476873397827,
+          "terms": {
+            "1": 0.050847455859184265,
+            "a": -0.018683604896068573,
+            "b": 0.4046437442302704,
+            "a^2": -0.0003593100409489125,
+            "a*b": 0.21357524394989014,
+            "b^2": 0.0008431654423475266
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9954668705105743,
+          "rmse": 0.16189567744731903,
+          "terms": {
+            "1": 0.050847455859184265,
+            "a": -0.015273818746209145,
+            "b": 0.027545008808374405,
+            "a^2": -0.0003593100409489125,
+            "a*b": 0.21357524394989014,
+            "b^2": 0.0008431654423475266,
+            "a^3": 4.465062011149712e-05,
+            "a^2*b": 0.048904094845056534,
+            "a*b^2": -0.0004854714497923851,
+            "b^3": -0.002279249718412757
+          }
+        }
+      },
+      "mult_r2": 0.5589241416845576,
+      "swiglu_r2": 0.9897085143989289,
+      "poly3_r2": 0.9954668705105743,
+      "operator": "swiglu",
+      "operator_r2_margin": 0.4307843727143713
+    },
+    {
+      "host": "swiglu",
+      "mode": "joint",
+      "seed": 44,
+      "init": "swiglu",
+      "status": "completed",
+      "host_ppl": 78.25464053585016,
+      "best_ppl": 72.51529798710375,
+      "final_ppl": 72.51529798710375,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s44_multiply_swiglu/inner_swiglu_joint_swiglu_seed44.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s44_multiply_swiglu/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.5568681071554138,
+          "rmse": 1.3370369672775269,
+          "terms": {
+            "1": 0.05567913502454758,
+            "a*b": 0.17807023227214813
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.9860580179655863,
+          "rmse": 0.23715876042842865,
+          "terms": {
+            "1": 0.05567913502454758,
+            "silu(a)*b": 0.3467903137207031
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.986296249482085,
+          "rmse": 0.23512382805347443,
+          "terms": {
+            "1": 0.05567913502454758,
+            "silu(a)*b": 0.3433726131916046,
+            "silu(b)*a": 0.006382487714290619
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.7834568486154446,
+          "rmse": 0.9346503019332886,
+          "terms": {
+            "1": -0.0011630149092525244,
+            "a": -0.005733516067266464,
+            "b": 0.32921233773231506,
+            "a^2": 0.004942086059600115,
+            "a*b": 0.17807023227214813,
+            "b^2": 0.001811100752092898
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9951612393798983,
+          "rmse": 0.1397152990102768,
+          "terms": {
+            "1": -0.0011630149092525244,
+            "a": -0.0244368277490139,
+            "b": -0.015820784494280815,
+            "a^2": 0.004942086059600115,
+            "a*b": 0.17807023227214813,
+            "b^2": 0.001811100752092898,
+            "a^3": 0.0007929815910756588,
+            "a^2*b": 0.0422947071492672,
+            "a*b^2": 0.000794745865277946,
+            "b^3": -0.0007237534737214446
+          }
+        }
+      },
+      "mult_r2": 0.5568681071554138,
+      "swiglu_r2": 0.9860580179655863,
+      "poly3_r2": 0.9951612393798983,
+      "operator": "swiglu",
+      "operator_r2_margin": 0.42918991081017255
+    },
+    {
+      "host": "swiglu",
+      "mode": "joint",
+      "seed": 44,
+      "init": "identity",
+      "status": "completed",
+      "host_ppl": 78.25464053585016,
+      "best_ppl": 72.49905567364159,
+      "final_ppl": 72.49905567364159,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s44_random_identity/inner_swiglu_joint_identity_seed44.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s44_random_identity/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.6066993652782531,
+          "rmse": 1.2346339225769043,
+          "terms": {
+            "1": -0.019549662247300148,
+            "a*b": 0.18218007683753967
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.9905506355532468,
+          "rmse": 0.19137145578861237,
+          "terms": {
+            "1": -0.019549662247300148,
+            "silu(a)*b": 0.3406849801540375
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.9927826980950486,
+          "rmse": 0.1672489196062088,
+          "terms": {
+            "1": -0.019549662247300148,
+            "silu(a)*b": 0.330431193113327,
+            "silu(b)*a": 0.019148847088217735
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.854679399804149,
+          "rmse": 0.750480592250824,
+          "terms": {
+            "1": 0.01951160654425621,
+            "a": 0.0033083914313465357,
+            "b": 0.33778753876686096,
+            "a^2": -0.0021237805485725403,
+            "a*b": 0.18218007683753967,
+            "b^2": -0.002516931388527155
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9966332612170862,
+          "rmse": 0.11423010379076004,
+          "terms": {
+            "1": 0.01951160654425621,
+            "a": 0.009169087745249271,
+            "b": 0.07446147501468658,
+            "a^2": -0.0021237805485725403,
+            "a*b": 0.18218007683753967,
+            "b^2": -0.002516931388527155,
+            "a^3": -0.00043455796549096704,
+            "a^2*b": 0.03393395617604256,
+            "a*b^2": 8.589258504798636e-05,
+            "b^3": -0.001471852883696556
+          }
+        }
+      },
+      "mult_r2": 0.6066993652782531,
+      "swiglu_r2": 0.9905506355532468,
+      "poly3_r2": 0.9966332612170862,
+      "operator": "swiglu",
+      "operator_r2_margin": 0.38385127027499377
+    },
+    {
+      "host": "swiglu",
+      "mode": "joint",
+      "seed": 44,
+      "init": "random",
+      "status": "completed",
+      "host_ppl": 78.25464053585016,
+      "best_ppl": 72.65662173105642,
+      "final_ppl": 72.65662173105642,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s44_random_identity/inner_swiglu_joint_random_seed44.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s44_random_identity/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.6186015925835144,
+          "rmse": 1.1187090873718262,
+          "terms": {
+            "1": 0.0027513974346220493,
+            "a*b": 0.1692667007446289
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.9884081728189771,
+          "rmse": 0.19503101706504822,
+          "terms": {
+            "1": 0.0027513974346220493,
+            "silu(a)*b": 0.3131372332572937
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.993341631567032,
+          "rmse": 0.14781266450881958,
+          "terms": {
+            "1": 0.0027513974346220493,
+            "silu(a)*b": 0.29911044239997864,
+            "silu(b)*a": 0.026194922626018524
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.8566093906262778,
+          "rmse": 0.6859431266784668,
+          "terms": {
+            "1": 0.016416190192103386,
+            "a": 0.01703813672065735,
+            "b": 0.3041062355041504,
+            "a^2": -0.00010314754763385281,
+            "a*b": 0.1692667007446289,
+            "b^2": -0.0015203114598989487
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9963908443519456,
+          "rmse": 0.10882546752691269,
+          "terms": {
+            "1": 0.016416190192103386,
+            "a": 0.0075302342884242535,
+            "b": 0.04966186732053757,
+            "a^2": -0.00010314754763385281,
+            "a*b": 0.1692667007446289,
+            "b^2": -0.0015203114598989487,
+            "a^3": 0.0005527287721633911,
+            "a^2*b": 0.031002148985862732,
+            "a*b^2": 0.00013471701822709292,
+            "b^3": -0.0004292579833418131
+          }
+        }
+      },
+      "mult_r2": 0.6186015925835144,
+      "swiglu_r2": 0.9884081728189771,
+      "poly3_r2": 0.9963908443519456,
+      "operator": "swiglu",
+      "operator_r2_margin": 0.36980658023546265
+    },
+    {
+      "host": "swiglu",
+      "mode": "joint",
+      "seed": 45,
+      "init": "multiply",
+      "status": "completed",
+      "host_ppl": 77.62782386075156,
+      "best_ppl": 73.09565354825432,
+      "final_ppl": 73.09565354825432,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s45_multiply_swiglu/inner_swiglu_joint_multiply_seed45.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s45_multiply_swiglu/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.5738803359389362,
+          "rmse": 1.6021591424942017,
+          "terms": {
+            "1": 0.0647294670343399,
+            "a*b": 0.22089648246765137
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.9906207617343724,
+          "rmse": 0.23769697546958923,
+          "terms": {
+            "1": 0.0647294670343399,
+            "silu(a)*b": 0.4247490167617798
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.9933396537157644,
+          "rmse": 0.20030337572097778,
+          "terms": {
+            "1": 0.0647294670343399,
+            "silu(a)*b": 0.4106402099132538,
+            "silu(b)*a": 0.026348119601607323
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.8185654150716009,
+          "rmse": 1.0454418659210205,
+          "terms": {
+            "1": -0.018203802406787872,
+            "a": 0.03262091428041458,
+            "b": 0.4165557026863098,
+            "a^2": 0.008840092457830906,
+            "a*b": 0.22089648246765137,
+            "b^2": 0.0010128759313374758
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.995533141089198,
+          "rmse": 0.16403669118881226,
+          "terms": {
+            "1": -0.018203802406787872,
+            "a": 0.018407702445983887,
+            "b": 0.042887672781944275,
+            "a^2": 0.008840092457830906,
+            "a*b": 0.22089648246765137,
+            "b^2": 0.0010128759313374758,
+            "a^3": 0.0007517053163610399,
+            "a^2*b": 0.047246962785720825,
+            "a*b^2": 0.0003355902445036918,
+            "b^3": -0.0015850363997742534
+          }
+        }
+      },
+      "mult_r2": 0.5738803359389362,
+      "swiglu_r2": 0.9906207617343724,
+      "poly3_r2": 0.995533141089198,
+      "operator": "swiglu",
+      "operator_r2_margin": 0.41674042579543624
+    },
+    {
+      "host": "swiglu",
+      "mode": "joint",
+      "seed": 45,
+      "init": "swiglu",
+      "status": "completed",
+      "host_ppl": 77.62782386075156,
+      "best_ppl": 72.81868445059705,
+      "final_ppl": 72.81868445059705,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s45_multiply_swiglu/inner_swiglu_joint_swiglu_seed45.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s45_multiply_swiglu/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.5844494186240123,
+          "rmse": 1.3429594039916992,
+          "terms": {
+            "1": -0.08026420325040817,
+            "a*b": 0.18921808898448944
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.9830786227320306,
+          "rmse": 0.2709996700286865,
+          "terms": {
+            "1": -0.08026420325040817,
+            "silu(a)*b": 0.3591565787792206
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.9842574220054344,
+          "rmse": 0.26138991117477417,
+          "terms": {
+            "1": -0.08026420325040817,
+            "silu(a)*b": 0.3512711524963379,
+            "silu(b)*a": 0.014725998975336552
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.7911268496792734,
+          "rmse": 0.9521211981773376,
+          "terms": {
+            "1": -0.08407709002494812,
+            "a": -0.004777035675942898,
+            "b": 0.3263443410396576,
+            "a^2": -0.0016101258806884289,
+            "a*b": 0.18921808898448944,
+            "b^2": 0.002063119551166892
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9956975978864087,
+          "rmse": 0.1366489976644516,
+          "terms": {
+            "1": -0.08407709002494812,
+            "a": -0.016023170202970505,
+            "b": -0.02582731284201145,
+            "a^2": -0.0016101258806884289,
+            "a*b": 0.18921808898448944,
+            "b^2": 0.002063119551166892,
+            "a^3": 0.00022352249652612954,
+            "a^2*b": 0.04312698543071747,
+            "a*b^2": 0.0009337808005511761,
+            "b^3": -0.0007149633020162582
+          }
+        }
+      },
+      "mult_r2": 0.5844494186240123,
+      "swiglu_r2": 0.9830786227320306,
+      "poly3_r2": 0.9956975978864087,
+      "operator": "swiglu",
+      "operator_r2_margin": 0.3986292041080183
+    },
+    {
+      "host": "swiglu",
+      "mode": "joint",
+      "seed": 45,
+      "init": "identity",
+      "status": "completed",
+      "host_ppl": 77.62782386075156,
+      "best_ppl": 72.48151535220661,
+      "final_ppl": 72.48151535220661,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s45_random_identity/inner_swiglu_joint_identity_seed45.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s45_random_identity/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.6114678334071608,
+          "rmse": 1.2646610736846924,
+          "terms": {
+            "1": 0.019796643406152725,
+            "a*b": 0.1884889006614685
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.9905184883250985,
+          "rmse": 0.19756020605564117,
+          "terms": {
+            "1": 0.019796643406152725,
+            "silu(a)*b": 0.35109996795654297
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.9913790003032812,
+          "rmse": 0.18838204443454742,
+          "terms": {
+            "1": 0.019796643406152725,
+            "silu(a)*b": 0.3445385992527008,
+            "silu(b)*a": 0.012253295630216599
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.8533782162891974,
+          "rmse": 0.7768906950950623,
+          "terms": {
+            "1": 0.031069910153746605,
+            "a": -0.015657609328627586,
+            "b": 0.34359097480773926,
+            "a^2": -0.001057818764820695,
+            "a*b": 0.1884889006614685,
+            "b^2": -0.00028151264996267855
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9964162060542409,
+          "rmse": 0.12145969271659851,
+          "terms": {
+            "1": 0.031069910153746605,
+            "a": -0.005490179639309645,
+            "b": 0.05491122230887413,
+            "a^2": -0.001057818764820695,
+            "a*b": 0.1884889006614685,
+            "b^2": -0.00028151264996267855,
+            "a^3": -0.000388123415177688,
+            "a^2*b": 0.03512531891465187,
+            "a*b^2": -0.0005093525978736579,
+            "b^3": -0.0004602585977409035
+          }
+        }
+      },
+      "mult_r2": 0.6114678334071608,
+      "swiglu_r2": 0.9905184883250985,
+      "poly3_r2": 0.9964162060542409,
+      "operator": "swiglu",
+      "operator_r2_margin": 0.37905065491793766
+    },
+    {
+      "host": "swiglu",
+      "mode": "joint",
+      "seed": 45,
+      "init": "random",
+      "status": "completed",
+      "host_ppl": 77.62782386075156,
+      "best_ppl": 72.29887810865397,
+      "final_ppl": 72.29887810865397,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s45_random_identity/inner_swiglu_joint_random_seed45.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s45_random_identity/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.6228305074065035,
+          "rmse": 1.126734972000122,
+          "terms": {
+            "1": 0.0011504272697493434,
+            "a*b": 0.1720191091299057
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.9883852358611107,
+          "rmse": 0.19772368669509888,
+          "terms": {
+            "1": 0.0011504272697493434,
+            "silu(a)*b": 0.3171432316303253
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.9894020807954188,
+          "rmse": 0.1888703554868698,
+          "terms": {
+            "1": 0.0011504272697493434,
+            "silu(a)*b": 0.3106935918331146,
+            "silu(b)*a": 0.012044651433825493
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.8625102981738388,
+          "rmse": 0.680281400680542,
+          "terms": {
+            "1": 0.008801630698144436,
+            "a": -0.01571197248995304,
+            "b": 0.309108704328537,
+            "a^2": 0.001448627095669508,
+            "a*b": 0.1720191091299057,
+            "b^2": -0.002357635647058487
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9960498328907686,
+          "rmse": 0.115308478474617,
+          "terms": {
+            "1": 0.008801630698144436,
+            "a": -0.010745286010205746,
+            "b": 0.05455588549375534,
+            "a^2": 0.001448627095669508,
+            "a*b": 0.1720191091299057,
+            "b^2": -0.002357635647058487,
+            "a^3": 0.00020360364578664303,
+            "a^2*b": 0.030680205672979355,
+            "a*b^2": -0.0009565463406033814,
+            "b^3": -0.00024323731486219913
+          }
+        }
+      },
+      "mult_r2": 0.6228305074065035,
+      "swiglu_r2": 0.9883852358611107,
+      "poly3_r2": 0.9960498328907686,
+      "operator": "swiglu",
+      "operator_r2_margin": 0.36555472845460724
+    },
+    {
+      "host": "swiglu",
+      "mode": "joint",
+      "seed": 46,
+      "init": "multiply",
+      "status": "completed",
+      "host_ppl": 78.6560143503561,
+      "best_ppl": 72.37790496482754,
+      "final_ppl": 72.37790496482754,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s46_multiply_swiglu/inner_swiglu_joint_multiply_seed46.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s46_multiply_swiglu/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.5619248225317398,
+          "rmse": 1.7086111307144165,
+          "terms": {
+            "1": 0.07631109654903412,
+            "a*b": 0.22990387678146362
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.9929346898770582,
+          "rmse": 0.21698740124702454,
+          "terms": {
+            "1": 0.07631109654903412,
+            "silu(a)*b": 0.4472682476043701
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.9935744186516469,
+          "rmse": 0.20693080127239227,
+          "terms": {
+            "1": 0.07631109654903412,
+            "silu(a)*b": 0.44007009267807007,
+            "silu(b)*a": 0.01344251912087202
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.816838259568374,
+          "rmse": 1.104806661605835,
+          "terms": {
+            "1": 0.03187977150082588,
+            "a": 0.014675800688564777,
+            "b": 0.44878607988357544,
+            "a^2": 0.005418701097369194,
+            "a*b": 0.22990387678146362,
+            "b^2": -0.0001399947504978627
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9954237332775028,
+          "rmse": 0.17463229596614838,
+          "terms": {
+            "1": 0.03187977150082588,
+            "a": 0.01770590804517269,
+            "b": 0.06694502383470535,
+            "a^2": 0.005418701097369194,
+            "a*b": 0.22990387678146362,
+            "b^2": -0.0001399947504978627,
+            "a^3": 0.00023621466243639588,
+            "a^2*b": 0.04989280924201012,
+            "a*b^2": -0.0007851669215597212,
+            "b^3": -0.0025155351031571627
+          }
+        }
+      },
+      "mult_r2": 0.5619248225317398,
+      "swiglu_r2": 0.9929346898770582,
+      "poly3_r2": 0.9954237332775028,
+      "operator": "swiglu",
+      "operator_r2_margin": 0.43100986734531843
+    },
+    {
+      "host": "swiglu",
+      "mode": "joint",
+      "seed": 46,
+      "init": "swiglu",
+      "status": "completed",
+      "host_ppl": 78.6560143503561,
+      "best_ppl": 72.76502981910254,
+      "final_ppl": 72.8600529668629,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s46_multiply_swiglu/inner_swiglu_joint_swiglu_seed46.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s46_multiply_swiglu/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.5735903663688762,
+          "rmse": 1.3140546083450317,
+          "terms": {
+            "1": -0.007286925800144672,
+            "a*b": 0.18106691539287567
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.9849213732348139,
+          "rmse": 0.24710460007190704,
+          "terms": {
+            "1": -0.007286925800144672,
+            "silu(a)*b": 0.34724780917167664
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.9864239045290571,
+          "rmse": 0.23447003960609436,
+          "terms": {
+            "1": -0.007286925800144672,
+            "silu(a)*b": 0.3386484384536743,
+            "silu(b)*a": 0.01605924777686596
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.7894532175817472,
+          "rmse": 0.9233667850494385,
+          "terms": {
+            "1": -0.011883193626999855,
+            "a": 0.01369529776275158,
+            "b": 0.32196736335754395,
+            "a^2": 0.0005067586898803711,
+            "a*b": 0.18106691539287567,
+            "b^2": 3.9305363316088915e-05
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9955977326444486,
+          "rmse": 0.13351748883724213,
+          "terms": {
+            "1": -0.011883193626999855,
+            "a": 0.01569507271051407,
+            "b": -0.017720960080623627,
+            "a^2": 0.0005067586898803711,
+            "a*b": 0.18106691539287567,
+            "b^2": 3.9305363316088915e-05,
+            "a^3": -3.143022695439868e-05,
+            "a^2*b": 0.041826024651527405,
+            "a*b^2": -0.0001810125686461106,
+            "b^3": -0.0008161517325788736
+          }
+        }
+      },
+      "mult_r2": 0.5735903663688762,
+      "swiglu_r2": 0.9849213732348139,
+      "poly3_r2": 0.9955977326444486,
+      "operator": "swiglu",
+      "operator_r2_margin": 0.4113310068659377
+    },
+    {
+      "host": "swiglu",
+      "mode": "joint",
+      "seed": 46,
+      "init": "identity",
+      "status": "completed",
+      "host_ppl": 78.6560143503561,
+      "best_ppl": 72.80414507899894,
+      "final_ppl": 72.80414507899894,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s46_random_identity/inner_swiglu_joint_identity_seed46.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s46_random_identity/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.5895972562193552,
+          "rmse": 1.2762752771377563,
+          "terms": {
+            "1": 0.022037923336029053,
+            "a*b": 0.18174198269844055
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.9937592785066678,
+          "rmse": 0.15738257765769958,
+          "terms": {
+            "1": 0.022037923336029053,
+            "silu(a)*b": 0.345317542552948
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.9948455704855746,
+          "rmse": 0.1430307924747467,
+          "terms": {
+            "1": 0.022037923336029053,
+            "silu(a)*b": 0.33807873725891113,
+            "silu(b)*a": 0.013518426567316055
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.8517951093141444,
+          "rmse": 0.766956090927124,
+          "terms": {
+            "1": -0.023791123181581497,
+            "a": 0.00044710180372931063,
+            "b": 0.35133102536201477,
+            "a^2": 0.005484962835907936,
+            "a*b": 0.18174198269844055,
+            "b^2": -4.019881453132257e-05
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.996261610374271,
+          "rmse": 0.12180960178375244,
+          "terms": {
+            "1": -0.023791123181581497,
+            "a": -0.01111211720854044,
+            "b": 0.06962504237890244,
+            "a^2": 0.005484962835907936,
+            "a*b": 0.18174198269844055,
+            "b^2": -4.019881453132257e-05,
+            "a^3": 0.0008520217379555106,
+            "a^2*b": 0.03465652093291283,
+            "a*b^2": -0.00016028375830501318,
+            "b^3": -0.000660114863421768
+          }
+        }
+      },
+      "mult_r2": 0.5895972562193552,
+      "swiglu_r2": 0.9937592785066678,
+      "poly3_r2": 0.996261610374271,
+      "operator": "swiglu",
+      "operator_r2_margin": 0.4041620222873126
+    },
+    {
+      "host": "swiglu",
+      "mode": "joint",
+      "seed": 46,
+      "init": "random",
+      "status": "completed",
+      "host_ppl": 78.6560143503561,
+      "best_ppl": 72.69448993260428,
+      "final_ppl": 72.74560426468736,
+      "n_epochs": 10,
+      "checkpoint": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s46_random_identity/inner_swiglu_joint_random_seed46.pth",
+      "result_file": "/user_data/yizhouc3/xor_causal_v2/probes/swiglu_joint_s46_random_identity/results.json",
+      "fits": {
+        "mult": {
+          "family": "mult",
+          "r2": 0.6238822424180834,
+          "rmse": 1.1013487577438354,
+          "terms": {
+            "1": -0.027509324252605438,
+            "a*b": 0.16852040588855743
+          }
+        },
+        "swiglu": {
+          "family": "swiglu",
+          "r2": 0.9869417544662156,
+          "rmse": 0.20521323382854462,
+          "terms": {
+            "1": -0.027509324252605438,
+            "silu(a)*b": 0.31020408868789673
+          }
+        },
+        "swiglu_sym": {
+          "family": "swiglu_sym",
+          "r2": 0.9879507899673168,
+          "rmse": 0.19712524116039276,
+          "terms": {
+            "1": -0.027509324252605438,
+            "silu(a)*b": 0.30391523241996765,
+            "silu(b)*a": 0.011744366027414799
+          }
+        },
+        "poly2": {
+          "family": "poly2",
+          "r2": 0.8579597875562611,
+          "rmse": 0.6768128275871277,
+          "terms": {
+            "1": -0.023351138457655907,
+            "a": -0.020924145355820656,
+            "b": 0.29855549335479736,
+            "a^2": -0.0031288049649447203,
+            "a*b": 0.16852040588855743,
+            "b^2": 0.00263478746637702
+          }
+        },
+        "poly3": {
+          "family": "poly3",
+          "r2": 0.9964699399632834,
+          "rmse": 0.1066974326968193,
+          "terms": {
+            "1": -0.023351138457655907,
+            "a": -0.0077751632779836655,
+            "b": 0.048904821276664734,
+            "a^2": -0.0031288049649447203,
+            "a*b": 0.16852040588855743,
+            "b^2": 0.00263478746637702,
+            "a^3": -0.0008385534747503698,
+            "a^2*b": 0.030588513240218163,
+            "a*b^2": -5.283176506054588e-05,
+            "b^3": -0.0005158631247468293
+          }
+        }
+      },
+      "mult_r2": 0.6238822424180834,
+      "swiglu_r2": 0.9869417544662156,
+      "poly3_r2": 0.9964699399632834,
+      "operator": "swiglu",
+      "operator_r2_margin": 0.36305951204813214
+    }
+  ],
+  "summary": {
+    "expected_conditions": 40,
+    "complete_conditions": 40,
+    "missing_conditions": [],
+    "unexpected_conditions": [],
+    "groups": [
+      {
+        "host": "bilinear",
+        "mode": "frozen",
+        "init": "multiply",
+        "n": 5,
+        "seeds": [
+          42,
+          43,
+          44,
+          45,
+          46
+        ],
+        "best_ppl_mean": 79.56483502844799,
+        "best_ppl_sample_sd": 0.721401221647127,
+        "host_ppl_mean": 79.66476149492378,
+        "ppl_delta_mean": -0.09992646647579022,
+        "mult_r2_mean": 0.9990246531582155,
+        "mult_r2_sample_sd": 0.0009124014712649288,
+        "swiglu_r2_mean": 0.5445662761669757,
+        "swiglu_r2_sample_sd": 0.011087350970857345,
+        "operator_votes": {
+          "multiply": 5,
+          "swiglu": 0
+        }
+      },
+      {
+        "host": "bilinear",
+        "mode": "frozen",
+        "init": "random",
+        "n": 5,
+        "seeds": [
+          42,
+          43,
+          44,
+          45,
+          46
+        ],
+        "best_ppl_mean": 79.56734203992205,
+        "best_ppl_sample_sd": 0.7253134669446096,
+        "host_ppl_mean": 79.66476149492378,
+        "ppl_delta_mean": -0.09741945500173017,
+        "mult_r2_mean": 0.9992999714895049,
+        "mult_r2_sample_sd": 0.0002099206897127439,
+        "swiglu_r2_mean": 0.5397939512139766,
+        "swiglu_r2_sample_sd": 0.009414897001032955,
+        "operator_votes": {
+          "multiply": 5,
+          "swiglu": 0
+        }
+      },
+      {
+        "host": "bilinear",
+        "mode": "joint",
+        "init": "multiply",
+        "n": 5,
+        "seeds": [
+          42,
+          43,
+          44,
+          45,
+          46
+        ],
+        "best_ppl_mean": 73.78627377843151,
+        "best_ppl_sample_sd": 0.4531823752277778,
+        "host_ppl_mean": 79.66476149492378,
+        "ppl_delta_mean": -5.878487716492273,
+        "mult_r2_mean": 0.9989306724161395,
+        "mult_r2_sample_sd": 0.0005708140386831779,
+        "swiglu_r2_mean": 0.5383784766093797,
+        "swiglu_r2_sample_sd": 0.019843767938205154,
+        "operator_votes": {
+          "multiply": 5,
+          "swiglu": 0
+        }
+      },
+      {
+        "host": "bilinear",
+        "mode": "joint",
+        "init": "random",
+        "n": 5,
+        "seeds": [
+          42,
+          43,
+          44,
+          45,
+          46
+        ],
+        "best_ppl_mean": 73.70134528079248,
+        "best_ppl_sample_sd": 0.5886334860659851,
+        "host_ppl_mean": 79.66476149492378,
+        "ppl_delta_mean": -5.963416214131283,
+        "mult_r2_mean": 0.9976062845093491,
+        "mult_r2_sample_sd": 0.0015086647238591177,
+        "swiglu_r2_mean": 0.5475722212289238,
+        "swiglu_r2_sample_sd": 0.022695887539502364,
+        "operator_votes": {
+          "multiply": 5,
+          "swiglu": 0
+        }
+      },
+      {
+        "host": "swiglu",
+        "mode": "joint",
+        "init": "identity",
+        "n": 5,
+        "seeds": [
+          42,
+          43,
+          44,
+          45,
+          46
+        ],
+        "best_ppl_mean": 72.02822322401906,
+        "best_ppl_sample_sd": 0.8108465689278668,
+        "host_ppl_mean": 77.5438877420457,
+        "ppl_delta_mean": -5.515664518026631,
+        "mult_r2_mean": 0.6050278254544514,
+        "mult_r2_sample_sd": 0.009205360520970539,
+        "swiglu_r2_mean": 0.9910427953194155,
+        "swiglu_r2_sample_sd": 0.0019493588801053406,
+        "operator_votes": {
+          "multiply": 0,
+          "swiglu": 5
+        }
+      },
+      {
+        "host": "swiglu",
+        "mode": "joint",
+        "init": "multiply",
+        "n": 5,
+        "seeds": [
+          42,
+          43,
+          44,
+          45,
+          46
+        ],
+        "best_ppl_mean": 72.06404338769941,
+        "best_ppl_sample_sd": 0.7826215659508715,
+        "host_ppl_mean": 77.5438877420457,
+        "ppl_delta_mean": -5.479844354346267,
+        "mult_r2_mean": 0.5625021130964436,
+        "mult_r2_sample_sd": 0.007493125770184436,
+        "swiglu_r2_mean": 0.9911722179673781,
+        "swiglu_r2_sample_sd": 0.0016277562579836292,
+        "operator_votes": {
+          "multiply": 0,
+          "swiglu": 5
+        }
+      },
+      {
+        "host": "swiglu",
+        "mode": "joint",
+        "init": "random",
+        "n": 5,
+        "seeds": [
+          42,
+          43,
+          44,
+          45,
+          46
+        ],
+        "best_ppl_mean": 71.98482898983188,
+        "best_ppl_sample_sd": 0.7894055573411218,
+        "host_ppl_mean": 77.5438877420457,
+        "ppl_delta_mean": -5.559058752213818,
+        "mult_r2_mean": 0.6203927572027484,
+        "mult_r2_sample_sd": 0.002921971371967137,
+        "swiglu_r2_mean": 0.9883064141047105,
+        "swiglu_r2_sample_sd": 0.0008105252888585116,
+        "operator_votes": {
+          "multiply": 0,
+          "swiglu": 5
+        }
+      },
+      {
+        "host": "swiglu",
+        "mode": "joint",
+        "init": "swiglu",
+        "n": 5,
+        "seeds": [
+          42,
+          43,
+          44,
+          45,
+          46
+        ],
+        "best_ppl_mean": 72.2064889032558,
+        "best_ppl_sample_sd": 0.6894639511483619,
+        "host_ppl_mean": 77.5438877420457,
+        "ppl_delta_mean": -5.337398838789895,
+        "mult_r2_mean": 0.5708117059412843,
+        "mult_r2_sample_sd": 0.013201596474898679,
+        "swiglu_r2_mean": 0.9852552719272911,
+        "swiglu_r2_sample_sd": 0.00258610210602328,
+        "operator_votes": {
+          "multiply": 0,
+          "swiglu": 5
+        }
+      }
+    ]
+  }
+}

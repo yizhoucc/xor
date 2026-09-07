@@ -8,7 +8,7 @@
 
 把 ReLU 换成一个小 MLP（两输入一输出），让每个神经元能看到隔壁特征。但**我们不卖"它是更强的激活函数"**——因为从头训在大模型上打不过 SwiGLU、直接替换又慢又掉点（Qwen -9%）。如果按"better activation"写，reviewer 会说"和原论文（IEEE Access 2022）一样、marginal、推理慢、没价值"。
 
-**定位：用它探测给定优化 basin 中的二元架构基元。** SwiGLU-host 内，random / identity / multiply 等 InnerNet 初值都会走到 SwiGLU-like 表面；但新的 Bilinear-host 因果实验中，4 个完成的 joint seeds 全部保持纯 `a·b`（mult R²≥0.998），没有转成 SwiGLU，同时 PPL 也达到约 73.5。结论因此不是“存在唯一、网络无关的 SwiGLU 最优形态”，而是 **InnerNet 能从不同初值优化/恢复与外围网络 basin 相容的高性能二元算子**。这是更可信也更一般的 architecture-probe 结论。
+**定位：用它探测给定优化 basin 中的二元架构基元。** 完整40条件因果矩阵中，Bilinear-host 的20/20条件全部保持纯 `a·b`，SwiGLU-host 的20/20条件全部收敛为SwiGLU-like表面，且两边都与InnerNet初值无关。结论不是“存在唯一、网络无关的SwiGLU最优形态”，而是 **InnerNet 能从不同初值优化/恢复与外围网络 basin 相容的高性能二元算子**。这是更可信也更一般的 architecture-probe 结论。
 
 功能性结果（不作机制性 claim）：Sequential MNIST 约束模型以 21K 参数在 8/9 个实际训练 seed 达到 98.44±0.22%，但单个 InnerNet 表面仍不可辨识为标准 gate。
 
@@ -33,6 +33,8 @@
 
 **部署结果**：CNN 上 InnerNet 为 **84.95±0.57%**，提炼后的固定 poly3 为 **81.32±0.32%**，ReLU/SwiGLU 约为79.9%（5 seeds，sample SD）。固定算子比 InnerNet 快 **2.68×**，但仍比 SwiGLU 慢2.46×，并损失3.63个准确率点；它仍显著优于 ReLU/SwiGLU约1.4点。说明“发现→提炼”能回收部分效率和收益，但现有手写多项式没有完成无损部署。FFN deploy 超时，只有 InnerNet 4 seeds且 distilled 0 seeds；已完成分支显示 InnerNet训练吞吐约比SwiGLU慢6.03×，不据此声称FFN部署成功。详见 `results/audit/deploy_analysis.json`。
 
+**统一计算成本profile（RTX 2080 Ti，FP32，同进程synthetic batch）**：相对SwiGLU，InnerNet的主要算子FLOPs只有 **1.17×**，但CNN/Transformer推理分别慢 **17.33×/12.02×**，训练步慢 **7.63×/6.27×**，峰值训练显存为 **7.90×/6.43×**。因此主要瓶颈不是参数量或理论FLOPs，而是逐元素小MLP造成的大量未融合kernel与中间张量。poly3提炼后相对InnerNet推理快4.84×/4.37×，但未融合实现仍比SwiGLU慢3.58×/2.75×。详见 `results/audit/compute_cost_profile.json`。
+
 ---
 
 ## 1. CNN 图像分类（5 seeds）
@@ -41,17 +43,17 @@
 |--------|-------|-------|------|---------|-------------|--------|------|
 | MNIST | 99.41±0.04 | 99.42±0.06 | 99.02±0.03 | 99.18±0.02 | — | — | +0.39 |
 | CIFAR-10 | 78.57±0.74 | 81.02±1.02 | 73.99±0.49 | 75.14±0.34 | 70.67±0.43 | 79.79±0.54 | **+4.58** |
-| FashionMNIST | 90.91±0.29 | ⏳ | 89.34±0.13 | 89.34±0.16 | — | — | +1.57 |
-| SVHN | 95.016±0.005 (n=3) | 95.16±0.23 | 92.55±0.19 | 92.82±0.09 | — | — | +2.46 |
+| FashionMNIST | 90.91±0.29 | 91.36±0.47 | 89.34±0.13 | 89.34±0.16 | — | — | +1.57 |
+| SVHN | 94.78±0.61 | 95.16±0.23 | 92.55±0.19 | 92.82±0.09 | — | — | +2.23 |
 | CIFAR-100 big | 53.74±0.88 | — | 50.00±0.83 | — | — | 46.48±0.50 | **+3.74** |
 
 参数公平对比：同样 127K 参数，InnerNet 78.57% vs ReLU 70.67%，差 8 个点。
 
-补充标量激活基线（CIFAR-10 CNN+LN，宽度46/92/92/92，各5 seeds）：**PReLU 76.76±0.22%**，**Swish/SiLU 75.14±0.25%**。PReLU 比 ReLU+LN 高1.62点，但仍低于2-arg InnerNet 1.81点；Swish与ReLU+LN基本相同。这排除了“只要可学习斜率或换成平滑标量激活就能得到同等收益”的简单解释。Configs：`config/experiments/cnn_cifar_prelu_ln.yaml`、`cnn_cifar_swish_ln.yaml`；exp：`exp/cnn_cifar_{prelu,swish}_ln_20260827_*`。
+补充标量激活基线（CIFAR-10 CNN+LN，宽度46/92/92/92，各5 seeds）：**PReLU 76.76±0.22%**，**Swish/SiLU 75.14±0.25%**。PReLU 比 ReLU+LN 高1.62点（4个共同seeds paired-t p=0.0096），但仍低于2-arg InnerNet 1.81点（5-seed paired-t p=0.0056）；Swish比InnerNet低3.43点（p=0.00052），且与ReLU+LN基本相同。这排除了“只要可学习斜率或换成平滑标量激活就能得到同等收益”的简单解释。Configs：`config/experiments/cnn_cifar_prelu_ln.yaml`、`cnn_cifar_swish_ln.yaml`；exp：`exp/cnn_cifar_{prelu,swish}_ln_20260827_*`。
 
 Configs: `config/experiments/cnn_cifar_2arg.yaml` 等，exp: `exp/cnn_cifar_2arg_*`
 
-2026-08-27 原始结果补拉：FashionMNIST 2-arg 已达到 5 seeds（90.91±0.29%，population SD），SVHN 1-arg 已达到 5 seeds（95.16±0.23%）；SVHN 2-arg 当前 3 seeds 为 95.016±0.005%，仍需补 seeds 44/45。对应 config：`config/experiments/cnn_fmnist_2arg.yaml`、`cnn_svhn_1arg.yaml`、`cnn_svhn_2arg.yaml`；exp 模式：`exp/cnn_{fmnist,svhn}_{1arg,2arg}_*`。
+四组FashionMNIST/SVHN的1-arg/2-arg结果均已达到5 seeds。FashionMNIST 1-arg比2-arg高0.45点（paired-t p=0.0504）；SVHN 1-arg比2-arg高0.38点，但受2-arg seed45=93.57%低值影响且不显著（p=0.374）。对应 config：`config/experiments/cnn_{fmnist,svhn}_{1arg,2arg}.yaml`；exp模式：`exp/cnn_{fmnist,svhn}_{1arg,2arg}_*`。
 
 二维激活对比图 `results/figures/fig2_2d_activation_surfaces.{png,pdf}` 的 InnerNet panel 现直接读取 `results/figures/inner_weights_cnn_seed42.pth`，不再使用手写示意函数。
 
@@ -230,7 +232,7 @@ d=64 的 post-sharing checkpoint 也明确是 SwiGLU-like：单项拟合解释 9
 
 **跨 seed 一致性（warm-start retention）**：5 个 seeds 的后续任务优化彼此独立，但它们共享同一份显式拟合到 SwiGLU 的 InnerNet 初值。逐个提炼得到 SwiGLU 拟合 **R²=0.947±0.010**（范围 0.931–0.956），系数 **0.238±0.005**，纯乘法约 0.66。这个结果排除了单个 seed 的偶然漂移，但不能升级成“独立再发现”；要支持后者，必须分析从 Gaussian/random 等非 SwiGLU 初值训练并保存的多 seed checkpoint。
 
-**Bilinear-host 因果结果（2026-07-30）**：4 个完成的 joint seeds（42/43/45/46）中，host PPL 为 **79.60±0.31**，换入 random/multiply InnerNet 并联合训练 10ep 后为 **73.51±0.37 / 73.72±0.35**。但表面没有变成 SwiGLU：random 的 mult R² **0.9982±0.0006**、multiply 的 mult R² **0.9989±0.0005**，SwiGLU R² 只有约 0.53/0.55。已有 frozen controls 同样恢复 `a·b`（mult R²≈0.999）。因此 SwiGLU-host 的 cross-init 结论只在该 host basin 内成立，不能写成 network-independent attractor。PPL 改善也不能全归因于 activation，因为缺少 Bilinear host 继续训练 10ep 的对照。
+**完整 causal matrix（5 seeds，40/40条件）**：Bilinear-host下，joint random/multiply分别达到PPL **73.70±0.59 / 73.79±0.45**，表面仍为纯乘法（mult R² **0.9976 / 0.9989**）；frozen random/multiply为PPL **79.57±0.73 / 79.56±0.72**，mult R² **0.9993 / 0.9990**。20/20条件均投票为multiply。SwiGLU-host下，random/identity/multiply/swiglu四种初值达到PPL **71.98–72.21**、SwiGLU R² **0.9853–0.9912**，20/20条件均投票为SwiGLU。最终算子完全由host/optimization basin区分，而非InnerNet初值；这排除了network-independent SwiGLU attractor。PPL改善不能全归因于activation，因为没有对应host继续训练10ep的对照。
 
 | | swiglu R² | silu(a)·b 系数 | mult R² |
 |--|:---:|:---:|:---:|
@@ -421,21 +423,21 @@ Acrobot 上 InnerNet 比 ReLU 高21.7 return points（paired-t p=0.0036，Wilcox
 
 | 实验 | 进度 |
 |------|------|
-| P1 causal matrix v2 | 36/40 条件已有结构化结果；joint s46/frozen s44 原 jobs 超时，677668/677669 以48h limit补跑，完成通知677677 |
-| Critical CNN seeds | 原6 jobs 因 `PRETRAIN_DONE` 与缺失 checkpoint 不一致而失败；已保留旧目录、修复标记并从pretrain重提677670–677675，完成通知677676 |
+| P1 causal matrix v2 | ✅ 40/40条件完成；Bilinear 20/20→multiply，SwiGLU 20/20→SwiGLU，结果与final checkpoints已拉回 |
+| Critical CNN seeds | ✅ SVHN 2-arg与FashionMNIST 1-arg均补齐5 seeds；结果与checkpoints已拉回（排除巨大中间缓存） |
 | PReLU/Swish baselines | ✅ 各5 seeds完成：PReLU+LN 76.76±0.22%，Swish+LN 75.14±0.25%；原始结果与checkpoints已拉回 |
 
 GPT v4 (3/5 seeds)、free_init_v2 (Wiki 3/3, MLM 2/3)、scratch_init (2.5/5) 时间到未完成，数据已够用。
 
 ## 统计与可追溯性（2026-08-27）
 
-- `scripts/build_result_manifest.py` 已扫描 477 个实验目录，得到 1602 行结构化指标：402 个实验 raw-verified，75 个 incomplete，0 个 completed-no-result；deploy、Seq-MNIST、warm-start 与 PPO 脚本自产的结果均已纳入，PPO 额外记录每个 seed 的最后20个评估点均值。
+- `scripts/build_result_manifest.py` 已扫描 507 个实验目录，得到 1678 行结构化指标：438 个实验 raw-verified，69 个 incomplete，0 个 completed-no-result；自动分组得到300个可汇报组且无seed冲突。deploy、Seq-MNIST、warm-start 与 PPO 脚本自产的结果均已纳入，PPO 额外记录每个 seed 的最后20个评估点均值。
 - `scripts/summarize_result_manifest.py` 按科学配置、condition 与 run status 自动去重并汇总 mean、sample SD、population SD、raw seeds/values；当前 238 个指标组全部可汇报，0 个同配置 seed 数值冲突。
 - NaN run 不再与成功 run 混算：SeqMinGatedRNN 成功组 8 seeds 自动复算为 **98.435%**（sample SD 0.236%，population SD 0.220%），另保留 1 个 NaN seed 的独立记录。
 - 自动发现 1 个同名配置碰撞：`mlp_mnist_relu` 同时指 64-width 未参数匹配版（seed1234=85.63%）和 112-width 参数匹配版（seed1234=91.27%，其余 seeds 同组）。两者现在按配置签名分开，不再混算。
-- 24 项核心比较已由 `config/audit/core_comparisons.yaml` 注册并自动复算。Transformer d=64/128/192/256 的 InnerNet-vs-GELU paired-t p 分别为 **0.00022 / 0.05095 / 0.361 / 0.173**；d=128 SwiGLU-vs-InnerNet p=**0.00917**。CNN、AE、Big-MLP headline 的 paired-t 均 <0.014；PPO Acrobot InnerNet-vs-ReLU p=0.0036，LunarLander p=0.897；Housing 五个宽度的配对检验也已注册。
+- 29 项核心比较已由 `config/audit/core_comparisons.yaml` 注册并自动复算。Transformer d=64/128/192/256 的 InnerNet-vs-GELU paired-t p 分别为 **0.00022 / 0.05095 / 0.361 / 0.173**；d=128 SwiGLU-vs-InnerNet p=**0.00917**。新增M6和补seed比较：InnerNet-vs-PReLU p=0.0056、InnerNet-vs-Swish p=0.00052、FMNIST 1arg-vs-2arg p=0.0504、SVHN 2arg-vs-1arg p=0.374。
 - 小样本解释：n=5 时双侧 Wilcoxon 的离散最小值通常是 0.0625，因此不单看“p<0.05”；正式报告同时给 raw seeds、bootstrap CI、paired-t/Wilcoxon 和 Cohen's dz。
-- `scripts/check_document_claims.py` 已把 RESULTS_CN/EN 的58个已注册 headline table cells 与 canonical summary 自动对照，当前 **58/58 match**。
+- `scripts/check_document_claims.py` 已把 RESULTS_CN/EN 的70个已注册 headline table cells 与 canonical summary 自动对照，当前 **70/70 match**。
 - 产物：`results/audit/grouped_metric_summary.csv`、`metric_conflicts.csv`、`experiment_variant_collisions.csv`、`core_comparisons.csv`、`document_consistency.csv`、`deploy_analysis.json`；31 个审计/统计单元测试全部通过。
 
 ## 总结

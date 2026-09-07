@@ -1,0 +1,93 @@
+{
+  "cnn": {
+    "distilled": {
+      "forward_ms_per_batch": 7.000537738204002,
+      "inference_items_per_second": 14284.616945105583,
+      "parameters": 658570,
+      "peak_training_memory_mb": 413.18896484375,
+      "profiled_forward_flops_per_batch": 11742336000,
+      "profiled_forward_flops_per_item": 117423360.0,
+      "train_step_ms_per_batch": 22.626345418393612,
+      "training_items_per_second": 4419.626685213914
+    },
+    "innernet": {
+      "forward_ms_per_batch": 33.893806114792824,
+      "inference_items_per_second": 2950.3915748298145,
+      "parameters": 658699,
+      "peak_training_memory_mb": 2367.14599609375,
+      "profiled_forward_flops_per_batch": 13401024000,
+      "profiled_forward_flops_per_item": 134010240.0,
+      "train_step_ms_per_batch": 60.29457040131092,
+      "training_items_per_second": 1658.524131350736
+    },
+    "relu": {
+      "forward_ms_per_batch": 1.1614027991890907,
+      "inference_items_per_second": 86102.7716394532,
+      "parameters": 331690,
+      "peak_training_memory_mb": 146.6259765625,
+      "profiled_forward_flops_per_batch": 5724096000,
+      "profiled_forward_flops_per_item": 57240960.0,
+      "train_step_ms_per_batch": 3.635129053145647,
+      "training_items_per_second": 27509.339706513398
+    },
+    "swiglu": {
+      "forward_ms_per_batch": 1.9555484876036644,
+      "inference_items_per_second": 51136.54845886247,
+      "parameters": 658570,
+      "peak_training_memory_mb": 299.67626953125,
+      "profiled_forward_flops_per_batch": 11457408000,
+      "profiled_forward_flops_per_item": 114574080.0,
+      "train_step_ms_per_batch": 7.906102389097214,
+      "training_items_per_second": 12648.457492519125
+    }
+  },
+  "environment": {
+    "gpu": "NVIDIA GeForce RTX 2080 Ti",
+    "host": "mind-0-22",
+    "notes": "Profiler FLOPs include only operations supported by PyTorch profiler.",
+    "precision": "float32",
+    "torch": "2.6.0+cu124"
+  },
+  "transformer_ffn_d128": {
+    "distilled": {
+      "forward_ms_per_batch": 13.207826092839241,
+      "inference_items_per_second": 620238.330094411,
+      "parameters": 2347536,
+      "peak_training_memory_mb": 752.86376953125,
+      "profiled_forward_flops_per_batch": 19078316032,
+      "profiled_forward_flops_per_item": 2328896.0,
+      "train_step_ms_per_batch": 39.80594063177705,
+      "training_items_per_second": 205798.42782211088
+    },
+    "gelu": {
+      "forward_ms_per_batch": 4.4182708114385605,
+      "inference_items_per_second": 1854119.0319958539,
+      "parameters": 2083344,
+      "peak_training_memory_mb": 415.8564453125,
+      "profiled_forward_flops_per_batch": 14296809472,
+      "profiled_forward_flops_per_item": 1745216.0,
+      "train_step_ms_per_batch": 15.123267471790314,
+      "training_items_per_second": 541681.8829185343
+    },
+    "innernet": {
+      "forward_ms_per_batch": 57.75814317166805,
+      "inference_items_per_second": 141832.81439037673,
+      "parameters": 2347665,
+      "peak_training_memory_mb": 3504.86669921875,
+      "profiled_forward_flops_per_batch": 21813002240,
+      "profiled_forward_flops_per_item": 2662720.0,
+      "train_step_ms_per_batch": 104.02488755062222,
+      "training_items_per_second": 78750.3855364754
+    },
+    "swiglu": {
+      "forward_ms_per_batch": 4.8057470098137856,
+      "inference_items_per_second": 1704625.7290013744,
+      "parameters": 2347536,
+      "peak_training_memory_mb": 544.8642578125,
+      "profiled_forward_flops_per_batch": 18608553984,
+      "profiled_forward_flops_per_item": 2271552.0,
+      "train_step_ms_per_batch": 16.60165721550584,
+      "training_items_per_second": 493444.7142029126
+    }
+  }
+}
