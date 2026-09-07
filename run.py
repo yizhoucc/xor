@@ -11,6 +11,7 @@ import copy
 import hashlib
 import argparse
 import time
+import tempfile
 import yaml
 import numpy as np
 import torch
@@ -182,9 +183,9 @@ def main():
 
     # 3. Determine save directory
     if args.validate:
-        # Validate mode: skip dedup, use temp dir
-        save_dir = os.path.join(exp_base_dir, '_validate_tmp')
-        os.makedirs(save_dir, exist_ok=True)
+        # Validate outside exp/ so its config hash can never be mistaken for an
+        # incomplete training run by find_existing_experiment().
+        save_dir = tempfile.mkdtemp(prefix='xor_validate_')
     elif args.resume:
         save_dir = args.resume
         print(f"Resuming from: {save_dir}")
