@@ -14,6 +14,22 @@ checks:
       1: {exp_name: cnn_cifar100_big_2arg, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
       3: {exp_name: cnn_cifar100_big_relu, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
       6: {exp_name: cnn_cifar100_swiglu, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+  - id: en_cnn_fmnist
+    file: RESULTS_EN.md
+    section: "## 1. CNN Image Classification (5 seeds)"
+    line_contains: "| FashionMNIST |"
+    cells:
+      1: {exp_name: cnn_fmnist_2arg, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+      2: {exp_name: cnn_fmnist_1arg, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+      3: {exp_name: cnn_fmnist_relu, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+  - id: en_cnn_svhn
+    file: RESULTS_EN.md
+    section: "## 1. CNN Image Classification (5 seeds)"
+    line_contains: "| SVHN |"
+    cells:
+      1: {exp_name: cnn_svhn_2arg, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+      2: {exp_name: cnn_svhn_1arg, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+      3: {exp_name: cnn_svhn_relu, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
   - id: en_tf_d64
     file: RESULTS_EN.md
     line_contains: "| WikiText-2 d=64 |"
@@ -65,6 +81,22 @@ checks:
       1: {exp_name: cnn_cifar_2arg, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
       3: {exp_name: cnn_cifar_relu, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
       5: {exp_name: cnn_cifar_relu_matched, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+  - id: cn_cnn_fmnist
+    file: RESULTS_CN.md
+    section: "## 1. CNN 图像分类（5 seeds）"
+    line_contains: "| FashionMNIST |"
+    cells:
+      1: {exp_name: cnn_fmnist_2arg, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+      2: {exp_name: cnn_fmnist_1arg, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+      3: {exp_name: cnn_fmnist_relu, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+  - id: cn_cnn_svhn
+    file: RESULTS_CN.md
+    section: "## 1. CNN 图像分类（5 seeds）"
+    line_contains: "| SVHN |"
+    cells:
+      1: {exp_name: cnn_svhn_2arg, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+      2: {exp_name: cnn_svhn_1arg, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
+      3: {exp_name: cnn_svhn_relu, metric: test_accuracy, format: mean_pm_pop, scale: 100, decimals: 2}
   - id: cn_tf_d64
     file: RESULTS_CN.md
     line_contains: "| Wiki d=64 |"

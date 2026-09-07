@@ -39,6 +39,31 @@ comparisons:
     reference: {exp_name: cnn_cifar_relu_matched, metric: test_accuracy}
     paired: true
     lower_better: false
+  - name: cnn_cifar10_2arg_vs_prelu_ln
+    condition: {exp_name: cnn_cifar_2arg, metric: test_accuracy}
+    reference: {exp_name: cnn_cifar_prelu_ln, metric: test_accuracy}
+    paired: true
+    lower_better: false
+  - name: cnn_cifar10_2arg_vs_swish_ln
+    condition: {exp_name: cnn_cifar_2arg, metric: test_accuracy}
+    reference: {exp_name: cnn_cifar_swish_ln, metric: test_accuracy}
+    paired: true
+    lower_better: false
+  - name: cnn_cifar10_prelu_ln_vs_relu_ln
+    condition: {exp_name: cnn_cifar_prelu_ln, metric: test_accuracy}
+    reference: {exp_name: cnn_cifar_relu_ln, metric: test_accuracy}
+    paired: true
+    lower_better: false
+  - name: cnn_svhn_2arg_vs_1arg
+    condition: {exp_name: cnn_svhn_2arg, metric: test_accuracy}
+    reference: {exp_name: cnn_svhn_1arg, metric: test_accuracy}
+    paired: true
+    lower_better: false
+  - name: cnn_fmnist_1arg_vs_2arg
+    condition: {exp_name: cnn_fmnist_1arg, metric: test_accuracy}
+    reference: {exp_name: cnn_fmnist_2arg, metric: test_accuracy}
+    paired: true
+    lower_better: false
   - name: cnn_cifar100_2arg_vs_relu
     condition: {exp_name: cnn_cifar100_big_2arg, metric: test_accuracy}
     reference: {exp_name: cnn_cifar100_big_relu, metric: test_accuracy}
