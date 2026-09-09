@@ -1,0 +1,25 @@
+exp_dir: exp
+exp_name: transformer_wikitext_2arg_innerh16
+lm:
+  batch_size: 128
+  context_size: 64
+  embed_dim: 128
+  epochs: 10
+  grad_clip: 1.0
+  lr: 0.0005
+  num_seeds: 5
+  num_workers: 4
+model:
+  d_ff: 512
+  d_model: 128
+  dropout: 0.1
+  inner_hidden: 16
+  n_heads: 4
+  n_layers: 4
+  name: InnerNetTransformer
+param_sharing: true
+run_id: '3722017'
+save_dir: exp/transformer_wikitext_2arg_innerh16_20260907_173223_afe14b42
+seed: 1234
+task_type: language_model
+use_gpu: true

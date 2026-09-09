@@ -100,6 +100,19 @@ d=64 到 d=256 InnerNet 一直赢 GELU（-3.3% → -1.7%）。但 GPT d=256（�
 
 四个规模都是 same-width 比较，并非参数匹配。相对 GELU 的 paired-t p 值依次为 d=64: 0.00022、d=128: 0.05095、d=192: 0.361、d=256: 0.173；均值方向一致，但统计证据主要集中在最小规模。英文表中的 `±` 统一使用 population SD（ddof=0）。
 
+### InnerNet hidden-dim 消融（U35，部分完成）
+
+同一个 WikiText-2 d=128 配置只改变共享 InnerNet 的 hidden width，5 seeds（42–46），PPL↓：
+
+| InnerNet hidden | PPL | 相对 h=32 | paired-t p | 状态 |
+|-----------------|-----|------------|------------|------|
+| 8 | 96.17±0.95 | +0.91 | 0.107 | ✅ 5/5 |
+| 16 | 95.76±0.64 | +0.50 | 0.482 | ✅ 5/5 |
+| 32 | **95.26±1.00** | — | — | ✅ canonical |
+| 64 | — | — | — | ⏳ job 682895，seed44 ep7/10 |
+
+目前看 h=16 已保留大部分 h=32 性能，h=8 均值再差约0.4 PPL；但 n=5 下两项差异都未显著，**不能把“不显著”写成统计等价**。h=64 在同一 RTX 2080 Ti 上约64分钟/epoch，明显慢于h=8（约13分钟）和h=16（约19分钟），说明训练成本会随探针宽度快速增长。完整容量曲线等 h=64 结束后再定。Configs：`config/experiments/transformer_wikitext_2arg_innerh{8,16,64}.yaml`；exp：`exp/transformer_wikitext_2arg_innerh{8,16,64}_*`；部分汇总：`results/audit/inner_hidden_ablation_partial.json`。该 LM runner 只保存 `lm_results.p` 和日志，不保存模型 checkpoint。
+
 修复 parameter-sharing 后的 scaling 图由 canonical audit 数据直接生成：`results/figures/fig_scaling_law.pdf`。旧硬编码 pre-fix 图已被替换；当前趋势是正向但**非单调**，不能再写成“规模越大优势单调缩小”。
 
 Scaling 趋势：d=64 赢 3.3% → d=128 赢 1.6% → d=192 赢 0.8% → d=256 赢 1.7% → **GPT d=256 输 5.0%**。

@@ -58,19 +58,22 @@
 
 - **U20 param sharing bug**：之前 Transformer/ResNet/WRN 的 InnerNet 每层各一个没共享。已修复，重跑。修复后结果和之前差不多（d=64: 112.66→112.83），说明影响不大，但 sharing 是论文基本设计。CNN/MLP/AE/VGG/LSTM/PPO 不受影响。
 
-## 集群状态（2026-09-07）
+## 集群状态（2026-09-08）
 
-U35 hidden-dim 消融已通过 cluster-only 验证，三个 GPU 训练 job 正在运行；此前 causal、CNN seed补齐、原论文对照图和计算成本profile均已完成。
+U35 hidden-dim 消融中 h=8/16 已完成并拉回，h=64 仍在运行；此前 causal、CNN seed补齐、原论文对照图和计算成本profile均已完成。
 
-### U35 InnerNet hidden-dim 消融：⏳ 3 个 GPU jobs RUNNING
+### U35 InnerNet hidden-dim 消融：⏳ 2/3 新配置完成
 
 - **验证 job 682890**：✅ COMPLETED（1m42s，CPU partition）；h=8/16/64 均通过模型构建与一次 forward/backward，参数量分别为 1,186,569 / 1,186,601 / 1,186,793。
 - 新配置：`config/experiments/transformer_wikitext_2arg_innerh{8,16,64}.yaml`；均严格复用 canonical WikiText-2 d=128、10 epochs、5 seeds（42–46）协议，只改变共享 InnerNet 的 `inner_hidden`。
 - h=32 直接复用现有 canonical 5-seed 结果 **95.26±1.00 PPL**，不重复训练。
-- **训练 jobs**：h=8 **682891**、h=16 **682892**、h=64 **682895**，均在 RTX 2080 Ti 上 RUNNING；输出目录分别匹配 `exp/transformer_wikitext_2arg_innerh{8,16,64}_*`。完成 Bark job **682896** 已用 `afterany` 依赖三项训练。
+- **h=8 job 682891**：✅ COMPLETED（10h54m），**96.17±0.95 PPL**；相对 h=32 差 +0.91 PPL，paired-t p=0.107、Wilcoxon p=0.125。
+- **h=16 job 682892**：✅ COMPLETED（15h39m），**95.76±0.64 PPL**；相对 h=32 差 +0.50 PPL，paired-t p=0.482、Wilcoxon p=0.8125。
+- **h=64 job 682895**：⏳ RUNNING；截至 2026-09-08 19:19 PDT，seeds 42–43 已完成，seed44 到 epoch7/10。h=64 在同一 RTX 2080 Ti 上约 64 分钟/epoch，按剩余23 epochs估计约在 **2026-09-09 20:00 PDT** 前后完成。完成 Bark job **682896** 仍正确依赖该 job。
+- h=8/16 的原始 `lm_results.p`、config 和日志已拉回对应本地 exp 目录；汇总见 `results/audit/inner_hidden_ablation_partial.json`。当前 `LMRunner` 不保存该实验族的模型 checkpoint，因此远端也没有 checkpoint 文件可拉回。
 - 首次 h=64 job **682893** 在启动 32 秒后取消：旧验证模式把 h=64 config hash 留在 `exp/_validate_tmp`，训练 dedup 因而误认临时目录为可续跑实验。该 62KB 临时目录已可恢复地归档到 `/user_data/yizhouc3/xor_u35_validation_artifacts/validate_tmp_682890_h64_collision`，没有结果纳入分析；清理后重提为 682895。
 - dedup 污染已在提交 **a44195f** 修复：验证目录改用系统临时目录，不再位于 `exp/`。修复验证 job **682897** ✅ COMPLETED（11秒，CPU partition），日志确认使用 `/tmp/xor_validate_*` 且 validation PASS。
-- 按历史同协议日志估算，每个训练 job 开始运行后约 11–14 小时。实验回答“最小探针容量是否足够”；不把 hidden 缩小表述为已解决未融合小 MLP 的 kernel 开销。
+- 当前部分结论：h=16 保留了大部分 h=32 性能，h=8 均值进一步下降；两者与 h=32 的差异在 n=5 下均未显著，但不能据此声称统计等价。h=64 完成前不作完整容量曲线结论。hidden 缩小也不等于解决未融合小 MLP 的 kernel 开销。
 
 ### P1 causal matrix v2：✅ 40/40 条件完成
 
@@ -239,7 +242,7 @@ Bark：原完成通知 **664237** 与补跑通知 **677677** 均已触发。当�
 | U32 | 参数量和推理速度 | ✅ | `deploy_analysis.json`：CNN InnerNet只比SwiGLU多129参数但慢6.59×；distilled快2.68×但仍比SwiGLU慢2.46×。FFN InnerNet约比SwiGLU慢6.03×（4 seeds；distilled未跑到） |
 | U33 | 提炼 InnerNet 为简单公式 | ✅ | d=128 poly3 R²=0.997；SwiGLU family R²=0.942。CNN poly3 R²=0.974、SwiGLU family R²=0.908。causal结果说明具体算子依赖host/basin，不能称普适SwiGLU吸引子 |
 | U34 | Qwen2.5-0.5B finetune | ✅ **负面结果** | 3 seeds: InnerNet ~80% vs SwiGLU ~89%。替换瞬间崩到 52-66%，恢复不回来。大模型直接替换不可行 |
-| U35 | InnerNet hidden dim 消融 | ⏳ 682891/682892/682895 RUNNING | WikiText-2 d=128、5 seeds；h=8/16/64 新跑，h=32 复用 canonical 95.26±1.00 PPL。完成通知 682896；验证临时目录 dedup 修复已由 682897 验证通过。 |
+| U35 | InnerNet hidden dim 消融 | ⏳ h8/h16完成，h64 job 682895 RUNNING | h8 96.17±0.95，h16 95.76±0.64，h32 95.26±1.00；h64截至seed44 ep7/10，预计2026-09-09约20:00 PDT完成。 |
 | U36 | Non-shared warm-start | ⏳ PTB ✅ MLM ✅ | PTB 5/5 赢, CNN +3.12%, **MLM non-shared 15.63 vs SwiGLU 18.91 (-3.28)**。Wiki d=128 不在当前队列，本地无最终原始结果，不再标记为运行中。 |
 | U37 | Free-init (不同初始化) | ✅ Wiki 3/3, MLM 2/3 | Wiki: 4 种初始化全收敛到 ~71.7-72.6 vs SwiGLU ~77.3。MLM: random/multiply/swiglu_fitted/identity 都 ~15.7-16.1。**初始化不影响终点** |
 | U38 | Multiply-init 多任务 | ✅ 5/5 seeds | d=64 持平, d=128 -0.24, PTB -1.08, **MLM MultInit 15.93±0.21 vs SwiGLU 19.09±0.27 (-16.6%)** |

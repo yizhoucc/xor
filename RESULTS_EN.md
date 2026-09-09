@@ -93,6 +93,10 @@ The apparent regression inconsistency is a capacity crossover: the learned inter
 
 InnerNet reaches lower mean PPL than GELU at every scale (-0.8% to -3.3%), and at d=64 its PPL matches the hand-designed SwiGLU model (112.83 vs 112.31). Performance parity alone does not identify the learned operator. Paired tests against GELU give p=0.00022, 0.05095, 0.361, and 0.173 at d=64, 128, 192, and 256, respectively; thus the direction is consistent, while inferential support is strongest at the smallest scale. These are same-width comparisons, not parameter-matched ones.
 
+### InnerNet hidden-width ablation (partial)
+
+Holding the WikiText-2 d=128 protocol fixed, reducing the shared InnerNet width from 32 to 16 gives **95.76±0.64 PPL**, versus **95.26±1.00** at width 32 (mean difference +0.50 PPL; paired-t p=0.482). Width 8 gives **96.17±0.95** (+0.91 PPL; p=0.107). These five-seed results indicate that width 16 retains most of the observed performance, but non-significance is not evidence of statistical equivalence. The width-64 condition is still running, so the full capacity curve is not yet reported. Configs: `config/experiments/transformer_wikitext_2arg_innerh{8,16,64}.yaml`; exp folders: `exp/transformer_wikitext_2arg_innerh{8,16,64}_*`; partial artifact: `results/audit/inner_hidden_ablation_partial.json`.
+
 The post-sharing scaling figure is generated directly from canonical audit artifacts (`results/figures/fig_scaling_law.pdf`). It replaces the archived hard-coded pre-fix plot and shows a positive but non-monotonic benefit (3.3%, 1.6%, 0.8%, 1.7%).
 
 **Scale boundary**: The same-width advantage remains positive but non-monotonic through d=256 in the standard Transformer sweep. It reverses in the larger GPT-style experiment, while warm-start experiments show that the learned function remains expressive enough in the controlled setting.

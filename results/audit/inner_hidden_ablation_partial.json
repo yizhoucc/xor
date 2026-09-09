@@ -1,0 +1,65 @@
+{
+  "status": "partial_h64_running",
+  "updated_at": "2026-09-08T19:19:13-07:00",
+  "protocol": {
+    "task": "WikiText-2 causal language modeling",
+    "model": "InnerNetTransformer",
+    "d_model": 128,
+    "d_ff": 512,
+    "n_layers": 4,
+    "epochs": 10,
+    "seeds": [42, 43, 44, 45, 46],
+    "metric": "minimum validation PPL per seed",
+    "dispersion": "population standard deviation"
+  },
+  "conditions": {
+    "h8": {
+      "config": "config/experiments/transformer_wikitext_2arg_innerh8.yaml",
+      "exp_dir": "exp/transformer_wikitext_2arg_innerh8_20260907_173223_e01b40da",
+      "slurm_job": 682891,
+      "state": "COMPLETED",
+      "elapsed": "10:54:33",
+      "per_seed_ppl": [96.24714782733959, 95.5080676493998, 94.767182333125, 97.36407949445835, 96.97034330340189],
+      "mean_ppl": 96.17136412154494,
+      "population_sd": 0.9464005038860803
+    },
+    "h16": {
+      "config": "config/experiments/transformer_wikitext_2arg_innerh16.yaml",
+      "exp_dir": "exp/transformer_wikitext_2arg_innerh16_20260907_173223_afe14b42",
+      "slurm_job": 682892,
+      "state": "COMPLETED",
+      "elapsed": "15:39:37",
+      "per_seed_ppl": [96.3850520019093, 94.5893664513871, 95.85290649725792, 96.2850254090762, 95.66808543941295],
+      "mean_ppl": 95.75608715980869,
+      "population_sd": 0.6408943660999579
+    },
+    "h32": {
+      "config": "config/experiments/transformer_wikitext_2arg.yaml",
+      "exp_dir": "exp/transformer_wikitext_2arg_20260303_095126_29974a57",
+      "state": "COMPLETED_CANONICAL",
+      "per_seed_ppl": [93.83312088043746, 95.55994716251138, 94.52406520528002, 96.71528298944473, 95.67169562989294],
+      "mean_ppl": 95.2608223735133,
+      "population_sd": 0.9954788630373705
+    },
+    "h64": {
+      "config": "config/experiments/transformer_wikitext_2arg_innerh64.yaml",
+      "exp_dir": "exp/transformer_wikitext_2arg_innerh64_20260907_173302_96d52d5d",
+      "slurm_job": 682895,
+      "state": "RUNNING",
+      "progress_at_update": "seed 44 epoch 7/10; seeds 42-43 complete"
+    }
+  },
+  "paired_comparisons_to_h32": {
+    "h8": {
+      "mean_delta_ppl": 0.910541748031622,
+      "paired_t_p": 0.10662913541821105,
+      "wilcoxon_p": 0.125
+    },
+    "h16": {
+      "mean_delta_ppl": 0.4952647862953853,
+      "paired_t_p": 0.48188395617518365,
+      "wilcoxon_p": 0.8125
+    }
+  },
+  "checkpoint_note": "LMRunner saves lm_results.p and logs but does not save model checkpoints for this experiment family."
+}
