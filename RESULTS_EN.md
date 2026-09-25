@@ -2,7 +2,7 @@
 
 > Summary of all experiments for "Two-argument activation functions learn soft XOR operations like cortical neurons" (Yoon et al., 2021).
 
-Bilingual paper-style synthesis: `docs/paper.html` (formal English manuscript followed by an expanded Chinese reading version).
+Current manuscript draft: `docs/paper.html` (Chinese-only paper draft; the former bilingual report layout has been removed).
 
 ## Paper Story — Learnable Activations as Differentiable Architecture Search
 

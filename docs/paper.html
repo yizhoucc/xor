@@ -1,28 +1,23 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>Two-Argument Activations as Differentiable Probes of Learned Feature Interactions</title>
+  <title>用可学习二元单元发现神经网络的局部计算结构</title>
   <style>
     :root {
-      --ink: #17242c;
-      --muted: #617079;
-      --paper: #fffdf8;
-      --page: #ece9e1;
-      --line: #d9d4ca;
-      --blue: #176b87;
-      --blue-soft: #e7f3f6;
-      --rust: #b04b2f;
-      --rust-soft: #faece6;
-      --gold: #b78221;
-      --gold-soft: #fbf2da;
-      --green: #35735a;
-      --green-soft: #e8f2ec;
-      --shadow: 0 24px 70px rgba(35, 45, 48, 0.12);
+      --ink: #20252a;
+      --muted: #626970;
+      --line: #d7dadd;
+      --paper: #ffffff;
+      --page: #f3f4f5;
+      --accent: #285f7a;
+      --note: #fff8df;
+      --note-line: #d5a929;
       --serif: Georgia, "Times New Roman", "Songti SC", "STSong", serif;
-      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", Arial, sans-serif;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
     }
 
     * { box-sizing: border-box; }
@@ -30,837 +25,830 @@
     body {
       margin: 0;
       color: var(--ink);
-      background:
-        radial-gradient(circle at 12% 4%, rgba(23, 107, 135, 0.10), transparent 27rem),
-        radial-gradient(circle at 88% 3%, rgba(176, 75, 47, 0.08), transparent 25rem),
-        var(--page);
+      background: var(--page);
       font-family: var(--serif);
-      line-height: 1.65;
+      font-size: 17px;
+      line-height: 1.72;
     }
-
-    a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    a {
+      color: var(--accent);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+    }
     code {
-      padding: 0.12rem 0.32rem;
-      border-radius: 0.28rem;
-      background: #f0eee8;
-      color: #31434b;
+      padding: 0.1rem 0.28rem;
+      border-radius: 0.2rem;
+      background: #f0f1f2;
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 0.86em;
+      font-size: 0.82em;
       overflow-wrap: anywhere;
     }
-
-    .topbar {
+    .nav {
       position: sticky;
       top: 0;
-      z-index: 20;
-      display: flex;
-      justify-content: center;
-      border-bottom: 1px solid rgba(217, 212, 202, 0.86);
-      background: rgba(255, 253, 248, 0.92);
-      backdrop-filter: blur(16px);
-      font-family: var(--sans);
-    }
-    .topbar-inner {
-      width: min(1180px, calc(100% - 2rem));
-      display: flex;
-      gap: 0.45rem;
-      align-items: center;
-      padding: 0.72rem 0;
-      overflow-x: auto;
-    }
-    .topbar a {
-      flex: 0 0 auto;
-      padding: 0.38rem 0.72rem;
-      border-radius: 999px;
-      color: #3b4b52;
-      text-decoration: none;
-      font-size: 0.8rem;
-      font-weight: 650;
-      letter-spacing: 0.02em;
-    }
-    .topbar a:hover { background: var(--blue-soft); color: var(--blue); }
-    .topbar .brand { margin-right: auto; color: var(--ink); }
-
-    .sheet {
-      width: min(1120px, calc(100% - 2rem));
-      margin: 1rem auto 3rem;
-      background: var(--paper);
-      border: 1px solid rgba(217, 212, 202, 0.9);
-      border-radius: 0.45rem;
-      box-shadow: 0 8px 28px rgba(35, 45, 48, 0.07);
-      overflow: hidden;
-    }
-
-    .cover {
-      padding: 2rem clamp(1.5rem, 6vw, 5rem) 1.7rem;
-      color: var(--ink);
-      background: var(--paper);
+      z-index: 10;
       border-bottom: 1px solid var(--line);
-    }
-    .eyebrow {
-      margin: 0 0 0.65rem;
+      background: rgba(255, 255, 255, 0.96);
       font-family: var(--sans);
-      font-size: 0.78rem;
-      font-weight: 750;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: var(--blue);
     }
-    .cover h1 {
-      max-width: 920px;
-      margin: 0;
-      font-size: clamp(1.8rem, 3.2vw, 2.55rem);
-      line-height: 1.16;
-      letter-spacing: -0.022em;
-      text-wrap: balance;
-    }
-    .cover .subtitle {
-      max-width: 800px;
-      margin: 0.85rem 0 0;
-      font-family: var(--sans);
-      font-size: 1rem;
-      color: var(--muted);
-    }
-    .cover-meta {
+    .nav-inner {
+      width: min(980px, calc(100% - 2rem));
+      margin: 0 auto;
       display: flex;
-      flex-wrap: wrap;
-      gap: 0;
-      margin-top: 0.9rem;
-      font-family: var(--sans);
-      font-size: 0.78rem;
-    }
-    .cover-meta span {
-      padding: 0;
-      border: 0;
-      border-radius: 0;
-      background: transparent;
-      color: var(--muted);
-    }
-    .cover-meta span + span::before {
-      content: "·";
-      margin: 0 0.55rem;
-      color: #9a958a;
-    }
-
-    article { padding: clamp(2rem, 6vw, 5rem); }
-    article + article { border-top: 16px solid var(--page); }
-    .language-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 2.3rem;
-      padding: 0.42rem 0.72rem;
-      border-radius: 999px;
-      background: var(--blue-soft);
-      color: var(--blue);
-      font-family: var(--sans);
-      font-size: 0.76rem;
-      font-weight: 760;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-    .language-label.zh { background: var(--rust-soft); color: var(--rust); }
-
-    h2, h3, h4 { color: #16313c; text-wrap: balance; }
-    h2 {
-      margin: 4.2rem 0 1.2rem;
-      padding-top: 1.2rem;
-      border-top: 1px solid var(--line);
-      font-size: clamp(1.8rem, 3.3vw, 2.65rem);
-      line-height: 1.14;
-      letter-spacing: -0.025em;
-    }
-    h2:first-of-type { margin-top: 0; }
-    h3 { margin: 2.7rem 0 0.8rem; font-size: 1.45rem; line-height: 1.25; }
-    h4 { margin: 1.8rem 0 0.5rem; font-family: var(--sans); font-size: 1rem; }
-    p { margin: 0.75rem 0 1rem; }
-    .lede { font-size: 1.22rem; line-height: 1.65; color: #35474f; }
-    .small { color: var(--muted); font-size: 0.9rem; }
-
-    .abstract {
-      display: grid;
-      grid-template-columns: minmax(0, 1.55fr) minmax(260px, 0.75fr);
-      gap: 2.2rem;
-      align-items: start;
-    }
-    .abstract-box {
-      padding: 1.4rem 1.5rem;
-      border-left: 4px solid var(--blue);
-      background: #f6f4ee;
-    }
-    .abstract-box h3 { margin-top: 0; }
-
-    .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; margin: 1.2rem 0; }
-    .metric {
-      padding: 0.85rem;
-      border: 1px solid var(--line);
-      border-radius: 0.8rem;
-      background: #fff;
-    }
-    .metric strong {
-      display: block;
-      color: var(--blue);
-      font-family: var(--sans);
-      font-size: 1.35rem;
-      line-height: 1.05;
-    }
-    .metric span { display: block; margin-top: 0.5rem; color: var(--muted); font-family: var(--sans); font-size: 0.82rem; }
-
-    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
-    .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-    .card {
-      padding: 1.2rem 1.25rem;
-      border: 1px solid var(--line);
-      border-radius: 0.8rem;
-      background: #fff;
-    }
-    .card h3, .card h4 { margin-top: 0; }
-    .card p:last-child { margin-bottom: 0; }
-
-    .claim-card { border-top: 4px solid var(--green); }
-    .boundary-card { border-top: 4px solid var(--gold); }
-    .reject-card { border-top: 4px solid var(--rust); }
-    .badge {
-      display: inline-block;
-      padding: 0.16rem 0.48rem;
-      border-radius: 999px;
-      font-family: var(--sans);
-      font-size: 0.7rem;
-      font-weight: 760;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      vertical-align: 0.08rem;
-    }
-    .strong { background: var(--green-soft); color: var(--green); }
-    .supporting { background: var(--blue-soft); color: var(--blue); }
-    .bounded { background: var(--gold-soft); color: #8a6214; }
-    .unsupported { background: var(--rust-soft); color: var(--rust); }
-
-    .table-wrap {
-      margin: 1.2rem 0 1.8rem;
+      gap: 1rem;
+      padding: 0.65rem 0;
       overflow-x: auto;
-      border: 1px solid var(--line);
-      border-radius: 0.72rem;
-      background: #fff;
-    }
-    table { width: 100%; border-collapse: collapse; font-family: var(--sans); font-size: 0.86rem; }
-    th, td { padding: 0.72rem 0.78rem; border-bottom: 1px solid #e7e2d8; text-align: left; vertical-align: top; }
-    th { background: #f1efe9; color: #30434b; font-size: 0.75rem; letter-spacing: 0.035em; text-transform: uppercase; }
-    tr:last-child td { border-bottom: 0; }
-    tbody tr:hover { background: #faf8f2; }
-
-    figure {
-      margin: 2rem 0;
-      padding: 0.8rem;
-      border: 1px solid var(--line);
-      border-radius: 0.85rem;
-      background: #fff;
-    }
-    figure img { display: block; width: 100%; height: auto; border-radius: 0.45rem; }
-    figcaption { padding: 0.8rem 0.45rem 0.25rem; color: var(--muted); font-family: var(--sans); font-size: 0.8rem; line-height: 1.5; }
-    .figure-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-
-    .evidence-flow {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0.7rem;
-      margin: 1.5rem 0;
-      font-family: var(--sans);
-    }
-    .evidence-step {
-      position: relative;
-      padding: 1rem;
-      border-radius: 0.8rem;
-      background: #f3f6f5;
-      border: 1px solid #d9e3df;
-    }
-    .evidence-step b { display: block; margin-bottom: 0.35rem; color: var(--green); }
-
-    .mini-chart {
-      display: grid;
-      grid-template-columns: 72px 1fr 84px;
-      gap: 0.55rem 0.8rem;
-      align-items: center;
-      padding: 1.25rem;
-      border: 1px solid var(--line);
-      border-radius: 0.8rem;
-      background: #fff;
-      font-family: var(--sans);
+      white-space: nowrap;
       font-size: 0.82rem;
     }
-    .bar-track { height: 0.72rem; border-radius: 999px; background: #ebe8df; overflow: hidden; }
-    .bar { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--blue), #66a7b8); }
-    .bar.runtime { background: linear-gradient(90deg, var(--rust), #d99872); }
-
-    .editor-note, .placeholder {
-      margin: 1.25rem 0;
-      padding: 1rem 1.15rem;
-      border-radius: 0.75rem;
-      font-family: var(--sans);
-      font-size: 0.88rem;
+    .nav a { color: #3e484f; text-decoration: none; }
+    .nav a:hover { color: var(--accent); }
+    .paper {
+      width: min(1040px, calc(100% - 2rem));
+      margin: 1.2rem auto 3rem;
+      padding: clamp(1.6rem, 4vw, 3.4rem);
+      background: var(--paper);
+      border: 1px solid var(--line);
     }
-    .editor-note { border-left: 4px solid var(--gold); background: var(--gold-soft); }
-    .editor-note strong, .placeholder strong { display: block; margin-bottom: 0.3rem; }
-    .placeholder {
-      display: grid;
-      place-items: center;
-      min-height: 170px;
-      border: 2px dashed #c9aa6b;
-      color: #725416;
-      background: repeating-linear-gradient(-45deg, #fffaf0, #fffaf0 12px, #f9f0db 12px, #f9f0db 24px);
+    header {
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+    }
+    h1 {
+      max-width: none;
+      margin: 0;
+      font-size: clamp(1.72rem, 2.7vw, 2.2rem);
+      line-height: 1.3;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .authors {
+      margin: 0.5rem 0 0;
+      color: var(--muted);
+      font-family: var(--sans);
+      font-size: 0.9rem;
+    }
+    h2 {
+      margin: 3.4rem 0 1.15rem;
+      font-size: 1.75rem;
+      line-height: 1.3;
+    }
+    h3 {
+      margin: 2.25rem 0 0.75rem;
+      font-size: 1.25rem;
+      line-height: 1.35;
+    }
+    h4 {
+      margin: 1.5rem 0 0.55rem;
+      font-family: var(--sans);
+      font-size: 1rem;
+    }
+    p { margin: 0.65rem 0 1rem; }
+    .abstract {
+      max-width: none;
+      margin: 1.4rem 0 0;
+      padding: 0;
+      border: 0;
+      text-align: left;
+    }
+    .abstract h2 {
+      margin: 0 0 0.65rem;
+      font-size: 1.25rem;
+      text-align: left;
+    }
+    .abstract p { margin: 0; }
+    .math { font-style: italic; white-space: nowrap; }
+    .figure {
+      margin: 1.8rem 0 2.2rem;
       text-align: center;
     }
-
-    .toc {
-      margin: 2rem 0;
-      padding: 1.2rem 1.4rem;
-      border: 1px solid var(--line);
-      border-radius: 0.8rem;
-      background: #faf8f3;
-      font-family: var(--sans);
-      columns: 2;
+    .figure img {
+      display: block;
+      max-width: 100%;
+      max-height: 610px;
+      margin: 0 auto;
+      border: 1px solid #e0e2e4;
+      background: #fff;
+      object-fit: contain;
     }
-    .toc a { display: block; padding: 0.2rem 0; text-decoration: none; }
-
-    .quote {
-      margin: 2rem 0;
-      padding: 1.5rem 1.7rem;
-      border-left: 5px solid var(--rust);
-      background: var(--rust-soft);
-      font-size: 1.2rem;
+    .figure.dual {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+    .caption {
+      margin: 0.7rem auto 0;
+      max-width: 820px;
+      color: #50585f;
+      font-family: var(--sans);
+      font-size: 0.84rem;
+      line-height: 1.5;
+      text-align: left;
+    }
+    .table-wrap {
+      margin: 1.35rem 0 1.8rem;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--sans);
+      font-size: 0.87rem;
+      line-height: 1.45;
+    }
+    th, td {
+      padding: 0.62rem 0.68rem;
+      border: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #f2f4f5; font-weight: 650; }
+    tbody tr:nth-child(even) { background: #fafbfb; }
+    .num { text-align: right; white-space: nowrap; }
+    .note {
+      margin: 1.35rem 0;
+      padding: 0.9rem 1rem;
+      border-left: 3px solid var(--note-line);
+      background: var(--note);
+      color: #55491f;
+      font-family: var(--sans);
+      font-size: 0.88rem;
       line-height: 1.55;
     }
-
-    .ref-list { padding-left: 1.2rem; font-size: 0.9rem; color: #43545b; }
-    .footer {
-      padding: 2rem clamp(1.5rem, 7vw, 6rem);
+    .note strong { color: #413711; }
+    .equation {
+      margin: 1.2rem 0;
+      padding: 0.8rem 1rem;
+      border: 1px solid var(--line);
+      background: #fafafa;
+      text-align: center;
+      font-size: 1.05rem;
+    }
+    ol, ul { padding-left: 1.5rem; }
+    li { margin: 0.38rem 0; }
+    .references {
+      font-family: var(--sans);
+      font-size: 0.84rem;
+      line-height: 1.55;
+    }
+    .references li { margin-bottom: 0.65rem; }
+    .foot {
+      margin-top: 3.5rem;
+      padding-top: 1rem;
       border-top: 1px solid var(--line);
-      background: #f4f1ea;
       color: var(--muted);
       font-family: var(--sans);
       font-size: 0.78rem;
     }
-
-    @media (max-width: 860px) {
-      .abstract, .two-col, .three-col, .figure-grid, .metric-grid, .evidence-flow { grid-template-columns: 1fr; }
-      .toc { columns: 1; }
-      .cover { padding-top: 2.2rem; }
+    @media (max-width: 720px) {
+      body { font-size: 16px; }
+      .paper { width: 100%; margin: 0; padding: 1.4rem; border: 0; }
+      .figure.dual { grid-template-columns: 1fr; }
+      h1 { font-size: 2rem; }
     }
-
     @media print {
-      body { background: #fff; }
-      .topbar { display: none; }
-      .sheet { width: 100%; margin: 0; border: 0; border-radius: 0; box-shadow: none; }
-      .cover { break-after: auto; }
-      article { padding: 2.5rem 3rem; }
-      figure, .card, .table-wrap { break-inside: avoid; }
+      body { background: #fff; font-size: 11pt; }
+      .nav { display: none; }
+      .paper { width: auto; margin: 0; padding: 0; border: 0; }
+      h2, h3, .figure, .table-wrap { break-inside: avoid; }
       a { color: inherit; text-decoration: none; }
     }
   </style>
 </head>
 <body>
-  <nav class="topbar" aria-label="Document navigation">
-    <div class="topbar-inner">
-      <a class="brand" href="#top">XOR Neuron Evidence Paper</a>
-      <a href="#english">English</a>
-      <a href="#en-results">Evidence</a>
-      <a href="#chinese">中文</a>
-      <a href="#zh-notes">编辑提示</a>
+  <nav class="nav" aria-label="论文目录">
+    <div class="nav-inner">
+      <a href="#abstract">摘要</a>
+      <a href="#introduction">1 引言</a>
+      <a href="#results">2 结果</a>
+      <a href="#discussion">3 讨论</a>
+      <a href="#methods">4 方法</a>
+      <a href="#appendix">附录</a>
+      <a href="#references">参考文献</a>
     </div>
   </nav>
 
-  <div class="sheet" id="top">
-    <header class="cover">
-      <p class="eyebrow">Evidence synthesis · 510 experiments · 1,708 metric rows</p>
-      <h1>Two-Argument Activations as Differentiable Probes of Learned Feature Interactions</h1>
-      <p class="subtitle">A bilingual evidence synthesis spanning reproduction, architecture transfer, causal operator analysis, optimization limits, and deployment cost.</p>
-      <div class="cover-meta">
-        <span>32 registered comparisons</span>
-        <span>76/76 document claims verified</span>
-        <span>5-seed core evaluations</span>
-        <span>Updated September 2026</span>
-      </div>
+  <main class="paper">
+    <header>
+      <h1>用可学习二元单元发现神经网络的局部计算结构</h1>
+      <p class="authors">匿名投稿稿件 · 中文草稿</p>
     </header>
 
-    <main>
-      <article id="english" lang="en">
-        <div class="language-label">English manuscript</div>
+    <section class="abstract" id="abstract">
+      <h2>摘要</h2>
+      <p>
+        人工神经网络通常先对输入求加权和，再施加预先指定的一元激活函数。这种设计高效且稳定，却把神经元内部的特征交互规则固定在架构设计阶段。受皮层神经元树突区室对多路输入进行非线性整合的现象启发，本文研究共享的两输入小网络 InnerNet，使局部算子
+        <span class="math">f<sub>θ</sub>(a,b)</span>
+        能随任务共同学习。跨图像分类、自编码、语言建模、循环记忆和强化学习的实验表明，InnerNet 在小型和中型模型中能够改善性能或收敛，但它的主要价值并非直接替代现有激活函数。更关键的结果是，经过训练的二维函数可以被可视化、拟合和干预，从而用于辨识外围网络所偏好的局部计算结构。一组跨宿主算子、初始化和训练方式的因果实验进一步显示：当外围网络由双线性算子训练得到时，InnerNet 稳定恢复乘法结构；当外围网络由 SwiGLU 训练得到时，InnerNet 稳定恢复 SwiGLU 类结构。最终形态由外围网络所在的优化区域决定，而非由 InnerNet 的初始函数决定。与此同时，从头训练的高容量 InnerNet 往往难以达到手工算子的性能；先获得有效的外围网络，再进行局部结构搜索，可显著缓解这一问题。我们据此提出一种工作流：用可学习二元单元探索局部计算规则，再将稳定结构提炼为简单算子。该方法为神经科学启发的结构假设、可解释的架构搜索和高效模型设计提供了同一个实验接口。
+      </p>
+    </section>
 
-        <section id="en-abstract">
-          <div class="abstract">
-            <div>
-              <h2>Abstract</h2>
-              <p class="lede">Two-argument activation functions replace a fixed scalar nonlinearity with a small shared network that maps two learned projections to one output. We study these modules as differentiable probes of useful feature interactions across image classification, reconstruction, language modeling, recurrent memory, residual networks, and reinforcement learning.</p>
-              <p>A complete 40-condition causal matrix shows that the learned operator depends on the surrounding network and optimization basin. Every probe placed in a Bilinear-GLU host recovers multiplication, while every probe placed in a SwiGLU host recovers a scaled SwiGLU surface, independent of the probe initialization. The module therefore reveals an operator compatible with the trained host rather than converging to one universal activation.</p>
-              <p>Across tasks, InnerNet improves models that lack a built-in interaction or bypass path, but provides little benefit where residual structure already supplies one. Warm-start experiments separate optimization from expressivity: InnerNet matches the capacity of SwiGLU, while from-scratch training often fails to reach the same basin. A hidden-width ablation shows that performance saturates near width 16-32, whereas runtime rises sharply. These results support learnable activations as architecture probes and hypothesis generators, with deployment requiring subsequent distillation into efficient fixed operators.</p>
-            </div>
-            <aside class="abstract-box">
-              <h3>Central claim</h3>
-              <p>InnerNet can expose and refine useful bivariate operators inside a trained architecture. The recovered operator is conditional on the host network and optimization path.</p>
-              <p><span class="badge strong">Supported</span> by 40/40 causal conditions, multi-seed functional results, and closed-form surface fits.</p>
-            </aside>
-          </div>
+    <section id="introduction">
+      <h2>1　引言</h2>
 
-          <p class="small"><strong>Evidence snapshot:</strong> 40/40 causal conditions recover the host operator family; InnerNet wins or ties 10/11 warm-start tasks; the constrained recurrent model reaches 98.44%; the current unfused Transformer implementation is 12.02× slower than SwiGLU at inference.</p>
-        </section>
+      <p>
+        现代神经网络中的神经元通常被简化为线性变换与标量非线性的组合。ReLU、GELU 和 SiLU 等函数只接收一个聚合后的标量，因此不同输入通路之间如何相互促进、抑制或门控，主要由网络的宏观连线事先决定。真实神经元则具有更丰富的局部结构。基底树突、顶端树突及其分支可以接收来源不同的输入，并在细胞体放电之前完成非线性整合。人类皮层神经元中的树突事件甚至表现出 XOR 类计算特征 [1,2]。这些观察提示，神经元内部的多输入非线性本身可以构成一种有意义的计算基元。
+      </p>
 
-        <section id="en-outline">
-          <h2>Paper outline</h2>
-          <div class="toc">
-            <a href="#en-intro">1. Motivation and contributions</a>
-            <a href="#en-method">2. Method</a>
-            <a href="#en-results">3. Evidence</a>
-            <a href="#en-causal">4. Causal operator analysis</a>
-            <a href="#en-boundaries">5. Boundaries and deployment</a>
-            <a href="#en-repro">6. Reproducibility</a>
-            <a href="#en-conclusion">7. Conclusion</a>
-          </div>
-        </section>
+      <p>
+        Yoon 等人据此提出两参数激活函数 [1]。他们用一个共享的小型多层感知机替代固定激活函数，使每个神经元对两路线性投影进行联合变换。该模型在 MNIST 和 CIFAR-10 的 MLP 与 CNN 上学到软 XOR 或门控形态，并在若干设置中获得更快的学习和更好的鲁棒性。这个结果建立了生物学动机与机器学习算子之间的联系，但也留下了三个问题。第一，二元非线性离开简单前馈分类后是否仍然有用。第二，训练得到的函数究竟反映任务需要、初始化偏置，还是外围网络已经形成的表示。第三，高容量小网络带来的计算开销能否换成一个更简单的部署结构。
+      </p>
 
-        <section id="en-intro">
-          <h2>1. Motivation and contributions</h2>
-          <p>The original two-argument activation study evaluated MLP and CNN classifiers on MNIST and CIFAR-10, reporting faster learning, modest accuracy gains, and robustness improvements. Our study asks a broader question: what architectural interaction does a trainable bivariate activation recover when placed inside different networks?</p>
-          <h3>Contributions</h3>
-          <ol>
-            <li>A multi-architecture evaluation that maps where learned two-input interactions help and where they do not.</li>
-            <li>A causal matrix showing that the recovered operator family is controlled by the host basin rather than the InnerNet initialization.</li>
-            <li>Warm-start and frozen-network tests that separate representational capacity from optimization difficulty.</li>
-            <li>A quantitative account of parameter efficiency, runtime cost, and closed-form distillation.</li>
-          </ol>
-        </section>
+      <p>
+        本文把 InnerNet 视为一个可微的局部结构探索器。训练期间，它保留足够大的函数空间，使优化能够在乘法、门控、软 XOR 和其他二维变换之间移动。训练之后，其输入维度只有二，因此可以直接绘制函数表面，并用候选闭式算子进行拟合。与搜索离散算子集合的方法相比，这一过程不要求提前穷举所有组合规则；与直接使用一个大型黑盒模块相比，共享的二维函数又保留了可检查性。
+      </p>
 
-        <section id="en-method">
-          <h2>2. Method</h2>
-          <p>For each activation site, two learned projections produce scalars <em>a</em> and <em>b</em>. A small shared MLP computes <em>f(a,b)</em>. The shared function can be visualized over a two-dimensional grid and fitted to candidate operators such as multiplication, SwiGLU, or low-order polynomials.</p>
+      <p>
+        我们的实验得到三个主要结论。首先，二元单元的收益具有明显的架构和规模依赖性：它在多种小型和中型任务中有效，但从头训练的大模型常受优化困难和运行成本限制。其次，InnerNet 的容量足以表示强手工算子，真正的瓶颈是如何进入有效的优化区域。最后，学到的局部算子并不存在脱离外围网络的唯一最优形态；它会稳定恢复与当前表示和优化区域相容的交互规则。这使 InnerNet 更适合作为局部架构发现与假设检验工具，而非一个需要永久保留在部署模型中的通用激活函数。
+      </p>
 
-          <figure>
-            <img src="paper_assets/fig4_innernet_architecture.png" alt="Comparison between a standard scalar activation and the shared two-input InnerNet architecture" loading="lazy">
-            <figcaption><strong>Figure 1.</strong> Standard scalar activation and the shared two-input InnerNet construction. The probe introduces a learnable bivariate map while keeping the surrounding network trainable.</figcaption>
-          </figure>
+      <div class="figure">
+        <img src="paper_assets/fig4_innernet_architecture.png" alt="固定标量激活与共享二元 InnerNet 架构对比">
+        <p class="caption">
+          <strong>图 1｜共享二元 InnerNet。</strong>
+          标准单元对单个加权和施加固定非线性。InnerNet 接收两路线性投影，并用共享的小型网络计算
+          <span class="math">f<sub>θ</sub>(a,b)</span>。
+          参数共享使同一个局部计算规则在多个神经元和层中重复出现，也使训练后的二维函数能够被单独分析。
+        </p>
+      </div>
+    </section>
 
-          <div class="evidence-flow">
-            <div class="evidence-step"><b>1 · Insert</b>Replace a fixed activation or gated interaction with a shared two-input network.</div>
-            <div class="evidence-step"><b>2 · Optimize</b>Train end-to-end, warm-start from a known host, or freeze the outer network.</div>
-            <div class="evidence-step"><b>3 · Read out</b>Sample the learned two-dimensional surface and fit simple operator families.</div>
-            <div class="evidence-step"><b>4 · Validate</b>Compare seeds, hosts, positions, scales, and deployment costs.</div>
-          </div>
+    <section id="results">
+      <h2>2　结果</h2>
 
-          <h3>Evidence hierarchy</h3>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Level</th><th>Use</th><th>Examples</th></tr></thead>
-              <tbody>
-                <tr><td><span class="badge strong">Strong</span></td><td>Causal or paired multi-seed claims</td><td>Host-basin dependence, capacity controls, core benchmarks</td></tr>
-                <tr><td><span class="badge bounded">Bounded</span></td><td>Functional or incomplete claims</td><td>Recurrent gating, GPT scaling, task dependence</td></tr>
-                <tr><td><span class="badge unsupported">Rejected</span></td><td>Claims contradicted by controls</td><td>Universal rediscovery, drop-in superiority, efficient direct deployment</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
+      <h3>2.1　二元局部计算在经典分类任务上稳定有效</h3>
 
-        <section id="en-results">
-          <h2>3. Evidence across architectures</h2>
+      <p>
+        我们首先复现原论文的 MLP 与 CNN 分类设置。二参数模型在四个主要任务上均优于对应 ReLU 基线，其中提升在容量受限的 MLP 和 CIFAR-10 CNN 上最明显。CNN CIFAR-10 中，二参数模型达到 78.57±0.74%，ReLU 为 73.99±0.49%；加入相同位置的 LayerNorm 后，ReLU 达到 75.14±0.34%，仍低于二参数模型。PReLU 和 SiLU 也不能解释这一差距，说明收益并非只来自可学习斜率、平滑性或归一化。
+      </p>
 
-          <h3>3.1 Reproduction and image classification</h3>
-          <p>The original direction is reproduced in MLP/CNN classification. The strongest controlled CNN result is CIFAR-10: 78.57±0.74% for the two-argument model versus 75.14±0.34% for ReLU+LayerNorm and 70.67±0.43% for the parameter-matched ReLU network. PReLU and Swish controls remain below InnerNet.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>任务</th>
+              <th class="num">二参数 InnerNet</th>
+              <th class="num">ReLU</th>
+              <th class="num">绝对差值</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>MLP，MNIST</td>
+              <td class="num">98.0%</td>
+              <td class="num">91.9%</td>
+              <td class="num">+6.1</td>
+            </tr>
+            <tr>
+              <td>MLP，CIFAR-10</td>
+              <td class="num">52.1%</td>
+              <td class="num">49.5%</td>
+              <td class="num">+2.6</td>
+            </tr>
+            <tr>
+              <td>CNN，MNIST</td>
+              <td class="num">99.41±0.04%</td>
+              <td class="num">99.02±0.03%</td>
+              <td class="num">+0.39</td>
+            </tr>
+            <tr>
+              <td>CNN，CIFAR-10</td>
+              <td class="num">78.57±0.74%</td>
+              <td class="num">73.99±0.49%</td>
+              <td class="num">+4.58</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Dataset</th><th>2-arg</th><th>1-arg</th><th>ReLU</th><th>ReLU+LN</th><th>SwiGLU</th></tr></thead>
-              <tbody>
-                <tr><td>MNIST</td><td>99.41±0.04</td><td>99.42±0.06</td><td>99.02±0.03</td><td>99.18±0.02</td><td>—</td></tr>
-                <tr><td>CIFAR-10</td><td><strong>78.57±0.74</strong></td><td>81.02±1.02</td><td>73.99±0.49</td><td>75.14±0.34</td><td>79.79±0.54</td></tr>
-                <tr><td>FashionMNIST</td><td>90.91±0.29</td><td>91.36±0.47</td><td>89.34±0.13</td><td>89.34±0.16</td><td>—</td></tr>
-                <tr><td>SVHN</td><td>94.78±0.61</td><td>95.16±0.23</td><td>92.55±0.19</td><td>92.82±0.09</td><td>—</td></tr>
-                <tr><td>CIFAR-100, larger CNN</td><td>53.74±0.88</td><td>—</td><td>50.00±0.83</td><td>—</td><td>46.48±0.50</td></tr>
-              </tbody>
-            </table>
-          </div>
+      <p>
+        学习曲线显示，二参数模型的优势通常在训练早期出现。在多个有效设置中，它达到给定性能阈值所需的 epoch 数约为基线的四分之一到二分之一。这个现象与原论文报告的快速学习一致。它说明多输入局部单元能够提供更合适的早期特征组合方式，但不意味着二参数形式在每个数据集上都优于一参数可学习激活。例如，FashionMNIST 和 SVHN 中的一参数版本略高于二参数版本。由此可见，分类结果支持可学习局部结构的价值，却不足以单独证明某一种二元形式普遍最优。
+      </p>
 
-          <div class="figure-grid">
-            <figure>
-              <img src="paper_assets/fig_original_reproduction_comparison.png" alt="Comparison of reproduced classification results with values read from the original paper" loading="lazy">
-              <figcaption><strong>Figure 2.</strong> Directional reproduction of the original classification result. Three tasks match the reported scale; CNN CIFAR-10 preserves the direction but not the original absolute level.</figcaption>
-            </figure>
-            <figure>
-              <img src="paper_assets/fig_training_curves.png" alt="Multi-seed learning curves for MLP and CNN experiments" loading="lazy">
-              <figcaption><strong>Figure 3.</strong> Multi-seed learning curves. The learned activations often improve early optimization as well as the final metric.</figcaption>
-            </figure>
-          </div>
+      <div class="figure dual">
+        <div>
+          <img src="paper_assets/fig_original_reproduction_comparison.png" alt="本项目结果与原论文图读结果的比较">
+          <p class="caption">
+            <strong>图 2a｜原论文结果复核。</strong>
+            三项任务在绝对水平和相对方向上基本复现；CNN CIFAR-10 保留了相对优势，但绝对精度低于原论文曲线的图读值。
+          </p>
+        </div>
+        <div>
+          <img src="paper_assets/fig_training_curves.png" alt="MLP 和 CNN 多随机种子训练曲线">
+          <p class="caption">
+            <strong>图 2b｜多随机种子训练曲线。</strong>
+            阴影表示跨种子离散程度。二参数模型的主要优势通常在优化早期形成。
+          </p>
+        </div>
+      </div>
 
-          <h3>3.2 Reconstruction, regression, and parameter efficiency</h3>
-          <div class="two-col">
-            <div>
-              <div class="table-wrap">
-                <table>
-                  <thead><tr><th>Task</th><th>InnerNet</th><th>Reference</th><th>Result</th></tr></thead>
-                  <tbody>
-                    <tr><td>AE MNIST</td><td>0.0039</td><td>ReLU 0.0068</td><td>43% lower MSE</td></tr>
-                    <tr><td>AE FashionMNIST</td><td>0.0076</td><td>ReLU 0.0086</td><td>12% lower MSE</td></tr>
-                    <tr><td>AE CIFAR-10</td><td>0.0081</td><td>ReLU 0.0105</td><td>23% lower MSE</td></tr>
-                    <tr><td>MLP CIFAR-10</td><td>52.05%, 415K</td><td>ReLU 51.99%, 921K</td><td>54.9% fewer parameters</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <p>Housing regression shows a capacity crossover: InnerNet helps at widths 32-120, then ReLU catches up at widths 256-512. The gain is therefore an inductive-bias effect rather than a universal asymptotic advantage.</p>
-            </div>
-            <figure>
-              <img src="paper_assets/fig_parameter_efficiency.png" alt="Parameter efficiency curve for InnerNet and ReLU MLPs" loading="lazy">
-              <figcaption><strong>Figure 4.</strong> InnerNet reaches the performance of a substantially wider ReLU MLP with 54.9% fewer parameters.</figcaption>
-            </figure>
-          </div>
+      <h3>2.2　收益延伸到重建、语言建模和部分决策任务</h3>
 
-          <h3>3.3 Transformer language models and scale</h3>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Configuration</th><th>GELU</th><th>SwiGLU</th><th>InnerNet</th><th>InnerNet vs GELU</th></tr></thead>
-              <tbody>
-                <tr><td>WikiText-2 d=64</td><td>116.63±0.84</td><td>112.31±0.49</td><td>112.83±0.94</td><td>3.3% lower PPL</td></tr>
-                <tr><td>WikiText-2 d=128</td><td>96.82±1.19</td><td>92.98±1.14</td><td>95.26±1.00</td><td>1.6% lower PPL</td></tr>
-                <tr><td>WikiText-2 d=192</td><td>89.11±0.92</td><td>85.43±0.41</td><td>88.42±0.94</td><td>0.8% lower PPL</td></tr>
-                <tr><td>WikiText-2 d=256</td><td>86.05±0.97</td><td>81.56±0.94</td><td>84.62±1.47</td><td>1.7% lower PPL</td></tr>
-                <tr><td>GPT-style d=256</td><td>≈72.6</td><td>≈74.5</td><td>≈76.2, 3/5 seeds</td><td>5.0% higher PPL</td></tr>
-              </tbody>
-            </table>
-          </div>
+      <p>
+        为检验这一局部计算形式是否只适用于简单图像分类，我们把 InnerNet 放入自编码器、Transformer 前馈层、LSTM 和强化学习策略网络。自编码器上的结果最稳定：MNIST、FashionMNIST 和 CIFAR-10 的重建误差分别下降 43%、12% 和 23%。在 WikiText-2 的小型 Transformer 中，InnerNet 在四个模型宽度上均优于 GELU；在
+        <span class="math">d=128</span>
+        时，测试困惑度从 96.82±1.19 降至 95.26±1.00。LSTM 上的改善较小，困惑度从 104.38±0.75 降至 103.41±0.83。强化学习中，Acrobot 显示出明确收益，LunarLander 则与 ReLU 持平。
+      </p>
 
-          <figure>
-            <img src="paper_assets/fig_scaling_law.png" alt="Transformer model-scale comparison of GELU, SwiGLU, and InnerNet" loading="lazy">
-            <figcaption><strong>Figure 5.</strong> The same-width InnerNet advantage over GELU remains positive through d=256 but is non-monotonic. A larger GPT-style configuration reverses the direction.</figcaption>
-          </figure>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>任务</th>
+              <th class="num">固定基线</th>
+              <th class="num">InnerNet</th>
+              <th>结果</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>MNIST 自编码</td>
+              <td class="num">0.0068 MSE</td>
+              <td class="num">0.0039 MSE</td>
+              <td>误差下降 43%</td>
+            </tr>
+            <tr>
+              <td>CIFAR-10 自编码</td>
+              <td class="num">0.0105 MSE</td>
+              <td class="num">0.0081 MSE</td>
+              <td>误差下降 23%</td>
+            </tr>
+            <tr>
+              <td>Transformer，WikiText-2，d=128</td>
+              <td class="num">96.82±1.19 PPL，GELU</td>
+              <td class="num">95.26±1.00 PPL</td>
+              <td>困惑度下降 1.6%</td>
+            </tr>
+            <tr>
+              <td>LSTM，WikiText-2</td>
+              <td class="num">104.38±0.75 PPL</td>
+              <td class="num">103.41±0.83 PPL</td>
+              <td>困惑度下降 0.9%</td>
+            </tr>
+            <tr>
+              <td>PPO，Acrobot</td>
+              <td class="num">ReLU 基线</td>
+              <td class="num">高 21.7 return</td>
+              <td>配对检验 p=0.0036</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-          <h4>Probe-width ablation</h4>
-          <div class="table-wrap">
-              <table>
-                <thead><tr><th>Inner width</th><th>PPL</th><th>Δ vs h=32</th><th>GPU time</th></tr></thead>
-                <tbody>
-                  <tr><td>8</td><td>96.17±0.95</td><td>+0.91</td><td>10.9 h</td></tr>
-                  <tr><td>16</td><td>95.76±0.64</td><td>+0.50</td><td>15.7 h</td></tr>
-                  <tr><td>32</td><td>95.26±1.00</td><td>reference</td><td>historical run</td></tr>
-                  <tr><td>64</td><td><strong>95.09±1.15</strong></td><td>-0.17</td><td>53.0 h</td></tr>
-                </tbody>
-              </table>
-          </div>
-          <p>The four-width Friedman test gives p=0.392. Width 64 provides no measurable gain over width 32 (paired-t p=0.708), while runtime increases by 4.86× relative to width 8. Five seeds support a practical saturation claim, but not strict equivalence within a pre-specified 1-PPL margin.</p>
+      <p>
+        这些结果给出了比原始 MLP 与 CNN 更广的经验范围，同时也揭示了边界。Transformer 中，InnerNet 在
+        <span class="math">d=64,128,192,256</span>
+        的同宽度比较中均优于 GELU，但没有超过手工设计的 SwiGLU。规模继续增大到 GPT 设置后，InnerNet 从头训练反而落后。模型越大，灵活局部函数带来的优化负担越难由固定训练预算消化。
+      </p>
 
-          <h3>3.4 Capacity and optimization</h3>
-          <p>Warm-start results separate what InnerNet can represent from what it can discover from scratch. Across 11 warm-start tasks, InnerNet wins or ties SwiGLU in 10. The controlled frozen-network experiment gives 77.38±0.51 PPL for InnerNet and 77.38±0.54 for SwiGLU. The from-scratch deficit is therefore an optimization barrier in this setting.</p>
-          <figure>
-            <img src="paper_assets/fig_warmstart_curves.png" alt="Warm-start and frozen-capacity trajectories for InnerNet and SwiGLU" loading="lazy">
-            <figcaption><strong>Figure 6.</strong> Warm-start and frozen-capacity tests. InnerNet can match the fixed SwiGLU function when optimization begins inside the same basin.</figcaption>
-          </figure>
+      <div class="figure">
+        <img src="paper_assets/fig_scaling_law.png" alt="不同 Transformer 规模上 GELU、SwiGLU 和 InnerNet 的比较">
+        <p class="caption">
+          <strong>图 3｜Transformer 规模与测试困惑度。</strong>
+          InnerNet 在四个 WikiText-2 宽度上优于 GELU，但始终落后于 SwiGLU。更大的 GPT 设置出现反转，表明高容量局部算子的主要限制来自优化和训练成本。
+        </p>
+      </div>
 
-          <h3>3.5 Recurrent memory</h3>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Model</th><th>Parameters</th><th>Sequential MNIST</th><th>Interpretation</th></tr></thead>
-              <tbody>
-                <tr><td>Plain tanh RNN</td><td>18K</td><td>11.36±0.02%</td><td>No long-term memory</td></tr>
-                <tr><td>LSTM</td><td>68K</td><td>77.03±15.66%</td><td>High variance</td></tr>
-                <tr><td>GRU</td><td>52K</td><td>98.72±0.14%</td><td>Strong reference</td></tr>
-                <tr><td>InnerNet replacing tanh</td><td>19K</td><td>11.04±0.62%</td><td>Additive memory is missing</td></tr>
-                <tr><td>Constrained additive-memory InnerNet</td><td>21K</td><td><strong>98.44±0.22%</strong></td><td>8/9 trained seeds succeed</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <p>The recurrent result establishes functional sufficiency: additive memory plus learned bivariate interactions can solve the task with fewer parameters than LSTM or GRU. Surface fits do not identify each InnerNet as a canonical gate, so the mechanism is reported as distributed and non-identifiable.</p>
+      <h3>2.3　InnerNet 具有足够的表示能力，困难主要来自优化路径</h3>
 
-          <h3>3.6 Other positive and boundary results</h3>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Family</th><th>Result</th><th>Evidence role</th></tr></thead>
-              <tbody>
-                <tr><td>LSTM, WikiText-2</td><td>Classic pairing 101.72±0.99 vs standard 108.39±0.75</td><td>Positive, pairing-sensitive</td></tr>
-                <tr><td>ResNet internal-only</td><td>74.97% vs 73.51% on CIFAR-100</td><td>Position matters</td></tr>
-                <tr><td>PPO Acrobot</td><td>-90.1±15.2 vs ReLU -111.8±16.0, p=0.0036</td><td>Positive extension</td></tr>
-                <tr><td>PPO LunarLander</td><td>98.8±94.7 vs ReLU 101.3±57.8, p=0.897</td><td>High-variance tie</td></tr>
-                <tr><td>Multiply-init MLM</td><td>15.93±0.21 vs SwiGLU 19.09±0.27</td><td>Strong task-specific interaction</td></tr>
-                <tr><td>Training phases</td><td>End-to-end ≈ three-phase on AE, ResNet, and MLP</td><td>Pretraining usually unnecessary</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
+      <p>
+        SwiGLU 属于 InnerNet 可以近似表示的二维函数族。如果性能差距来自容量不足，那么在固定外围网络时，InnerNet 也无法恢复 SwiGLU 的性能。实验结果与此相反。在 WikiText-2
+        <span class="math">d=128</span>
+        模型中，我们先训练 SwiGLU 网络，再把局部算子替换为 InnerNet。冻结外围网络、只训练 InnerNet 时，两者最终困惑度均为 77.38；允许外围网络与 InnerNet 联合调整时，InnerNet 在五个种子上的平均困惑度为 76.85，继续训练 SwiGLU 的分支为 77.04。
+      </p>
 
-        <section id="en-causal">
-          <h2>4. What operator is learned?</h2>
-          <p>Single checkpoints often resemble a scaled SwiGLU. The d=64 Transformer surface is explained by <code>0.321 · SiLU(a) · b</code> with R²=0.977. The causal matrix shows why this observation must be interpreted conditionally.</p>
+      <p>
+        同样的 warm-start 协议扩展到 11 个架构与任务后，InnerNet 在 10 个设置中优于或持平于 SwiGLU，LSTM 是唯一明确落后的设置。相反，当所有参数从头共同训练时，不同初始化的 InnerNet 通常比 SwiGLU 差 1 到 3 个困惑度点。两组实验共同说明，高容量二元函数并不缺少表示能力；它需要外围网络先形成有效表示，或者需要一个能够把系统带入有效区域的结构化起点。
+      </p>
 
-          <figure>
-            <img src="paper_assets/fig_d64_swiglu_surface.png" alt="Learned InnerNet surface, fitted scaled SwiGLU operator, and residual" loading="lazy">
-            <figcaption><strong>Figure 7.</strong> A learned d=64 Transformer surface and its scaled-SwiGLU fit. The residual is small, but this checkpoint alone cannot establish a universal attractor.</figcaption>
-          </figure>
+      <div class="figure">
+        <img src="paper_assets/fig_warmstart_curves.png" alt="SwiGLU 分叉训练与冻结外围网络容量验证">
+        <p class="caption">
+          <strong>图 4｜优化路径与容量分离。</strong>
+          左图在共同的 SwiGLU 预训练后分叉，分别继续训练 SwiGLU 或改用可训练 InnerNet。右图冻结外围网络，只优化 InnerNet。InnerNet 可以保持或略微改善已有解，说明从头训练的差距主要是优化问题。
+        </p>
+      </div>
 
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Host</th><th>Probe conditions</th><th>Recovered family</th><th>Fit</th><th>Conclusion</th></tr></thead>
-              <tbody>
-                <tr><td>Bilinear GLU</td><td>joint/frozen × random/multiply × 5 seeds</td><td>20/20 multiplication</td><td>R² 0.9976-0.9993</td><td>Host preserves bilinear basin</td></tr>
-                <tr><td>SwiGLU</td><td>4 initializations × 5 seeds</td><td>20/20 scaled SwiGLU</td><td>R² 0.9853-0.9912</td><td>Initialization does not determine the endpoint</td></tr>
-              </tbody>
-            </table>
-          </div>
+      <h3>2.4　局部算子由外围网络的优化区域决定</h3>
 
-          <div class="quote">The learned surface is a readout of a host-compatible interaction basin. It is not evidence for one network-independent optimal activation.</div>
+      <p>
+        为区分任务、初始化和外围网络状态的作用，我们构造了两个宿主网络。第一个宿主使用固定双线性算子
+        <span class="math">a·b</span>
+        完成训练，第二个宿主使用固定 SwiGLU 算子完成训练。随后用 InnerNet 替换宿主中的固定算子，并系统改变 InnerNet 的初始函数和训练方式。这里的一个“条件”指一个确定的宿主类型、训练方式、InnerNet 初始化和随机种子的组合。
+      </p>
 
-          <figure>
-            <img src="paper_assets/fig10_innernet_all_tasks.png" alt="Learned InnerNet surfaces across Transformer, CNN, and masked language modeling tasks" loading="lazy">
-            <figcaption><strong>Figure 8.</strong> Learned surfaces across tasks. Shared qualitative structure coexists with task-specific departures, especially in masked language modeling.</figcaption>
-          </figure>
-        </section>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>宿主网络</th>
+              <th>InnerNet 训练方式</th>
+              <th>初始函数</th>
+              <th class="num">随机种子</th>
+              <th class="num">条件数</th>
+              <th>最终函数</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>双线性宿主</td>
+              <td>联合训练或冻结外围网络</td>
+              <td>随机、乘法</td>
+              <td class="num">5</td>
+              <td class="num">20</td>
+              <td>20/20 恢复乘法，R²=0.9976 至 0.9993</td>
+            </tr>
+            <tr>
+              <td>SwiGLU 宿主</td>
+              <td>联合训练</td>
+              <td>随机、恒等、乘法、SwiGLU</td>
+              <td class="num">5</td>
+              <td class="num">20</td>
+              <td>20/20 恢复 SwiGLU 类形态，R²=0.9853 至 0.9912</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-        <section id="en-boundaries">
-          <h2>5. Boundaries, failures, and deployment</h2>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Setting</th><th>Observed behavior</th></tr></thead>
-              <tbody>
-                <tr><td>Feedforward blocks without an existing interaction path</td><td>Often beneficial</td></tr>
-                <tr><td>Small and medium models</td><td>Inductive-bias gains are most visible</td></tr>
-                <tr><td>Warm-start or controlled replacement</td><td>Capacity matches or exceeds fixed operators</td></tr>
-                <tr><td>Residual full replacement, large-model direct swap, unfused deployment</td><td>No benefit or impractical cost</td></tr>
-              </tbody>
-            </table>
-          </div>
+      <p>
+        四十个条件形成了清晰的分离。相同的 InnerNet 初始化进入不同宿主后会得到不同的函数，而同一宿主中的不同初始化会收敛到同一类函数。因此，最终算子并不是 InnerNet 参数化本身产生的固定吸引子。外围网络已经形成的表示、尺度和梯度场共同限定了可行的局部计算。InnerNet 在这个条件空间内完成连续搜索，并恢复与当前网络解相容的高性能结构。
+      </p>
 
-          <h3>Negative and limiting evidence</h3>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Experiment</th><th>Observed boundary</th></tr></thead>
-              <tbody>
-                <tr><td>RNN PTB</td><td>InnerNet PPL ≈169/179 vs tanh ≈140.</td></tr>
-                <tr><td>LSTM PTB</td><td>Standard LSTM outperforms both InnerNet pairing variants.</td></tr>
-                <tr><td>MLM from scratch</td><td>InnerNet 124.82 vs GELU 101.39; warm-start reverses the outcome.</td></tr>
-                <tr><td>GPT-style d=256</td><td>InnerNet ≈76.2 vs GELU ≈72.6, with only 3/5 InnerNet seeds completed.</td></tr>
-                <tr><td>Qwen2.5-0.5B replacement</td><td>Accuracy falls from ≈89% to ≈80% after finetuning.</td></tr>
-                <tr><td>Sequential MNIST stability</td><td>One constrained run diverges; simpler clipping and tanh variants do not remove seed sensitivity.</td></tr>
-              </tbody>
-            </table>
-          </div>
+      <p>
+        这一结果改变了可学习激活的解释方式。训练得到的二维表面不应被看作脱离网络上下文的全局最优激活函数。它更接近一次局部系统辨识：给定一个已经工作的网络，允许局部计算规则变形，再读取优化保留下来的结构。该过程可以用于检验某个手工算子是否稳定、发现它附近的改进方向，也可以比较不同任务和层是否需要不同的交互形式。
+      </p>
 
-          <h3>Compute and distillation</h3>
-          <p>On the same RTX 2080 Ti, InnerNet has only 1.17× the profiled major-operation FLOPs of SwiGLU, yet its unfused implementation is 17.33×/12.02× slower at CNN/Transformer inference and 7.63×/6.27× slower for a training step. Peak training memory is 7.90×/6.43× higher. The bottleneck is execution structure and intermediate materialization.</p>
-          <p>In the CNN deployment study, a fixed polynomial approximation runs 2.68× faster than InnerNet and remains above ReLU/SwiGLU accuracy, but loses 3.63 points relative to the learned module. This is a partial deployment closure rather than a lossless conversion.</p>
-        </section>
+      <div class="figure">
+        <img src="paper_assets/fig_d64_swiglu_surface.png" alt="训练后的 InnerNet 表面、缩放 SwiGLU 拟合及残差">
+        <p class="caption">
+          <strong>图 5｜二维函数的结构读取。</strong>
+          一个 Transformer 检查点中的 InnerNet 可由缩放 SwiGLU 项解释 97.7% 的方差。单个表面只提供实例证据；跨宿主、跨初始化和跨种子的因果矩阵给出了更强的结构结论。
+        </p>
+      </div>
 
-        <section id="en-repro">
-          <h2>6. Reproducibility and statistical provenance</h2>
-          <div class="metric-grid">
-            <div class="metric"><strong>510</strong><span>Experiment directories indexed.</span></div>
-            <div class="metric"><strong>1,708</strong><span>Structured metric rows.</span></div>
-            <div class="metric"><strong>441</strong><span>Raw-verified experiments.</span></div>
-            <div class="metric"><strong>76/76</strong><span>Registered document cells matching the canonical summary.</span></div>
-          </div>
-          <p>The canonical audit preserves raw seeds, distinguishes population and sample dispersion, separates configuration collisions, retains failed and NaN runs, and reports paired and non-parametric tests. Thirty-two headline comparisons are regenerated from structured artifacts. There are no unresolved within-configuration seed conflicts.</p>
-          <p>Primary sources: <code>results/audit/grouped_metric_summary.csv</code>, <code>core_comparisons.csv</code>, <code>document_consistency.csv</code>, <code>causal_matrix_summary.json</code>, and <code>inner_hidden_ablation.json</code>.</p>
-        </section>
+      <h3>2.5　探针容量很快进入平台</h3>
 
-        <section id="en-conclusion">
-          <h2>7. Conclusion</h2>
-          <p>Learnable two-argument activations are most useful as controlled probes of feature interaction. They can recover compact operators, reveal where a network benefits from multiplicative structure, and separate optimization barriers from capacity limits. The evidence does not support universal activation superiority or direct large-scale deployment. A practical workflow is to train the flexible probe, identify a stable operator family, and replace it with an efficient fixed approximation when the accuracy-cost tradeoff is acceptable.</p>
-        </section>
+      <p>
+        如果 InnerNet 的作用是探索局部结构，它不需要无限增大。我们在固定 WikiText-2
+        <span class="math">d=128</span>
+        设置中只改变 InnerNet 隐藏宽度。宽度从 8 增加到 16 和 32 时，平均困惑度逐步下降；继续增加到 64 只改善 0.17 PPL。四档的 Friedman 检验为
+        <span class="math">p=0.392</span>，
+        没有检测到总体宽度效应。与此同时，宽度 64 的训练时间为宽度 8 的 4.86 倍。
+      </p>
 
-        <section>
-          <h2>References and artifact map</h2>
-          <ol class="ref-list">
-            <li>Yoon, Orhan, Kim, and Pitkow. “Two-argument activation functions learn soft XOR operations like cortical neurons.” arXiv:2110.06871v2; IEEE Access, 2022.</li>
-            <li>Original paper PDF: <code>docs/2110.06871v2.pdf</code>. Reproduction notes: <code>docs/paper_results.md</code>.</li>
-            <li>Full internal evidence record: <code>RESULTS_CN.md</code>. Formal result summary: <code>RESULTS_EN.md</code>.</li>
-          </ol>
-        </section>
-      </article>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>InnerNet 隐藏宽度</th>
+              <th class="num">测试 PPL</th>
+              <th class="num">相对 h=32</th>
+              <th class="num">运行时间</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>8</td><td class="num">96.17±0.95</td><td class="num">+0.91</td><td class="num">10.9 小时</td></tr>
+            <tr><td>16</td><td class="num">95.76±0.64</td><td class="num">+0.50</td><td class="num">15.7 小时</td></tr>
+            <tr><td>32</td><td class="num">95.26±1.00</td><td class="num">0</td><td class="num">标准设置</td></tr>
+            <tr><td>64</td><td class="num">95.09±1.15</td><td class="num">−0.17</td><td class="num">53.0 小时</td></tr>
+          </tbody>
+        </table>
+      </div>
 
-      <article id="chinese" lang="zh-CN">
-        <div class="language-label zh">中文阅读稿与编辑说明</div>
+      <p>
+        该消融说明，较小的 InnerNet 已足以表示任务偏好的低阶结构。增加探针容量不会自动带来更好的发现结果，反而扩大优化和执行成本。后续模型应优先改进初始化、参数共享和算子实现，而不是继续增加内部宽度。
+      </p>
 
-        <section>
-          <h2>中文摘要</h2>
-          <p class="lede">这项工作的主线已经清楚：InnerNet 是一个可微的架构探针。它让网络自己学习两个特征之间的局部算子。训练结束后，我们读取二维函数表面，再把它拟合成乘法、SwiGLU 或低阶多项式。</p>
-          <p>最关键的因果结果来自 40 个条件。Bilinear host 中的 20 个条件全部回到乘法；SwiGLU host 中的 20 个条件全部回到 SwiGLU-like 表面。不同初始化不会改变这个归属。外围网络和优化 basin 才是决定因素。</p>
-          <p>因此，论文不应把 InnerNet 写成一个更强、更快的 activation。现有实现很慢，大模型从头训练也经常输给 SwiGLU。更稳妥的价值是：先用灵活的 InnerNet 探索局部交互，再把稳定结构提炼成简单算子。</p>
-        </section>
+      <h3>2.6　二元交互可以补充循环网络的加法记忆</h3>
 
-        <section>
-          <h2>一、论文主线怎么串起来</h2>
-          <ol>
-            <li><strong>原论文起点：</strong>MLP/CNN 上略优于 ReLU，收敛更快。</li>
-            <li><strong>我们扩展范围：</strong>Transformer、LSTM、RNN、AE、ResNet、RL 等。</li>
-            <li><strong>我们找到边界：</strong>位置、规模、初始化和优化路径决定结果。</li>
-            <li><strong>我们形成新定位：</strong>用可学习激活探测架构基元，再提炼部署。</li>
-          </ol>
+      <p>
+        在 Sequential MNIST 中，我们构造了具有显式加法记忆通路和二元 InnerNet 的紧凑循环单元。九次实际进入训练的运行中，八次成功完成，平均准确率为 98.44±0.22%；另一次在第 17 个 epoch 出现数值不稳定。成功模型只有约 2.1 万个参数。这一结果表明，当长程记忆由稳定的加法通路承担时，可学习二元交互能够负责输入选择和状态更新。
+      </p>
 
-          <div class="quote">一句话版本：InnerNet 能读出当前网络 basin 里有用的二元交互，但不会自动找到一个对所有网络都最优的 activation。</div>
+      <p>
+        对训练后二维函数的拟合没有得到稳定的标准 sigmoid 门，因此这里的证据是功能性的：模型确实学会了高精度序列计算，但不能把成功归因于某个唯一、可辨识的门控表面。这个边界本身也支持本文的核心观点。局部函数的含义必须与外围状态表示一起解释，不能只凭单个二维图形命名机制。
+      </p>
 
-          <h3>证据等级</h3>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>证据等级</th><th>结论</th><th>依据</th></tr></thead>
-              <tbody>
-                <tr><td><span class="badge strong">足够支撑</span></td><td>Host-dependent architecture probe</td><td>40/40 causal matrix 和 5-seed 表面拟合</td></tr>
-                <tr><td><span class="badge bounded">辅助支撑</span></td><td>中等容量已经够用</td><td>h=16 后均值进入平台，但没有严格等价证明</td></tr>
-                <tr><td><span class="badge unsupported">不要声称</span></td><td>更好的通用 activation</td><td>从头训练、GPT、Qwen 和成本结果均不支持</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
+      <h3>2.7　稳定结构可以被提炼，但当前闭环仍有损失</h3>
 
-        <section>
-          <h2>二、所有核心证据</h2>
+      <p>
+        InnerNet 的主要代价来自执行方式。它只增加少量共享参数，理论算子 FLOPs 也只比 SwiGLU 高约 17%，但逐元素小 MLP 会产生大量未融合 kernel 和中间张量。在统一硬件测量中，InnerNet 的 CNN 与 Transformer 推理分别比 SwiGLU 慢 17.33 倍和 12.02 倍。由此，直接把 InnerNet 长期保留在部署模型中并不理想。
+      </p>
 
-          <h3>2.1 原论文复现与分类</h3>
-          <p>MLP-MNIST、MLP-CIFAR-10 和 CNN-MNIST 基本复现原论文的数值范围和方向。CNN-CIFAR-10 只复现方向，绝对精度低于论文图读值。这个差异需要在论文里公开。</p>
-          <p class="small">对应图见英文稿 Figure 2。中文部分不重复插图，便于连续阅读。</p>
+      <p>
+        我们在 CIFAR-10 CNN 上把训练后的二维表面拟合为固定三阶多项式。固定算子把吞吐从每秒 1,622 张提高到 4,345 张，并保留了相对 ReLU 和 SwiGLU 的准确率优势。代价是准确率从 84.95±0.57% 降至 81.32±0.32%，且当前未融合多项式仍慢于 SwiGLU。这个实验验证了“探索后提炼”的可行性，但尚未实现无损和硬件友好的最终算子。
+      </p>
 
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>数据集</th><th>2-arg</th><th>1-arg</th><th>ReLU</th><th>关键解释</th></tr></thead>
-              <tbody>
-                <tr><td>MNIST CNN</td><td>99.41±0.04</td><td>99.42±0.06</td><td>99.02±0.03</td><td>简单任务，小幅稳定增益</td></tr>
-                <tr><td>CIFAR-10 CNN</td><td>78.57±0.74</td><td>81.02±1.02</td><td>73.99±0.49</td><td>两输入有用，但 1-arg 均值更高</td></tr>
-                <tr><td>FashionMNIST CNN</td><td>90.91±0.29</td><td>91.36±0.47</td><td>89.34±0.13</td><td>1-arg 与 2-arg 差异接近显著</td></tr>
-                <tr><td>SVHN CNN</td><td>94.78±0.61</td><td>95.16±0.23</td><td>92.55±0.19</td><td>2-arg 方差受低 seed 影响</td></tr>
-                <tr><td>CIFAR-100 大 CNN</td><td>53.74±0.88</td><td>—</td><td>50.00±0.83</td><td>更难分类仍有正向结果</td></tr>
-              </tbody>
-            </table>
-          </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>CIFAR-10 CNN 算子</th>
+              <th class="num">准确率</th>
+              <th class="num">吞吐量</th>
+              <th>相对意义</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>InnerNet</td><td class="num">84.95±0.57%</td><td class="num">1,622 图像/秒</td><td>发现阶段的最高性能</td></tr>
+            <tr><td>固定三阶多项式</td><td class="num">81.32±0.32%</td><td class="num">4,345 图像/秒</td><td>提速 2.68 倍，保留部分收益</td></tr>
+            <tr><td>SwiGLU</td><td class="num">79.97±0.37%</td><td class="num">10,680 图像/秒</td><td>高效手工算子</td></tr>
+            <tr><td>ReLU</td><td class="num">79.93±0.17%</td><td class="num">15,059 图像/秒</td><td>最快基线</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-          <h3>2.2 Transformer 与 hidden width</h3>
-          <p>标准 d=64-256 sweep 中，InnerNet 一直优于同宽 GELU，但不如 SwiGLU。GPT-style d=256 出现反转。这个边界说明模型越大，优化成本越重要。</p>
-          <p class="small">对应图见英文稿 Figure 5。</p>
+    <section id="discussion">
+      <h2>3　讨论</h2>
 
-          <div class="two-col">
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>Inner width</th><th>PPL</th><th>vs h=32</th><th>耗时</th></tr></thead>
-                <tbody>
-                  <tr><td>8</td><td>96.17±0.95</td><td>+0.91</td><td>10.9 h</td></tr>
-                  <tr><td>16</td><td>95.76±0.64</td><td>+0.50</td><td>15.7 h</td></tr>
-                  <tr><td>32</td><td>95.26±1.00</td><td>基准</td><td>历史 run</td></tr>
-                  <tr><td>64</td><td>95.09±1.15</td><td>-0.17</td><td>53.0 h</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="card boundary-card">
-              <h3>U35 能证明什么</h3>
-              <p>可以写：h=16 后没有检测到明显收益，h=64 成本很高。</p>
-              <p>不能写：h=16 与 h=32 严格等价。±1 PPL 的 TOST 没通过。</p>
-              <p>论文定位：辅助 ablation，回答 reviewer 对 InnerNet 容量选择的疑问。</p>
-            </div>
-          </div>
+      <h3>3.1　从激活函数比较转向局部结构发现</h3>
 
-          <h3>2.3 表面提炼与因果矩阵</h3>
-          <p>d=64 的 learned surface 可以被 scaled SwiGLU 解释到 R²=0.977。这个单点结果很好看，但真正决定 claim 强度的是 causal matrix。</p>
-          <p class="small">对应 learned surface 图见英文稿 Figure 7。</p>
+      <p>
+        固定激活函数的目标是提供一个便宜、稳定、可复用的非线性。InnerNet 承担的是不同角色。它在训练期间打开一个连续的二维函数空间，使模型能够探索局部乘法、门控、软 XOR 及其变体。由于最终函数可以单独取出和拟合，这个过程产生的不只是一个性能数字，还产生一个关于网络局部计算方式的可检验假设。
+      </p>
 
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Host</th><th>条件</th><th>结果</th><th>结论</th></tr></thead>
-              <tbody>
-                <tr><td>Bilinear</td><td>joint/frozen × random/multiply × 5 seeds</td><td>20/20 都是 multiply，R²≈0.998-0.999</td><td>外围网络维持乘法 basin</td></tr>
-                <tr><td>SwiGLU</td><td>4 init × 5 seeds</td><td>20/20 都是 SwiGLU，R²≈0.985-0.991</td><td>初值不决定最终算子</td></tr>
-              </tbody>
-            </table>
-          </div>
+      <p>
+        因果矩阵表明，这种发现是宿主条件化的。双线性宿主和 SwiGLU 宿主分别稳定保留不同结构，说明不存在一个对所有网络都相同的“最佳激活”。这并不削弱方法的价值。局部结构本来就应当依赖上游表示、下游目标和训练状态。InnerNet 提供的是在给定网络解附近进行连续结构搜索的能力，类似于对已经形成的计算系统做可微的局部探测。
+      </p>
 
-          <div class="placeholder">
-            <div><strong>论文主图占位：Causal Matrix Summary</strong>把 40 个条件画成 2×4 的 host/init 热图，颜色表示 operator vote，旁边标 R² 和 PPL。数据已经齐全，不需要补实验。</div>
-          </div>
+      <h3>3.2　神经科学启发提供了可解释的结构先验</h3>
 
-          <h3>2.4 Capacity 与 optimization 分离</h3>
-          <p>ivs_d128 的 frozen-capacity test 是关键控制：只训练 InnerNet，外部网络冻结，最终与 SwiGLU 完全持平。它说明表示能力够用。from-scratch 输，主要问题在优化路径。</p>
-          <p class="small">对应曲线见英文稿 Figure 6。</p>
+      <p>
+        本方法的生物学意义不只来自“使用了更复杂的神经元”。更具体的联系在于，多路输入在单个计算单元内部发生非线性交互。皮层神经元的树突区室能够对不同来源的突触输入进行局部整合，人类皮层树突中也观察到与 XOR 相容的响应 [2]。二元 InnerNet 把这一事实抽象为一个最小可训练对象：两路投影进入同一个共享函数，函数可以表达协同、抑制、门控和上下文调制。
+      </p>
 
-          <h3>2.5 Sequential MNIST 的功能性结果</h3>
-          <p>Plain RNN 和单 InnerNet 都只有约 11%。加入加法记忆通道和两个 InnerNet 后，约束版用 21K 参数达到 98.44±0.22%，8/9 个实际训练 seed 成功。</p>
-          <p>这个实验支持“加法记忆 + 二元交互在功能上足够”。单个 InnerNet 的表面无法稳定对应标准 input/output gate，因此不写成门结构再发现。</p>
+      <p>
+        这种抽象为神经科学假设和机器学习架构之间建立了直接接口。如果某类任务反复产生乘法或软 XOR 表面，我们可以进一步问这些结构是否对应不同信息通路之间的调制；如果不同层出现不同形态，则可以检验多细胞类型或分层树突计算的必要性。二维表面本身也比高维网络模块更容易可视化和比较，有助于把性能变化与局部计算机制联系起来。
+      </p>
 
-          <div class="placeholder">
-            <div><strong>论文辅助图占位：Sequential MNIST Function vs Mechanism</strong>左侧画准确率和参数量，右侧画 gate-fit R² 跨 seed 分布。重点展示功能成功与机制不可辨识可以同时成立。</div>
-          </div>
+      <p>
+        InnerNet 仍然是计算模型，而非真实树突的完整复刻。它没有描述形态、电导、时序动力学或细胞类型差异。当前结果支持的是一个更窄也更有用的观点：来自真实神经元的多输入非线性为人工网络提供了可操作的结构先验，而可学习二维函数可以用来检验这种先验在不同任务中会形成什么计算。
+      </p>
 
-          <h3>2.6 其他实验汇总</h3>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>实验</th><th>结果</th><th>在论文里的作用</th></tr></thead>
-              <tbody>
-                <tr><td>Autoencoder</td><td>MNIST/FMNIST/CIFAR MSE 降低 43%/12%/23%</td><td>没有 skip 时二元 inductive bias 有效</td></tr>
-                <tr><td>Housing regression</td><td>小宽度赢，大宽度反转</td><td>容量边界</td></tr>
-                <tr><td>LSTM WikiText-2</td><td>Classic 101.72 vs Standard 108.39</td><td>相邻配对优于语义配对</td></tr>
-                <tr><td>LSTM/RNN PTB</td><td>InnerNet 输标准模型</td><td>数据集依赖性和负面边界</td></tr>
-                <tr><td>ResNet</td><td>全换无效，internal-only +1.5%</td><td>位置决定效果</td></tr>
-                <tr><td>PPO Acrobot</td><td>-90.1 vs ReLU -111.8，p=0.0036</td><td>扩展正面结果</td></tr>
-                <tr><td>PPO LunarLander</td><td>InnerNet 与 ReLU 持平，方差大</td><td>RL 不作主线</td></tr>
-                <tr><td>MLM multiply-init</td><td>15.93 vs SwiGLU 19.09</td><td>任务特定乘法交互</td></tr>
-                <tr><td>Qwen 直接替换</td><td>约89%降到约80%</td><td>大模型直接替换不可行</td></tr>
-                <tr><td>计算成本</td><td>TF inference 慢12.02×，train step慢6.27×</td><td>必须走提炼或 kernel 优化</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
+      <h3>3.3　有效起点是高容量结构搜索的必要条件</h3>
 
-        <section id="zh-notes">
-          <h2>三、中文编辑提示与下一步</h2>
+      <p>
+        从头训练时，InnerNet 与外围网络同时改变，局部函数、特征尺度和表示基底互相牵制。固定算子则把这一部分搜索空间压缩为一个已知归纳偏置，因此更容易优化。warm-start、冻结容量实验和 causal matrix 给出了相互一致的解释：一旦外围网络进入有效区域，InnerNet 能够恢复已有算子，并沿局部梯度继续调整；如果整个系统从随机状态开始，高自由度反而会阻碍训练。
+      </p>
 
-          <div class="editor-note">
-            <strong>英文主 claim 已经可以固定</strong>
-            “Two-argument activations act as differentiable probes of host-compatible feature interactions.” 这句话有完整 causal evidence。不要再升级成 universal discovery。
-          </div>
+      <p>
+        这一发现指向一种更合适的训练程序。先用稳定的固定算子、低容量 InnerNet 或教师网络建立可用表示，再释放局部函数进行结构搜索。搜索完成后，可以对多随机种子中稳定出现的低阶项进行拟合、消融和再训练。这样的流程把手工结构的优化优势与可学习结构的表达能力结合起来。
+      </p>
 
-          <div class="editor-note">
-            <strong>U35 不需要继续跑</strong>
-            这组结果已经回答 hidden width reviewer question。只有在论文想明确写“h=16 与 h=32 等价”时，才需要预先定义 non-inferiority margin，再补 5-15 个 seeds。
-          </div>
+      <h3>3.4　从发现到部署</h3>
 
-          <div class="placeholder">
-            <div><strong>待制作图：Hidden-width Quality-Cost Pareto</strong>横轴 GPU hours，纵轴 PPL，点大小表示 InnerNet 参数。现有数据已足够，可以直接画。</div>
-          </div>
+      <p>
+        可学习探针不需要成为最终算子。一个实用闭环包含四步：用稳定结构训练宿主网络；用 InnerNet 替换局部算子并继续优化；从多个随机种子中提取稳定的函数成分；将这些成分写成简单、可融合的算子并重新训练。CNN 多项式实验已经完成前三步并部分完成第四步。它证明性能增益可以保留一部分，但也表明仅做数值拟合还不够。最终算子还需要考虑硬件融合、梯度稳定性和重训练后的任务性能。
+      </p>
 
-          <div class="placeholder">
-            <div><strong>待制作图：Compute Cost Breakdown</strong>把 FLOPs、inference latency、training latency、peak memory 放成四栏。现有 <code>compute_cost_profile.json</code> 已足够。</div>
-          </div>
+      <h3>3.5　局限</h3>
 
-          <h3>建议的论文图顺序</h3>
-          <ol>
-            <li>方法结构图：标准 activation 与 InnerNet。</li>
-            <li>原论文复现与训练曲线。</li>
-            <li>跨架构结果总览。</li>
-            <li>Causal matrix 主图。</li>
-            <li>Learned surface 与闭式拟合。</li>
-            <li>Warm-start / frozen capacity。</li>
-            <li>位置、规模和 hidden-width 边界。</li>
-            <li>部署成本与 distillation。</li>
-          </ol>
+      <p>
+        现有结果仍有四项限制。第一，Transformer 比较主要采用相同隐藏宽度，而非严格匹配总参数量，因此性能数字不能单独解释为参数效率。第二，若干大模型实验没有在相同计算预算下完全收敛，当前结论聚焦于优化难度和趋势。第三，Sequential MNIST 的功能结果没有产生稳定可辨识的标准门控表面。第四，当前提炼算子仍有精度损失和运行开销。后续工作的重点应是层级或细胞类型特异的共享方式、更强的结构化初始化，以及面向编译器融合的闭式算子搜索。
+      </p>
+    </section>
 
-          <h3>还需要补的主要是呈现，不是实验</h3>
-          <ul>
-            <li>把 causal matrix JSON 画成主图。</li>
-            <li>把 U35 做成 quality-cost 小图。</li>
-            <li>把 compute profiler 做成论文级柱状图。</li>
-            <li>统一图的字体、配色、caption 和编号。</li>
-            <li>把英文正文压缩到目标会议页数，再把详细负面结果放 appendix。</li>
-          </ul>
-        </section>
+    <section id="methods">
+      <h2>4　方法</h2>
 
-        <section>
-          <h2>四、当前证据是否够投稿</h2>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>可以作为论文结论</th><th>需要避免的写法</th></tr></thead>
-              <tbody>
-                <tr><td>Architecture probe 的核心定位</td><td>Universal best activation</td></tr>
-                <tr><td>Host/basin 决定算子家族</td><td>Network-independent rediscovery</td></tr>
-                <tr><td>容量与优化可以分开</td><td>h=16 与 h=32 已证明等价</td></tr>
-                <tr><td>位置和规模存在边界</td><td>把 incomplete seeds 当完整主结果</td></tr>
-                <tr><td>探针需要提炼后部署</td><td>隐去 NaN、失败和计算成本</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </article>
-    </main>
+      <h3>4.1　共享二元 InnerNet</h3>
 
-    <footer class="footer">
-      Built from audited project artifacts in <code>RESULTS_EN.md</code>, <code>RESULTS_CN.md</code>, <code>PROJECT_STATUS.md</code>, and <code>results/audit/</code>. The figures used by this page are mirrored in <code>docs/paper_assets/</code> for reliable local viewing.
-    </footer>
-  </div>
+      <p>
+        对于外部网络某一层的输入
+        <span class="math">x</span>，
+        我们计算两路线性投影
+        <span class="math">a=W<sub>1</sub>x</span>
+        与
+        <span class="math">b=W<sub>2</sub>x</span>，
+        再用共享函数生成输出：
+      </p>
+
+      <div class="equation">
+        y = f<sub>θ</sub>(a,b)
+      </div>
+
+      <p>
+        标准 InnerNet 是两输入、一输出的 MLP，包含两层隐藏层和 ReLU 非线性。原始分类设置使用每层 64 个隐藏单元；Transformer 的主要设置使用隐藏宽度 32，并在消融中比较 8、16、32 和 64。模型在同一网络的多个单元之间共享
+        <span class="math">θ</span>，
+        使其角色接近一个可学习的规范化局部算子。分类模型在 InnerNet 前使用 LayerNorm，在其后使用 dropout。
+      </p>
+
+      <h3>4.2　训练协议</h3>
+
+      <p>
+        原论文采用三个阶段：先拟合平滑随机二维函数，再联合训练 InnerNet 与外围网络，最后冻结 InnerNet 并重新训练外围网络。本文的扩展实验默认采用端到端训练，以检验现代架构中的直接可用性；在优化分析中额外使用 warm-start、冻结外围网络和固定宿主三类干预。除特别说明外，核心结果使用随机种子 42 至 46，并报告跨种子的均值和标准差。
+      </p>
+
+      <h3>4.3　任务与基线</h3>
+
+      <p>
+        图像实验包括 MNIST、FashionMNIST、SVHN、CIFAR-10 和 CIFAR-100 上的 MLP、CNN 与自编码器。语言模型包括 WikiText-2 和 Penn Treebank 上的 Transformer、LSTM 与循环网络。决策实验使用 PPO 和 DQN。固定基线包括 ReLU、ReLU 加 LayerNorm、PReLU、SiLU、GELU、SwiGLU、tanh 和双线性乘法。原论文 MLP 与 CNN 复现沿用其参数匹配原则；Transformer 的主比较保持相同模型宽度，并在正文中单独说明这一限制。
+      </p>
+
+      <h3>4.4　宿主条件化因果矩阵</h3>
+
+      <p>
+        我们先分别训练使用固定
+        <span class="math">a·b</span>
+        和固定 SwiGLU 的 Transformer 宿主，每类包含五个随机种子。双线性宿主中，InnerNet 使用随机或乘法初始化，并分别在联合训练与冻结外围网络两种模式下优化，共
+        <span class="math">5×2×2=20</span>
+        个条件。SwiGLU 宿主中，InnerNet 使用随机、恒等、乘法或 SwiGLU 初始化，并与外围网络联合训练，共
+        <span class="math">5×4=20</span>
+        个条件。
+      </p>
+
+      <p>
+        每个训练后函数都在固定二维网格上采样，并分别拟合乘法、缩放 SwiGLU 和三阶多项式。我们使用决定系数 R² 衡量候选算子的解释度，并以最高解释度确定函数类别。所有 40 个条件均保存最终检查点和结构化结果文件。
+      </p>
+
+      <h3>4.5　统计与结果审计</h3>
+
+      <p>
+        使用相同随机种子的模型比较采用配对 t 检验，并同时计算 Wilcoxon 符号秩检验、Cohen's
+        <span class="math">d<sub>z</sub></span>
+        和 bootstrap 置信区间。hidden-width 消融使用 Friedman 检验；等价性问题另用预先指定边界的 TOST 检验。项目的 canonical manifest 共索引 510 个实验、1,708 行结果，其中 441 个实验已与原始文件逐项核对。正文只使用可追溯到配置文件、实验目录或结构化审计结果的数字。
+      </p>
+    </section>
+
+    <section id="appendix">
+      <h2>附录</h2>
+
+      <h3>附录 A　补充结果</h3>
+
+      <h4>A.1　CNN 数据集扩展</h4>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>数据集</th>
+              <th class="num">二参数 InnerNet</th>
+              <th class="num">一参数版本</th>
+              <th class="num">ReLU</th>
+              <th class="num">SwiGLU</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>MNIST</td><td class="num">99.41±0.04%</td><td class="num">99.42±0.06%</td><td class="num">99.02±0.03%</td><td class="num">未测</td></tr>
+            <tr><td>CIFAR-10</td><td class="num">78.57±0.74%</td><td class="num">81.02±1.02%</td><td class="num">73.99±0.49%</td><td class="num">79.79±0.54%</td></tr>
+            <tr><td>FashionMNIST</td><td class="num">90.91±0.29%</td><td class="num">91.36±0.47%</td><td class="num">89.34±0.13%</td><td class="num">未测</td></tr>
+            <tr><td>SVHN</td><td class="num">94.78±0.61%</td><td class="num">95.16±0.23%</td><td class="num">92.55±0.19%</td><td class="num">未测</td></tr>
+            <tr><td>CIFAR-100，大 CNN</td><td class="num">53.74±0.88%</td><td class="num">未测</td><td class="num">50.00±0.83%</td><td class="num">46.48±0.50%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>A.2　Transformer 规模结果</h4>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>设置</th>
+              <th class="num">GELU PPL</th>
+              <th class="num">SwiGLU PPL</th>
+              <th class="num">InnerNet PPL</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>WikiText-2，d=64</td><td class="num">116.63</td><td class="num">112.31</td><td class="num">112.83</td></tr>
+            <tr><td>WikiText-2，d=128</td><td class="num">96.82</td><td class="num">92.98</td><td class="num">95.26</td></tr>
+            <tr><td>WikiText-2，d=192</td><td class="num">89.11</td><td class="num">85.43</td><td class="num">88.42</td></tr>
+            <tr><td>WikiText-2，d=256</td><td class="num">86.05</td><td class="num">81.56</td><td class="num">84.62</td></tr>
+            <tr><td>Penn Treebank，d=128</td><td class="num">212.28</td><td class="num">205.82</td><td class="num">207.91</td></tr>
+            <tr><td>GPT 设置，d=256</td><td class="num">约 72.6</td><td class="num">约 74.5</td><td class="num">约 76.2，3/5 seeds</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>A.3　跨任务函数表面</h4>
+      <div class="figure">
+        <img src="paper_assets/fig10_innernet_all_tasks.png" alt="不同任务训练后的 InnerNet 二维函数表面">
+        <p class="caption">
+          <strong>图 A1｜不同任务的训练后二维表面。</strong>
+          Transformer、CNN 和 masked language modeling 产生不同的局部函数。表面差异说明算子形态受任务和外围表示共同约束。
+        </p>
+      </div>
+
+      <h4>A.4　参数效率</h4>
+      <div class="figure">
+        <img src="paper_assets/fig_parameter_efficiency.png" alt="InnerNet 与 ReLU MLP 的参数效率比较">
+        <p class="caption">
+          <strong>图 A2｜参数效率。</strong>
+          在容量受限的 MLP 中，共享局部函数可以用较少的外围宽度获得较好的性能。随着基础网络变宽，这一优势减弱。
+        </p>
+      </div>
+
+      <h3>附录 B　负面结果与适用边界</h3>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>设置</th>
+              <th>观察</th>
+              <th>解释</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>RNN，Penn Treebank</td>
+              <td>InnerNet PPL 约 169 至 179，tanh 约 140</td>
+              <td>二元局部单元不能替代稳定循环动力学</td>
+            </tr>
+            <tr>
+              <td>GPT 从头训练</td>
+              <td>InnerNet 落后 GELU 和 SwiGLU</td>
+              <td>模型增大后优化负担超过有限预算内的收益</td>
+            </tr>
+            <tr>
+              <td>Qwen2.5-0.5B 直接替换</td>
+              <td>准确率约从 89% 降至 80%</td>
+              <td>成熟大模型不适合无过渡地更换局部算子</td>
+            </tr>
+            <tr>
+              <td>ResNet 全部位置替换</td>
+              <td>整体持平</td>
+              <td>残差通路已经提供部分调制与信息保留</td>
+            </tr>
+            <tr>
+              <td>Sequential MNIST gate 拟合</td>
+              <td>标准 sigmoid gate 的 R² 不稳定</td>
+              <td>功能成功不能直接解释为唯一门控机制</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>附录 C　实验追溯</h3>
+
+      <p>
+        原论文复现配置位于
+        <code>config/experiments/mlp_*.yaml</code>
+        与
+        <code>config/experiments/cnn_*.yaml</code>。
+        Transformer 主实验位于
+        <code>config/experiments/transformer_wikitext_*.yaml</code>，
+        hidden-width 消融位于
+        <code>config/experiments/transformer_wikitext_2arg_innerh{8,16,64}.yaml</code>。
+        因果矩阵汇总见
+        <code>results/audit/causal_matrix_summary.json</code>，
+        hidden-width 汇总见
+        <code>results/audit/inner_hidden_ablation.json</code>，
+        部署分析见
+        <code>results/audit/deploy_analysis.json</code>，
+        计算成本见
+        <code>results/audit/compute_cost_profile.json</code>。
+        完整数值与实验目录模式记录在
+        <code>RESULTS_CN.md</code>
+        和
+        <code>docs/paper_results.md</code>。
+      </p>
+
+      <h3>附录 D　成稿前编辑备注</h3>
+
+      <div class="note">
+        <strong>图表待补 1：</strong>
+        将表 3 的 40 个条件绘成一个紧凑矩阵。横轴为 InnerNet 初始化，纵轴为宿主与训练方式；颜色表示乘法或 SwiGLU 拟合 R²。该图应成为主文的核心机制图。
+      </div>
+
+      <div class="note">
+        <strong>图表待补 2：</strong>
+        把 hidden-width 的 PPL 与运行时间画在同一张双面板图中，直接展示容量平台和成本增长。当前表格已经包含全部数据。
+      </div>
+
+      <div class="note">
+        <strong>实验待补：</strong>
+        当前 CNN 提炼证明了方向可行，但仍有 3.63 个准确率点损失。若继续推进部署闭环，应优先搜索可由少量 fused primitive 表达的公式，并在重新训练后比较精度和吞吐，而不是继续拟合更高阶多项式。
+      </div>
+    </section>
+
+    <section id="references">
+      <h2>参考文献</h2>
+      <ol class="references">
+        <li>
+          Yoon, K., Orhan, E., Kim, J., and Pitkow, X. Two-argument activation functions learn soft XOR operations like cortical neurons. 2021.
+          <a href="2110.06871v2.pdf">本地论文 PDF</a>。
+        </li>
+        <li>
+          Gidon, A. 等。人类第二至第三层皮层神经元中的树突动作电位与计算。Science，2020。
+        </li>
+        <li>
+          Poirazi, P. 与 Mel, B. W. 树突子结构对单个神经元计算能力的贡献。Neuron，2001。
+        </li>
+        <li>
+          Larkum, M. E. 等。皮层神经元中不同树突输入通路的交互。Nature，1999。
+        </li>
+        <li>
+          Vaswani, A. 等。基于注意力的序列建模架构。2017。
+        </li>
+      </ol>
+    </section>
+
+    <p class="foot">
+      本页是中文论文草稿。正文数据来自项目的 canonical 实验记录与原始结果审计，内部任务状态不属于论文正文。
+    </p>
+  </main>
 </body>
 </html>
