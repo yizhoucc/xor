@@ -75,6 +75,13 @@
 - dedup 污染已在提交 **a44195f** 修复：验证目录改用系统临时目录，不再位于 `exp/`。修复验证 job **682897** ✅ COMPLETED（11秒，CPU partition），日志确认使用 `/tmp/xor_validate_*` 且 validation PASS。
 - 完整结论：h=8/16/32/64 的均值为 **96.17/95.76/95.26/95.09 PPL**，Friedman p=0.392。性能在 h=16 后进入平台，h=64 没有可测得的收益，却比 h=8 慢4.86×。n=5 足以作为“宽度收益很快饱和”的辅助消融，不足以证明严格统计等价；按预设 ±1 PPL margin 的 TOST，h=16 vs h=32 仍未通过（p=0.237）。
 
+### 双语 HTML 论文稿：✅ 第一版完成
+
+- 新增 `docs/paper.html`：单页结构，英文正式稿在前，中文详细阅读稿在后。
+- 英文部分汇总方法、分类/AE/Transformer/RNN/RL、causal matrix、capacity/optimization、负面边界、部署成本和统计 provenance，不包含内部 TODO。
+- 中文部分补充证据强度、claim 边界和三个明确的作图占位提示。页面复用8张现有核心图，镜像到 `docs/paper_assets/`，确保 Safari 直接打开本地 HTML 时可以显示。
+- 已在 Safari 检查首页、结果表格、图像加载和中文排版；8/8 图片正常加载。页面定位以阅读为主，已移除大幅封面背景、装饰性指标卡和中文重复插图。
+
 ### P1 causal matrix v2：✅ 40/40 条件完成
 
 旧矩阵因单个 job 重复训练 host、串行执行多个 init，出现 24h timeout；另有 8 个 job 落到 PyTorch 不支持的 RTX Pro 6000 节点。现已改成**共享 host checkpoint + probe 拆分 + 可续跑 + 结构化 `results.json`**，并用独立 worktree `/home/yizhouc3/xor-codex-audit` 保护 cluster 上有未提交改动的 `~/xor`。

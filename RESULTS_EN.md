@@ -2,6 +2,8 @@
 
 > Summary of all experiments for "Two-argument activation functions learn soft XOR operations like cortical neurons" (Yoon et al., 2021).
 
+Bilingual paper-style synthesis: `docs/paper.html` (formal English manuscript followed by an expanded Chinese reading version).
+
 ## Paper Story — Learnable Activations as Differentiable Architecture Search
 
 InnerNet replaces scalar activations (ReLU) with a small learned MLP taking two inputs: `f(a, b) → output`, so each neuron computes a nonlinear interaction between two learned linear projections (analogous to the soft-XOR interactions of cortical neurons).

@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Two-Argument Activations as Differentiable Probes of Learned Feature Interactions</title>
+  <style>
+    :root {
+      --ink: #17242c;
+      --muted: #617079;
+      --paper: #fffdf8;
+      --page: #ece9e1;
+      --line: #d9d4ca;
+      --blue: #176b87;
+      --blue-soft: #e7f3f6;
+      --rust: #b04b2f;
+      --rust-soft: #faece6;
+      --gold: #b78221;
+      --gold-soft: #fbf2da;
+      --green: #35735a;
+      --green-soft: #e8f2ec;
+      --shadow: 0 24px 70px rgba(35, 45, 48, 0.12);
+      --serif: Georgia, "Times New Roman", "Songti SC", "STSong", serif;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 4%, rgba(23, 107, 135, 0.10), transparent 27rem),
+        radial-gradient(circle at 88% 3%, rgba(176, 75, 47, 0.08), transparent 25rem),
+        var(--page);
+      font-family: var(--serif);
+      line-height: 1.65;
+    }
+
+    a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    code {
+      padding: 0.12rem 0.32rem;
+      border-radius: 0.28rem;
+      background: #f0eee8;
+      color: #31434b;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.86em;
+      overflow-wrap: anywhere;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      justify-content: center;
+      border-bottom: 1px solid rgba(217, 212, 202, 0.86);
+      background: rgba(255, 253, 248, 0.92);
+      backdrop-filter: blur(16px);
+      font-family: var(--sans);
+    }
+    .topbar-inner {
+      width: min(1180px, calc(100% - 2rem));
+      display: flex;
+      gap: 0.45rem;
+      align-items: center;
+      padding: 0.72rem 0;
+      overflow-x: auto;
+    }
+    .topbar a {
+      flex: 0 0 auto;
+      padding: 0.38rem 0.72rem;
+      border-radius: 999px;
+      color: #3b4b52;
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 650;
+      letter-spacing: 0.02em;
+    }
+    .topbar a:hover { background: var(--blue-soft); color: var(--blue); }
+    .topbar .brand { margin-right: auto; color: var(--ink); }
+
+    .sheet {
+      width: min(1120px, calc(100% - 2rem));
+      margin: 1rem auto 3rem;
+      background: var(--paper);
+      border: 1px solid rgba(217, 212, 202, 0.9);
+      border-radius: 0.45rem;
+      box-shadow: 0 8px 28px rgba(35, 45, 48, 0.07);
+      overflow: hidden;
+    }
+
+    .cover {
+      padding: 2rem clamp(1.5rem, 6vw, 5rem) 1.7rem;
+      color: var(--ink);
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+    }
+    .eyebrow {
+      margin: 0 0 0.65rem;
+      font-family: var(--sans);
+      font-size: 0.78rem;
+      font-weight: 750;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--blue);
+    }
+    .cover h1 {
+      max-width: 920px;
+      margin: 0;
+      font-size: clamp(1.8rem, 3.2vw, 2.55rem);
+      line-height: 1.16;
+      letter-spacing: -0.022em;
+      text-wrap: balance;
+    }
+    .cover .subtitle {
+      max-width: 800px;
+      margin: 0.85rem 0 0;
+      font-family: var(--sans);
+      font-size: 1rem;
+      color: var(--muted);
+    }
+    .cover-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0;
+      margin-top: 0.9rem;
+      font-family: var(--sans);
+      font-size: 0.78rem;
+    }
+    .cover-meta span {
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: var(--muted);
+    }
+    .cover-meta span + span::before {
+      content: "·";
+      margin: 0 0.55rem;
+      color: #9a958a;
+    }
+
+    article { padding: clamp(2rem, 6vw, 5rem); }
+    article + article { border-top: 16px solid var(--page); }
+    .language-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 2.3rem;
+      padding: 0.42rem 0.72rem;
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-family: var(--sans);
+      font-size: 0.76rem;
+      font-weight: 760;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .language-label.zh { background: var(--rust-soft); color: var(--rust); }
+
+    h2, h3, h4 { color: #16313c; text-wrap: balance; }
+    h2 {
+      margin: 4.2rem 0 1.2rem;
+      padding-top: 1.2rem;
+      border-top: 1px solid var(--line);
+      font-size: clamp(1.8rem, 3.3vw, 2.65rem);
+      line-height: 1.14;
+      letter-spacing: -0.025em;
+    }
+    h2:first-of-type { margin-top: 0; }
+    h3 { margin: 2.7rem 0 0.8rem; font-size: 1.45rem; line-height: 1.25; }
+    h4 { margin: 1.8rem 0 0.5rem; font-family: var(--sans); font-size: 1rem; }
+    p { margin: 0.75rem 0 1rem; }
+    .lede { font-size: 1.22rem; line-height: 1.65; color: #35474f; }
+    .small { color: var(--muted); font-size: 0.9rem; }
+
+    .abstract {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(260px, 0.75fr);
+      gap: 2.2rem;
+      align-items: start;
+    }
+    .abstract-box {
+      padding: 1.4rem 1.5rem;
+      border-left: 4px solid var(--blue);
+      background: #f6f4ee;
+    }
+    .abstract-box h3 { margin-top: 0; }
+
+    .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; margin: 1.2rem 0; }
+    .metric {
+      padding: 0.85rem;
+      border: 1px solid var(--line);
+      border-radius: 0.8rem;
+      background: #fff;
+    }
+    .metric strong {
+      display: block;
+      color: var(--blue);
+      font-family: var(--sans);
+      font-size: 1.35rem;
+      line-height: 1.05;
+    }
+    .metric span { display: block; margin-top: 0.5rem; color: var(--muted); font-family: var(--sans); font-size: 0.82rem; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .card {
+      padding: 1.2rem 1.25rem;
+      border: 1px solid var(--line);
+      border-radius: 0.8rem;
+      background: #fff;
+    }
+    .card h3, .card h4 { margin-top: 0; }
+    .card p:last-child { margin-bottom: 0; }
+
+    .claim-card { border-top: 4px solid var(--green); }
+    .boundary-card { border-top: 4px solid var(--gold); }
+    .reject-card { border-top: 4px solid var(--rust); }
+    .badge {
+      display: inline-block;
+      padding: 0.16rem 0.48rem;
+      border-radius: 999px;
+      font-family: var(--sans);
+      font-size: 0.7rem;
+      font-weight: 760;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      vertical-align: 0.08rem;
+    }
+    .strong { background: var(--green-soft); color: var(--green); }
+    .supporting { background: var(--blue-soft); color: var(--blue); }
+    .bounded { background: var(--gold-soft); color: #8a6214; }
+    .unsupported { background: var(--rust-soft); color: var(--rust); }
+
+    .table-wrap {
+      margin: 1.2rem 0 1.8rem;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 0.72rem;
+      background: #fff;
+    }
+    table { width: 100%; border-collapse: collapse; font-family: var(--sans); font-size: 0.86rem; }
+    th, td { padding: 0.72rem 0.78rem; border-bottom: 1px solid #e7e2d8; text-align: left; vertical-align: top; }
+    th { background: #f1efe9; color: #30434b; font-size: 0.75rem; letter-spacing: 0.035em; text-transform: uppercase; }
+    tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: #faf8f2; }
+
+    figure {
+      margin: 2rem 0;
+      padding: 0.8rem;
+      border: 1px solid var(--line);
+      border-radius: 0.85rem;
+      background: #fff;
+    }
+    figure img { display: block; width: 100%; height: auto; border-radius: 0.45rem; }
+    figcaption { padding: 0.8rem 0.45rem 0.25rem; color: var(--muted); font-family: var(--sans); font-size: 0.8rem; line-height: 1.5; }
+    .figure-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    .evidence-flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.7rem;
+      margin: 1.5rem 0;
+      font-family: var(--sans);
+    }
+    .evidence-step {
+      position: relative;
+      padding: 1rem;
+      border-radius: 0.8rem;
+      background: #f3f6f5;
+      border: 1px solid #d9e3df;
+    }
+    .evidence-step b { display: block; margin-bottom: 0.35rem; color: var(--green); }
+
+    .mini-chart {
+      display: grid;
+      grid-template-columns: 72px 1fr 84px;
+      gap: 0.55rem 0.8rem;
+      align-items: center;
+      padding: 1.25rem;
+      border: 1px solid var(--line);
+      border-radius: 0.8rem;
+      background: #fff;
+      font-family: var(--sans);
+      font-size: 0.82rem;
+    }
+    .bar-track { height: 0.72rem; border-radius: 999px; background: #ebe8df; overflow: hidden; }
+    .bar { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--blue), #66a7b8); }
+    .bar.runtime { background: linear-gradient(90deg, var(--rust), #d99872); }
+
+    .editor-note, .placeholder {
+      margin: 1.25rem 0;
+      padding: 1rem 1.15rem;
+      border-radius: 0.75rem;
+      font-family: var(--sans);
+      font-size: 0.88rem;
+    }
+    .editor-note { border-left: 4px solid var(--gold); background: var(--gold-soft); }
+    .editor-note strong, .placeholder strong { display: block; margin-bottom: 0.3rem; }
+    .placeholder {
+      display: grid;
+      place-items: center;
+      min-height: 170px;
+      border: 2px dashed #c9aa6b;
+      color: #725416;
+      background: repeating-linear-gradient(-45deg, #fffaf0, #fffaf0 12px, #f9f0db 12px, #f9f0db 24px);
+      text-align: center;
+    }
+
+    .toc {
+      margin: 2rem 0;
+      padding: 1.2rem 1.4rem;
+      border: 1px solid var(--line);
+      border-radius: 0.8rem;
+      background: #faf8f3;
+      font-family: var(--sans);
+      columns: 2;
+    }
+    .toc a { display: block; padding: 0.2rem 0; text-decoration: none; }
+
+    .quote {
+      margin: 2rem 0;
+      padding: 1.5rem 1.7rem;
+      border-left: 5px solid var(--rust);
+      background: var(--rust-soft);
+      font-size: 1.2rem;
+      line-height: 1.55;
+    }
+
+    .ref-list { padding-left: 1.2rem; font-size: 0.9rem; color: #43545b; }
+    .footer {
+      padding: 2rem clamp(1.5rem, 7vw, 6rem);
+      border-top: 1px solid var(--line);
+      background: #f4f1ea;
+      color: var(--muted);
+      font-family: var(--sans);
+      font-size: 0.78rem;
+    }
+
+    @media (max-width: 860px) {
+      .abstract, .two-col, .three-col, .figure-grid, .metric-grid, .evidence-flow { grid-template-columns: 1fr; }
+      .toc { columns: 1; }
+      .cover { padding-top: 2.2rem; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .topbar { display: none; }
+      .sheet { width: 100%; margin: 0; border: 0; border-radius: 0; box-shadow: none; }
+      .cover { break-after: auto; }
+      article { padding: 2.5rem 3rem; }
+      figure, .card, .table-wrap { break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="topbar" aria-label="Document navigation">
+    <div class="topbar-inner">
+      <a class="brand" href="#top">XOR Neuron Evidence Paper</a>
+      <a href="#english">English</a>
+      <a href="#en-results">Evidence</a>
+      <a href="#chinese">中文</a>
+      <a href="#zh-notes">编辑提示</a>
+    </div>
+  </nav>
+
+  <div class="sheet" id="top">
+    <header class="cover">
+      <p class="eyebrow">Evidence synthesis · 510 experiments · 1,708 metric rows</p>
+      <h1>Two-Argument Activations as Differentiable Probes of Learned Feature Interactions</h1>
+      <p class="subtitle">A bilingual evidence synthesis spanning reproduction, architecture transfer, causal operator analysis, optimization limits, and deployment cost.</p>
+      <div class="cover-meta">
+        <span>32 registered comparisons</span>
+        <span>76/76 document claims verified</span>
+        <span>5-seed core evaluations</span>
+        <span>Updated September 2026</span>
+      </div>
+    </header>
+
+    <main>
+      <article id="english" lang="en">
+        <div class="language-label">English manuscript</div>
+
+        <section id="en-abstract">
+          <div class="abstract">
+            <div>
+              <h2>Abstract</h2>
+              <p class="lede">Two-argument activation functions replace a fixed scalar nonlinearity with a small shared network that maps two learned projections to one output. We study these modules as differentiable probes of useful feature interactions across image classification, reconstruction, language modeling, recurrent memory, residual networks, and reinforcement learning.</p>
+              <p>A complete 40-condition causal matrix shows that the learned operator depends on the surrounding network and optimization basin. Every probe placed in a Bilinear-GLU host recovers multiplication, while every probe placed in a SwiGLU host recovers a scaled SwiGLU surface, independent of the probe initialization. The module therefore reveals an operator compatible with the trained host rather than converging to one universal activation.</p>
+              <p>Across tasks, InnerNet improves models that lack a built-in interaction or bypass path, but provides little benefit where residual structure already supplies one. Warm-start experiments separate optimization from expressivity: InnerNet matches the capacity of SwiGLU, while from-scratch training often fails to reach the same basin. A hidden-width ablation shows that performance saturates near width 16-32, whereas runtime rises sharply. These results support learnable activations as architecture probes and hypothesis generators, with deployment requiring subsequent distillation into efficient fixed operators.</p>
+            </div>
+            <aside class="abstract-box">
+              <h3>Central claim</h3>
+              <p>InnerNet can expose and refine useful bivariate operators inside a trained architecture. The recovered operator is conditional on the host network and optimization path.</p>
+              <p><span class="badge strong">Supported</span> by 40/40 causal conditions, multi-seed functional results, and closed-form surface fits.</p>
+            </aside>
+          </div>
+
+          <p class="small"><strong>Evidence snapshot:</strong> 40/40 causal conditions recover the host operator family; InnerNet wins or ties 10/11 warm-start tasks; the constrained recurrent model reaches 98.44%; the current unfused Transformer implementation is 12.02× slower than SwiGLU at inference.</p>
+        </section>
+
+        <section id="en-outline">
+          <h2>Paper outline</h2>
+          <div class="toc">
+            <a href="#en-intro">1. Motivation and contributions</a>
+            <a href="#en-method">2. Method</a>
+            <a href="#en-results">3. Evidence</a>
+            <a href="#en-causal">4. Causal operator analysis</a>
+            <a href="#en-boundaries">5. Boundaries and deployment</a>
+            <a href="#en-repro">6. Reproducibility</a>
+            <a href="#en-conclusion">7. Conclusion</a>
+          </div>
+        </section>
+
+        <section id="en-intro">
+          <h2>1. Motivation and contributions</h2>
+          <p>The original two-argument activation study evaluated MLP and CNN classifiers on MNIST and CIFAR-10, reporting faster learning, modest accuracy gains, and robustness improvements. Our study asks a broader question: what architectural interaction does a trainable bivariate activation recover when placed inside different networks?</p>
+          <h3>Contributions</h3>
+          <ol>
+            <li>A multi-architecture evaluation that maps where learned two-input interactions help and where they do not.</li>
+            <li>A causal matrix showing that the recovered operator family is controlled by the host basin rather than the InnerNet initialization.</li>
+            <li>Warm-start and frozen-network tests that separate representational capacity from optimization difficulty.</li>
+            <li>A quantitative account of parameter efficiency, runtime cost, and closed-form distillation.</li>
+          </ol>
+        </section>
+
+        <section id="en-method">
+          <h2>2. Method</h2>
+          <p>For each activation site, two learned projections produce scalars <em>a</em> and <em>b</em>. A small shared MLP computes <em>f(a,b)</em>. The shared function can be visualized over a two-dimensional grid and fitted to candidate operators such as multiplication, SwiGLU, or low-order polynomials.</p>
+
+          <figure>
+            <img src="paper_assets/fig4_innernet_architecture.png" alt="Comparison between a standard scalar activation and the shared two-input InnerNet architecture" loading="lazy">
+            <figcaption><strong>Figure 1.</strong> Standard scalar activation and the shared two-input InnerNet construction. The probe introduces a learnable bivariate map while keeping the surrounding network trainable.</figcaption>
+          </figure>
+
+          <div class="evidence-flow">
+            <div class="evidence-step"><b>1 · Insert</b>Replace a fixed activation or gated interaction with a shared two-input network.</div>
+            <div class="evidence-step"><b>2 · Optimize</b>Train end-to-end, warm-start from a known host, or freeze the outer network.</div>
+            <div class="evidence-step"><b>3 · Read out</b>Sample the learned two-dimensional surface and fit simple operator families.</div>
+            <div class="evidence-step"><b>4 · Validate</b>Compare seeds, hosts, positions, scales, and deployment costs.</div>
+          </div>
+
+          <h3>Evidence hierarchy</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Level</th><th>Use</th><th>Examples</th></tr></thead>
+              <tbody>
+                <tr><td><span class="badge strong">Strong</span></td><td>Causal or paired multi-seed claims</td><td>Host-basin dependence, capacity controls, core benchmarks</td></tr>
+                <tr><td><span class="badge bounded">Bounded</span></td><td>Functional or incomplete claims</td><td>Recurrent gating, GPT scaling, task dependence</td></tr>
+                <tr><td><span class="badge unsupported">Rejected</span></td><td>Claims contradicted by controls</td><td>Universal rediscovery, drop-in superiority, efficient direct deployment</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="en-results">
+          <h2>3. Evidence across architectures</h2>
+
+          <h3>3.1 Reproduction and image classification</h3>
+          <p>The original direction is reproduced in MLP/CNN classification. The strongest controlled CNN result is CIFAR-10: 78.57±0.74% for the two-argument model versus 75.14±0.34% for ReLU+LayerNorm and 70.67±0.43% for the parameter-matched ReLU network. PReLU and Swish controls remain below InnerNet.</p>
+
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Dataset</th><th>2-arg</th><th>1-arg</th><th>ReLU</th><th>ReLU+LN</th><th>SwiGLU</th></tr></thead>
+              <tbody>
+                <tr><td>MNIST</td><td>99.41±0.04</td><td>99.42±0.06</td><td>99.02±0.03</td><td>99.18±0.02</td><td>—</td></tr>
+                <tr><td>CIFAR-10</td><td><strong>78.57±0.74</strong></td><td>81.02±1.02</td><td>73.99±0.49</td><td>75.14±0.34</td><td>79.79±0.54</td></tr>
+                <tr><td>FashionMNIST</td><td>90.91±0.29</td><td>91.36±0.47</td><td>89.34±0.13</td><td>89.34±0.16</td><td>—</td></tr>
+                <tr><td>SVHN</td><td>94.78±0.61</td><td>95.16±0.23</td><td>92.55±0.19</td><td>92.82±0.09</td><td>—</td></tr>
+                <tr><td>CIFAR-100, larger CNN</td><td>53.74±0.88</td><td>—</td><td>50.00±0.83</td><td>—</td><td>46.48±0.50</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="figure-grid">
+            <figure>
+              <img src="paper_assets/fig_original_reproduction_comparison.png" alt="Comparison of reproduced classification results with values read from the original paper" loading="lazy">
+              <figcaption><strong>Figure 2.</strong> Directional reproduction of the original classification result. Three tasks match the reported scale; CNN CIFAR-10 preserves the direction but not the original absolute level.</figcaption>
+            </figure>
+            <figure>
+              <img src="paper_assets/fig_training_curves.png" alt="Multi-seed learning curves for MLP and CNN experiments" loading="lazy">
+              <figcaption><strong>Figure 3.</strong> Multi-seed learning curves. The learned activations often improve early optimization as well as the final metric.</figcaption>
+            </figure>
+          </div>
+
+          <h3>3.2 Reconstruction, regression, and parameter efficiency</h3>
+          <div class="two-col">
+            <div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Task</th><th>InnerNet</th><th>Reference</th><th>Result</th></tr></thead>
+                  <tbody>
+                    <tr><td>AE MNIST</td><td>0.0039</td><td>ReLU 0.0068</td><td>43% lower MSE</td></tr>
+                    <tr><td>AE FashionMNIST</td><td>0.0076</td><td>ReLU 0.0086</td><td>12% lower MSE</td></tr>
+                    <tr><td>AE CIFAR-10</td><td>0.0081</td><td>ReLU 0.0105</td><td>23% lower MSE</td></tr>
+                    <tr><td>MLP CIFAR-10</td><td>52.05%, 415K</td><td>ReLU 51.99%, 921K</td><td>54.9% fewer parameters</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p>Housing regression shows a capacity crossover: InnerNet helps at widths 32-120, then ReLU catches up at widths 256-512. The gain is therefore an inductive-bias effect rather than a universal asymptotic advantage.</p>
+            </div>
+            <figure>
+              <img src="paper_assets/fig_parameter_efficiency.png" alt="Parameter efficiency curve for InnerNet and ReLU MLPs" loading="lazy">
+              <figcaption><strong>Figure 4.</strong> InnerNet reaches the performance of a substantially wider ReLU MLP with 54.9% fewer parameters.</figcaption>
+            </figure>
+          </div>
+
+          <h3>3.3 Transformer language models and scale</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Configuration</th><th>GELU</th><th>SwiGLU</th><th>InnerNet</th><th>InnerNet vs GELU</th></tr></thead>
+              <tbody>
+                <tr><td>WikiText-2 d=64</td><td>116.63±0.84</td><td>112.31±0.49</td><td>112.83±0.94</td><td>3.3% lower PPL</td></tr>
+                <tr><td>WikiText-2 d=128</td><td>96.82±1.19</td><td>92.98±1.14</td><td>95.26±1.00</td><td>1.6% lower PPL</td></tr>
+                <tr><td>WikiText-2 d=192</td><td>89.11±0.92</td><td>85.43±0.41</td><td>88.42±0.94</td><td>0.8% lower PPL</td></tr>
+                <tr><td>WikiText-2 d=256</td><td>86.05±0.97</td><td>81.56±0.94</td><td>84.62±1.47</td><td>1.7% lower PPL</td></tr>
+                <tr><td>GPT-style d=256</td><td>≈72.6</td><td>≈74.5</td><td>≈76.2, 3/5 seeds</td><td>5.0% higher PPL</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <figure>
+            <img src="paper_assets/fig_scaling_law.png" alt="Transformer model-scale comparison of GELU, SwiGLU, and InnerNet" loading="lazy">
+            <figcaption><strong>Figure 5.</strong> The same-width InnerNet advantage over GELU remains positive through d=256 but is non-monotonic. A larger GPT-style configuration reverses the direction.</figcaption>
+          </figure>
+
+          <h4>Probe-width ablation</h4>
+          <div class="table-wrap">
+              <table>
+                <thead><tr><th>Inner width</th><th>PPL</th><th>Δ vs h=32</th><th>GPU time</th></tr></thead>
+                <tbody>
+                  <tr><td>8</td><td>96.17±0.95</td><td>+0.91</td><td>10.9 h</td></tr>
+                  <tr><td>16</td><td>95.76±0.64</td><td>+0.50</td><td>15.7 h</td></tr>
+                  <tr><td>32</td><td>95.26±1.00</td><td>reference</td><td>historical run</td></tr>
+                  <tr><td>64</td><td><strong>95.09±1.15</strong></td><td>-0.17</td><td>53.0 h</td></tr>
+                </tbody>
+              </table>
+          </div>
+          <p>The four-width Friedman test gives p=0.392. Width 64 provides no measurable gain over width 32 (paired-t p=0.708), while runtime increases by 4.86× relative to width 8. Five seeds support a practical saturation claim, but not strict equivalence within a pre-specified 1-PPL margin.</p>
+
+          <h3>3.4 Capacity and optimization</h3>
+          <p>Warm-start results separate what InnerNet can represent from what it can discover from scratch. Across 11 warm-start tasks, InnerNet wins or ties SwiGLU in 10. The controlled frozen-network experiment gives 77.38±0.51 PPL for InnerNet and 77.38±0.54 for SwiGLU. The from-scratch deficit is therefore an optimization barrier in this setting.</p>
+          <figure>
+            <img src="paper_assets/fig_warmstart_curves.png" alt="Warm-start and frozen-capacity trajectories for InnerNet and SwiGLU" loading="lazy">
+            <figcaption><strong>Figure 6.</strong> Warm-start and frozen-capacity tests. InnerNet can match the fixed SwiGLU function when optimization begins inside the same basin.</figcaption>
+          </figure>
+
+          <h3>3.5 Recurrent memory</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Model</th><th>Parameters</th><th>Sequential MNIST</th><th>Interpretation</th></tr></thead>
+              <tbody>
+                <tr><td>Plain tanh RNN</td><td>18K</td><td>11.36±0.02%</td><td>No long-term memory</td></tr>
+                <tr><td>LSTM</td><td>68K</td><td>77.03±15.66%</td><td>High variance</td></tr>
+                <tr><td>GRU</td><td>52K</td><td>98.72±0.14%</td><td>Strong reference</td></tr>
+                <tr><td>InnerNet replacing tanh</td><td>19K</td><td>11.04±0.62%</td><td>Additive memory is missing</td></tr>
+                <tr><td>Constrained additive-memory InnerNet</td><td>21K</td><td><strong>98.44±0.22%</strong></td><td>8/9 trained seeds succeed</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>The recurrent result establishes functional sufficiency: additive memory plus learned bivariate interactions can solve the task with fewer parameters than LSTM or GRU. Surface fits do not identify each InnerNet as a canonical gate, so the mechanism is reported as distributed and non-identifiable.</p>
+
+          <h3>3.6 Other positive and boundary results</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Family</th><th>Result</th><th>Evidence role</th></tr></thead>
+              <tbody>
+                <tr><td>LSTM, WikiText-2</td><td>Classic pairing 101.72±0.99 vs standard 108.39±0.75</td><td>Positive, pairing-sensitive</td></tr>
+                <tr><td>ResNet internal-only</td><td>74.97% vs 73.51% on CIFAR-100</td><td>Position matters</td></tr>
+                <tr><td>PPO Acrobot</td><td>-90.1±15.2 vs ReLU -111.8±16.0, p=0.0036</td><td>Positive extension</td></tr>
+                <tr><td>PPO LunarLander</td><td>98.8±94.7 vs ReLU 101.3±57.8, p=0.897</td><td>High-variance tie</td></tr>
+                <tr><td>Multiply-init MLM</td><td>15.93±0.21 vs SwiGLU 19.09±0.27</td><td>Strong task-specific interaction</td></tr>
+                <tr><td>Training phases</td><td>End-to-end ≈ three-phase on AE, ResNet, and MLP</td><td>Pretraining usually unnecessary</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="en-causal">
+          <h2>4. What operator is learned?</h2>
+          <p>Single checkpoints often resemble a scaled SwiGLU. The d=64 Transformer surface is explained by <code>0.321 · SiLU(a) · b</code> with R²=0.977. The causal matrix shows why this observation must be interpreted conditionally.</p>
+
+          <figure>
+            <img src="paper_assets/fig_d64_swiglu_surface.png" alt="Learned InnerNet surface, fitted scaled SwiGLU operator, and residual" loading="lazy">
+            <figcaption><strong>Figure 7.</strong> A learned d=64 Transformer surface and its scaled-SwiGLU fit. The residual is small, but this checkpoint alone cannot establish a universal attractor.</figcaption>
+          </figure>
+
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Host</th><th>Probe conditions</th><th>Recovered family</th><th>Fit</th><th>Conclusion</th></tr></thead>
+              <tbody>
+                <tr><td>Bilinear GLU</td><td>joint/frozen × random/multiply × 5 seeds</td><td>20/20 multiplication</td><td>R² 0.9976-0.9993</td><td>Host preserves bilinear basin</td></tr>
+                <tr><td>SwiGLU</td><td>4 initializations × 5 seeds</td><td>20/20 scaled SwiGLU</td><td>R² 0.9853-0.9912</td><td>Initialization does not determine the endpoint</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="quote">The learned surface is a readout of a host-compatible interaction basin. It is not evidence for one network-independent optimal activation.</div>
+
+          <figure>
+            <img src="paper_assets/fig10_innernet_all_tasks.png" alt="Learned InnerNet surfaces across Transformer, CNN, and masked language modeling tasks" loading="lazy">
+            <figcaption><strong>Figure 8.</strong> Learned surfaces across tasks. Shared qualitative structure coexists with task-specific departures, especially in masked language modeling.</figcaption>
+          </figure>
+        </section>
+
+        <section id="en-boundaries">
+          <h2>5. Boundaries, failures, and deployment</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Setting</th><th>Observed behavior</th></tr></thead>
+              <tbody>
+                <tr><td>Feedforward blocks without an existing interaction path</td><td>Often beneficial</td></tr>
+                <tr><td>Small and medium models</td><td>Inductive-bias gains are most visible</td></tr>
+                <tr><td>Warm-start or controlled replacement</td><td>Capacity matches or exceeds fixed operators</td></tr>
+                <tr><td>Residual full replacement, large-model direct swap, unfused deployment</td><td>No benefit or impractical cost</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Negative and limiting evidence</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Experiment</th><th>Observed boundary</th></tr></thead>
+              <tbody>
+                <tr><td>RNN PTB</td><td>InnerNet PPL ≈169/179 vs tanh ≈140.</td></tr>
+                <tr><td>LSTM PTB</td><td>Standard LSTM outperforms both InnerNet pairing variants.</td></tr>
+                <tr><td>MLM from scratch</td><td>InnerNet 124.82 vs GELU 101.39; warm-start reverses the outcome.</td></tr>
+                <tr><td>GPT-style d=256</td><td>InnerNet ≈76.2 vs GELU ≈72.6, with only 3/5 InnerNet seeds completed.</td></tr>
+                <tr><td>Qwen2.5-0.5B replacement</td><td>Accuracy falls from ≈89% to ≈80% after finetuning.</td></tr>
+                <tr><td>Sequential MNIST stability</td><td>One constrained run diverges; simpler clipping and tanh variants do not remove seed sensitivity.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Compute and distillation</h3>
+          <p>On the same RTX 2080 Ti, InnerNet has only 1.17× the profiled major-operation FLOPs of SwiGLU, yet its unfused implementation is 17.33×/12.02× slower at CNN/Transformer inference and 7.63×/6.27× slower for a training step. Peak training memory is 7.90×/6.43× higher. The bottleneck is execution structure and intermediate materialization.</p>
+          <p>In the CNN deployment study, a fixed polynomial approximation runs 2.68× faster than InnerNet and remains above ReLU/SwiGLU accuracy, but loses 3.63 points relative to the learned module. This is a partial deployment closure rather than a lossless conversion.</p>
+        </section>
+
+        <section id="en-repro">
+          <h2>6. Reproducibility and statistical provenance</h2>
+          <div class="metric-grid">
+            <div class="metric"><strong>510</strong><span>Experiment directories indexed.</span></div>
+            <div class="metric"><strong>1,708</strong><span>Structured metric rows.</span></div>
+            <div class="metric"><strong>441</strong><span>Raw-verified experiments.</span></div>
+            <div class="metric"><strong>76/76</strong><span>Registered document cells matching the canonical summary.</span></div>
+          </div>
+          <p>The canonical audit preserves raw seeds, distinguishes population and sample dispersion, separates configuration collisions, retains failed and NaN runs, and reports paired and non-parametric tests. Thirty-two headline comparisons are regenerated from structured artifacts. There are no unresolved within-configuration seed conflicts.</p>
+          <p>Primary sources: <code>results/audit/grouped_metric_summary.csv</code>, <code>core_comparisons.csv</code>, <code>document_consistency.csv</code>, <code>causal_matrix_summary.json</code>, and <code>inner_hidden_ablation.json</code>.</p>
+        </section>
+
+        <section id="en-conclusion">
+          <h2>7. Conclusion</h2>
+          <p>Learnable two-argument activations are most useful as controlled probes of feature interaction. They can recover compact operators, reveal where a network benefits from multiplicative structure, and separate optimization barriers from capacity limits. The evidence does not support universal activation superiority or direct large-scale deployment. A practical workflow is to train the flexible probe, identify a stable operator family, and replace it with an efficient fixed approximation when the accuracy-cost tradeoff is acceptable.</p>
+        </section>
+
+        <section>
+          <h2>References and artifact map</h2>
+          <ol class="ref-list">
+            <li>Yoon, Orhan, Kim, and Pitkow. “Two-argument activation functions learn soft XOR operations like cortical neurons.” arXiv:2110.06871v2; IEEE Access, 2022.</li>
+            <li>Original paper PDF: <code>docs/2110.06871v2.pdf</code>. Reproduction notes: <code>docs/paper_results.md</code>.</li>
+            <li>Full internal evidence record: <code>RESULTS_CN.md</code>. Formal result summary: <code>RESULTS_EN.md</code>.</li>
+          </ol>
+        </section>
+      </article>
+
+      <article id="chinese" lang="zh-CN">
+        <div class="language-label zh">中文阅读稿与编辑说明</div>
+
+        <section>
+          <h2>中文摘要</h2>
+          <p class="lede">这项工作的主线已经清楚：InnerNet 是一个可微的架构探针。它让网络自己学习两个特征之间的局部算子。训练结束后，我们读取二维函数表面，再把它拟合成乘法、SwiGLU 或低阶多项式。</p>
+          <p>最关键的因果结果来自 40 个条件。Bilinear host 中的 20 个条件全部回到乘法；SwiGLU host 中的 20 个条件全部回到 SwiGLU-like 表面。不同初始化不会改变这个归属。外围网络和优化 basin 才是决定因素。</p>
+          <p>因此，论文不应把 InnerNet 写成一个更强、更快的 activation。现有实现很慢，大模型从头训练也经常输给 SwiGLU。更稳妥的价值是：先用灵活的 InnerNet 探索局部交互，再把稳定结构提炼成简单算子。</p>
+        </section>
+
+        <section>
+          <h2>一、论文主线怎么串起来</h2>
+          <ol>
+            <li><strong>原论文起点：</strong>MLP/CNN 上略优于 ReLU，收敛更快。</li>
+            <li><strong>我们扩展范围：</strong>Transformer、LSTM、RNN、AE、ResNet、RL 等。</li>
+            <li><strong>我们找到边界：</strong>位置、规模、初始化和优化路径决定结果。</li>
+            <li><strong>我们形成新定位：</strong>用可学习激活探测架构基元，再提炼部署。</li>
+          </ol>
+
+          <div class="quote">一句话版本：InnerNet 能读出当前网络 basin 里有用的二元交互，但不会自动找到一个对所有网络都最优的 activation。</div>
+
+          <h3>证据等级</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>证据等级</th><th>结论</th><th>依据</th></tr></thead>
+              <tbody>
+                <tr><td><span class="badge strong">足够支撑</span></td><td>Host-dependent architecture probe</td><td>40/40 causal matrix 和 5-seed 表面拟合</td></tr>
+                <tr><td><span class="badge bounded">辅助支撑</span></td><td>中等容量已经够用</td><td>h=16 后均值进入平台，但没有严格等价证明</td></tr>
+                <tr><td><span class="badge unsupported">不要声称</span></td><td>更好的通用 activation</td><td>从头训练、GPT、Qwen 和成本结果均不支持</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section>
+          <h2>二、所有核心证据</h2>
+
+          <h3>2.1 原论文复现与分类</h3>
+          <p>MLP-MNIST、MLP-CIFAR-10 和 CNN-MNIST 基本复现原论文的数值范围和方向。CNN-CIFAR-10 只复现方向，绝对精度低于论文图读值。这个差异需要在论文里公开。</p>
+          <p class="small">对应图见英文稿 Figure 2。中文部分不重复插图，便于连续阅读。</p>
+
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>数据集</th><th>2-arg</th><th>1-arg</th><th>ReLU</th><th>关键解释</th></tr></thead>
+              <tbody>
+                <tr><td>MNIST CNN</td><td>99.41±0.04</td><td>99.42±0.06</td><td>99.02±0.03</td><td>简单任务，小幅稳定增益</td></tr>
+                <tr><td>CIFAR-10 CNN</td><td>78.57±0.74</td><td>81.02±1.02</td><td>73.99±0.49</td><td>两输入有用，但 1-arg 均值更高</td></tr>
+                <tr><td>FashionMNIST CNN</td><td>90.91±0.29</td><td>91.36±0.47</td><td>89.34±0.13</td><td>1-arg 与 2-arg 差异接近显著</td></tr>
+                <tr><td>SVHN CNN</td><td>94.78±0.61</td><td>95.16±0.23</td><td>92.55±0.19</td><td>2-arg 方差受低 seed 影响</td></tr>
+                <tr><td>CIFAR-100 大 CNN</td><td>53.74±0.88</td><td>—</td><td>50.00±0.83</td><td>更难分类仍有正向结果</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>2.2 Transformer 与 hidden width</h3>
+          <p>标准 d=64-256 sweep 中，InnerNet 一直优于同宽 GELU，但不如 SwiGLU。GPT-style d=256 出现反转。这个边界说明模型越大，优化成本越重要。</p>
+          <p class="small">对应图见英文稿 Figure 5。</p>
+
+          <div class="two-col">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Inner width</th><th>PPL</th><th>vs h=32</th><th>耗时</th></tr></thead>
+                <tbody>
+                  <tr><td>8</td><td>96.17±0.95</td><td>+0.91</td><td>10.9 h</td></tr>
+                  <tr><td>16</td><td>95.76±0.64</td><td>+0.50</td><td>15.7 h</td></tr>
+                  <tr><td>32</td><td>95.26±1.00</td><td>基准</td><td>历史 run</td></tr>
+                  <tr><td>64</td><td>95.09±1.15</td><td>-0.17</td><td>53.0 h</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card boundary-card">
+              <h3>U35 能证明什么</h3>
+              <p>可以写：h=16 后没有检测到明显收益，h=64 成本很高。</p>
+              <p>不能写：h=16 与 h=32 严格等价。±1 PPL 的 TOST 没通过。</p>
+              <p>论文定位：辅助 ablation，回答 reviewer 对 InnerNet 容量选择的疑问。</p>
+            </div>
+          </div>
+
+          <h3>2.3 表面提炼与因果矩阵</h3>
+          <p>d=64 的 learned surface 可以被 scaled SwiGLU 解释到 R²=0.977。这个单点结果很好看，但真正决定 claim 强度的是 causal matrix。</p>
+          <p class="small">对应 learned surface 图见英文稿 Figure 7。</p>
+
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Host</th><th>条件</th><th>结果</th><th>结论</th></tr></thead>
+              <tbody>
+                <tr><td>Bilinear</td><td>joint/frozen × random/multiply × 5 seeds</td><td>20/20 都是 multiply，R²≈0.998-0.999</td><td>外围网络维持乘法 basin</td></tr>
+                <tr><td>SwiGLU</td><td>4 init × 5 seeds</td><td>20/20 都是 SwiGLU，R²≈0.985-0.991</td><td>初值不决定最终算子</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="placeholder">
+            <div><strong>论文主图占位：Causal Matrix Summary</strong>把 40 个条件画成 2×4 的 host/init 热图，颜色表示 operator vote，旁边标 R² 和 PPL。数据已经齐全，不需要补实验。</div>
+          </div>
+
+          <h3>2.4 Capacity 与 optimization 分离</h3>
+          <p>ivs_d128 的 frozen-capacity test 是关键控制：只训练 InnerNet，外部网络冻结，最终与 SwiGLU 完全持平。它说明表示能力够用。from-scratch 输，主要问题在优化路径。</p>
+          <p class="small">对应曲线见英文稿 Figure 6。</p>
+
+          <h3>2.5 Sequential MNIST 的功能性结果</h3>
+          <p>Plain RNN 和单 InnerNet 都只有约 11%。加入加法记忆通道和两个 InnerNet 后，约束版用 21K 参数达到 98.44±0.22%，8/9 个实际训练 seed 成功。</p>
+          <p>这个实验支持“加法记忆 + 二元交互在功能上足够”。单个 InnerNet 的表面无法稳定对应标准 input/output gate，因此不写成门结构再发现。</p>
+
+          <div class="placeholder">
+            <div><strong>论文辅助图占位：Sequential MNIST Function vs Mechanism</strong>左侧画准确率和参数量，右侧画 gate-fit R² 跨 seed 分布。重点展示功能成功与机制不可辨识可以同时成立。</div>
+          </div>
+
+          <h3>2.6 其他实验汇总</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>实验</th><th>结果</th><th>在论文里的作用</th></tr></thead>
+              <tbody>
+                <tr><td>Autoencoder</td><td>MNIST/FMNIST/CIFAR MSE 降低 43%/12%/23%</td><td>没有 skip 时二元 inductive bias 有效</td></tr>
+                <tr><td>Housing regression</td><td>小宽度赢，大宽度反转</td><td>容量边界</td></tr>
+                <tr><td>LSTM WikiText-2</td><td>Classic 101.72 vs Standard 108.39</td><td>相邻配对优于语义配对</td></tr>
+                <tr><td>LSTM/RNN PTB</td><td>InnerNet 输标准模型</td><td>数据集依赖性和负面边界</td></tr>
+                <tr><td>ResNet</td><td>全换无效，internal-only +1.5%</td><td>位置决定效果</td></tr>
+                <tr><td>PPO Acrobot</td><td>-90.1 vs ReLU -111.8，p=0.0036</td><td>扩展正面结果</td></tr>
+                <tr><td>PPO LunarLander</td><td>InnerNet 与 ReLU 持平，方差大</td><td>RL 不作主线</td></tr>
+                <tr><td>MLM multiply-init</td><td>15.93 vs SwiGLU 19.09</td><td>任务特定乘法交互</td></tr>
+                <tr><td>Qwen 直接替换</td><td>约89%降到约80%</td><td>大模型直接替换不可行</td></tr>
+                <tr><td>计算成本</td><td>TF inference 慢12.02×，train step慢6.27×</td><td>必须走提炼或 kernel 优化</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="zh-notes">
+          <h2>三、中文编辑提示与下一步</h2>
+
+          <div class="editor-note">
+            <strong>英文主 claim 已经可以固定</strong>
+            “Two-argument activations act as differentiable probes of host-compatible feature interactions.” 这句话有完整 causal evidence。不要再升级成 universal discovery。
+          </div>
+
+          <div class="editor-note">
+            <strong>U35 不需要继续跑</strong>
+            这组结果已经回答 hidden width reviewer question。只有在论文想明确写“h=16 与 h=32 等价”时，才需要预先定义 non-inferiority margin，再补 5-15 个 seeds。
+          </div>
+
+          <div class="placeholder">
+            <div><strong>待制作图：Hidden-width Quality-Cost Pareto</strong>横轴 GPU hours，纵轴 PPL，点大小表示 InnerNet 参数。现有数据已足够，可以直接画。</div>
+          </div>
+
+          <div class="placeholder">
+            <div><strong>待制作图：Compute Cost Breakdown</strong>把 FLOPs、inference latency、training latency、peak memory 放成四栏。现有 <code>compute_cost_profile.json</code> 已足够。</div>
+          </div>
+
+          <h3>建议的论文图顺序</h3>
+          <ol>
+            <li>方法结构图：标准 activation 与 InnerNet。</li>
+            <li>原论文复现与训练曲线。</li>
+            <li>跨架构结果总览。</li>
+            <li>Causal matrix 主图。</li>
+            <li>Learned surface 与闭式拟合。</li>
+            <li>Warm-start / frozen capacity。</li>
+            <li>位置、规模和 hidden-width 边界。</li>
+            <li>部署成本与 distillation。</li>
+          </ol>
+
+          <h3>还需要补的主要是呈现，不是实验</h3>
+          <ul>
+            <li>把 causal matrix JSON 画成主图。</li>
+            <li>把 U35 做成 quality-cost 小图。</li>
+            <li>把 compute profiler 做成论文级柱状图。</li>
+            <li>统一图的字体、配色、caption 和编号。</li>
+            <li>把英文正文压缩到目标会议页数，再把详细负面结果放 appendix。</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>四、当前证据是否够投稿</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>可以作为论文结论</th><th>需要避免的写法</th></tr></thead>
+              <tbody>
+                <tr><td>Architecture probe 的核心定位</td><td>Universal best activation</td></tr>
+                <tr><td>Host/basin 决定算子家族</td><td>Network-independent rediscovery</td></tr>
+                <tr><td>容量与优化可以分开</td><td>h=16 与 h=32 已证明等价</td></tr>
+                <tr><td>位置和规模存在边界</td><td>把 incomplete seeds 当完整主结果</td></tr>
+                <tr><td>探针需要提炼后部署</td><td>隐去 NaN、失败和计算成本</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </article>
+    </main>
+
+    <footer class="footer">
+      Built from audited project artifacts in <code>RESULTS_EN.md</code>, <code>RESULTS_CN.md</code>, <code>PROJECT_STATUS.md</code>, and <code>results/audit/</code>. The figures used by this page are mirrored in <code>docs/paper_assets/</code> for reliable local viewing.
+    </footer>
+  </div>
+</body>
+</html>
