@@ -23,6 +23,9 @@ en_tf_d192,RESULTS_EN.md,| WikiText-2 d=192 |,3,88.42±0.94,**88.42±0.94**,matc
 en_tf_d256,RESULTS_EN.md,| WikiText-2 d=256 |,1,86.05±0.97,86.05±0.97,match,transformer_wikitext_baseline_large,best_val_ppl,5
 en_tf_d256,RESULTS_EN.md,| WikiText-2 d=256 |,2,81.56±0.94,**81.56±0.94**,match,transformer_wikitext_swiglu_large,best_val_ppl,5
 en_tf_d256,RESULTS_EN.md,| WikiText-2 d=256 |,3,84.62±1.47,**84.62±1.47**,match,transformer_wikitext_2arg_large,best_val_ppl,5
+en_tf_innerh8,RESULTS_EN.md,| 8 |,1,96.17±0.95,96.17±0.95,match,transformer_wikitext_2arg_innerh8,best_val_ppl,5
+en_tf_innerh16,RESULTS_EN.md,| 16 |,1,95.76±0.64,95.76±0.64,match,transformer_wikitext_2arg_innerh16,best_val_ppl,5
+en_tf_innerh64,RESULTS_EN.md,| 64 |,1,95.09±1.15,**95.09±1.15**,match,transformer_wikitext_2arg_innerh64,best_val_ppl,5
 en_big_mlp_innernet,RESULTS_EN.md,| InnerNet | **98.39,1,98.39±0.04,**98.39±0.04**,match,mlp_mnist_big_2arg,test_accuracy,5
 en_big_mlp_relu,RESULTS_EN.md,| ReLU | 97.93,1,97.93±0.07,97.93±0.07,match,mlp_mnist_big_relu,test_accuracy,5
 en_seqmin_success,RESULTS_EN.md,| **SeqMinGatedRNN,2,98.44±0.22,**98.44% ± 0.22%**,match,seq_mnist_min_gated,best_test_accuracy,8
@@ -47,6 +50,9 @@ cn_tf_d192,RESULTS_CN.md,| Wiki d=192 |,3,88.42,**88.42**,match,transformer_wiki
 cn_tf_d256,RESULTS_CN.md,| Wiki d=256 |,1,86.05,86.05,match,transformer_wikitext_baseline_large,best_val_ppl,5
 cn_tf_d256,RESULTS_CN.md,| Wiki d=256 |,2,81.56,81.56,match,transformer_wikitext_swiglu_large,best_val_ppl,5
 cn_tf_d256,RESULTS_CN.md,| Wiki d=256 |,3,84.62,**84.62**,match,transformer_wikitext_2arg_large,best_val_ppl,5
+cn_tf_innerh8,RESULTS_CN.md,| 8 |,1,96.17±0.95,96.17±0.95,match,transformer_wikitext_2arg_innerh8,best_val_ppl,5
+cn_tf_innerh16,RESULTS_CN.md,| 16 |,1,95.76±0.64,95.76±0.64,match,transformer_wikitext_2arg_innerh16,best_val_ppl,5
+cn_tf_innerh64,RESULTS_CN.md,| 64 |,1,95.09±1.15,**95.09±1.15**,match,transformer_wikitext_2arg_innerh64,best_val_ppl,5
 cn_ae_mnist_innernet,RESULTS_CN.md,| MNIST | **0.0039** | 0.0068,1,0.0039,**0.0039**,match,ae_mnist_2arg,test_mse,5
 cn_ae_mnist_innernet,RESULTS_CN.md,| MNIST | **0.0039** | 0.0068,2,0.0068,0.0068,match,ae_mnist_relu,test_mse,5
 cn_ae_mnist_innernet,RESULTS_CN.md,| MNIST | **0.0039** | 0.0068,3,0.0059,0.0059,match,ae_mnist_relu_matched,test_mse,5

@@ -100,7 +100,7 @@ d=64 到 d=256 InnerNet 一直赢 GELU（-3.3% → -1.7%）。但 GPT d=256（�
 
 四个规模都是 same-width 比较，并非参数匹配。相对 GELU 的 paired-t p 值依次为 d=64: 0.00022、d=128: 0.05095、d=192: 0.361、d=256: 0.173；均值方向一致，但统计证据主要集中在最小规模。英文表中的 `±` 统一使用 population SD（ddof=0）。
 
-### InnerNet hidden-dim 消融（U35，部分完成）
+### InnerNet hidden-dim 消融（U35，完成）
 
 同一个 WikiText-2 d=128 配置只改变共享 InnerNet 的 hidden width，5 seeds（42–46），PPL↓：
 
@@ -109,9 +109,9 @@ d=64 到 d=256 InnerNet 一直赢 GELU（-3.3% → -1.7%）。但 GPT d=256（�
 | 8 | 96.17±0.95 | +0.91 | 0.107 | ✅ 5/5 |
 | 16 | 95.76±0.64 | +0.50 | 0.482 | ✅ 5/5 |
 | 32 | **95.26±1.00** | — | — | ✅ canonical |
-| 64 | — | — | — | ⏳ job 682895，seed44 ep7/10 |
+| 64 | **95.09±1.15** | -0.17 | 0.708 | ✅ 5/5 |
 
-目前看 h=16 已保留大部分 h=32 性能，h=8 均值再差约0.4 PPL；但 n=5 下两项差异都未显著，**不能把“不显著”写成统计等价**。h=64 在同一 RTX 2080 Ti 上约64分钟/epoch，明显慢于h=8（约13分钟）和h=16（约19分钟），说明训练成本会随探针宽度快速增长。完整容量曲线等 h=64 结束后再定。Configs：`config/experiments/transformer_wikitext_2arg_innerh{8,16,64}.yaml`；exp：`exp/transformer_wikitext_2arg_innerh{8,16,64}_*`；部分汇总：`results/audit/inner_hidden_ablation_partial.json`。该 LM runner 只保存 `lm_results.p` 和日志，不保存模型 checkpoint。
+完整四档的 Friedman 检验 p=0.392，没有检测到总体宽度效应。h=16 后性能均值进入平台，h=64 相对 h=32 只改善0.17 PPL，95%差值区间为[-1.32, 0.99]。这足以作为“继续增大探针没有可测收益”的辅助消融。它不能证明严格等价：若预先把等价边界设为±1 PPL，h=16 vs h=32 的 TOST p=0.237，仍未通过。运行成本则很明确：h=8/h=16/h=64 分别耗时10.9/15.7/53.0小时，h=64是h=8的4.86×，而总参数只增加224个。Configs：`config/experiments/transformer_wikitext_2arg_innerh{8,16,64}.yaml`；exp：`exp/transformer_wikitext_2arg_innerh{8,16,64}_*`；完整汇总：`results/audit/inner_hidden_ablation.json`。该 LM runner 只保存 `lm_results.p` 和日志，不保存模型 checkpoint。
 
 修复 parameter-sharing 后的 scaling 图由 canonical audit 数据直接生成：`results/figures/fig_scaling_law.pdf`。旧硬编码 pre-fix 图已被替换；当前趋势是正向但**非单调**，不能再写成“规模越大优势单调缩小”。
 
@@ -444,13 +444,13 @@ GPT v4 (3/5 seeds)、free_init_v2 (Wiki 3/3, MLM 2/3)、scratch_init (2.5/5) 时
 
 ## 统计与可追溯性（2026-08-27）
 
-- `scripts/build_result_manifest.py` 已扫描 507 个实验目录，得到 1678 行结构化指标：438 个实验 raw-verified，69 个 incomplete，0 个 completed-no-result；自动分组得到300个可汇报组且无seed冲突。deploy、Seq-MNIST、warm-start 与 PPO 脚本自产的结果均已纳入，PPO 额外记录每个 seed 的最后20个评估点均值。
+- `scripts/build_result_manifest.py` 已扫描 510 个实验目录，得到 1708 行结构化指标：441 个实验 raw-verified，69 个 incomplete，0 个 completed-no-result；自动分组得到306个可汇报组且无seed冲突。deploy、Seq-MNIST、warm-start 与 PPO 脚本自产的结果均已纳入，PPO 额外记录每个 seed 的最后20个评估点均值。
 - `scripts/summarize_result_manifest.py` 按科学配置、condition 与 run status 自动去重并汇总 mean、sample SD、population SD、raw seeds/values；当前 238 个指标组全部可汇报，0 个同配置 seed 数值冲突。
 - NaN run 不再与成功 run 混算：SeqMinGatedRNN 成功组 8 seeds 自动复算为 **98.435%**（sample SD 0.236%，population SD 0.220%），另保留 1 个 NaN seed 的独立记录。
 - 自动发现 1 个同名配置碰撞：`mlp_mnist_relu` 同时指 64-width 未参数匹配版（seed1234=85.63%）和 112-width 参数匹配版（seed1234=91.27%，其余 seeds 同组）。两者现在按配置签名分开，不再混算。
 - 29 项核心比较已由 `config/audit/core_comparisons.yaml` 注册并自动复算。Transformer d=64/128/192/256 的 InnerNet-vs-GELU paired-t p 分别为 **0.00022 / 0.05095 / 0.361 / 0.173**；d=128 SwiGLU-vs-InnerNet p=**0.00917**。新增M6和补seed比较：InnerNet-vs-PReLU p=0.0056、InnerNet-vs-Swish p=0.00052、FMNIST 1arg-vs-2arg p=0.0504、SVHN 2arg-vs-1arg p=0.374。
 - 小样本解释：n=5 时双侧 Wilcoxon 的离散最小值通常是 0.0625，因此不单看“p<0.05”；正式报告同时给 raw seeds、bootstrap CI、paired-t/Wilcoxon 和 Cohen's dz。
-- `scripts/check_document_claims.py` 已把 RESULTS_CN/EN 的70个已注册 headline table cells 与 canonical summary 自动对照，当前 **70/70 match**。
+- `scripts/check_document_claims.py` 已把 RESULTS_CN/EN 的76个已注册 headline table cells 与 canonical summary 自动对照，当前 **76/76 match**。
 - 产物：`results/audit/grouped_metric_summary.csv`、`metric_conflicts.csv`、`experiment_variant_collisions.csv`、`core_comparisons.csv`、`document_consistency.csv`、`deploy_analysis.json`；31 个审计/统计单元测试全部通过。
 
 ## 总结

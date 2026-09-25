@@ -11,7 +11,7 @@
 - 原论文协议已核对：原论文按总参数量调整 baseline 宽度；本项目 MLP/CNN 参数匹配思路一致。Transformer 现有比较是 same-width 而非 total-parameter-matched，这只限制性能增益措辞，不影响 SwiGLU-like interaction 的发现结论。
 - 原论文同样没有部署闭环，只通过函数拟合和结构统计汇报发现；当前不新增部署实验。
 - 配对统计工具已完成：新增 paired t-test、Wilcoxon、Cohen's dz、bootstrap CI 和非有限 pair 报告，并保留独立样本模式。5-seed same-width Transformer 示例中，`GELU-InnerNet=+1.558 PPL`（paired-t p=0.05095），`SwiGLU-InnerNet=-2.280 PPL`（p=0.00917）；正式结果需同时报告 raw seeds 和非参数检验。
-- 本地结果 inventory/manifest 已生成：507 个实验、1678 行指标；**438 raw-verified、69 incomplete、0 completed-no-result**。已纳入统一 runner 之外的 deploy、Seq-MNIST、warm-start 与 PPO 结果；PPO 现在显式记录每个 seed 的最后20个评估点均值。自动分组得到 300 个可汇报指标组、0 个同配置 seed 冲突；另检测到 1 个实验命名碰撞（`mlp_mnist_relu` 同名但分别为 64-width 未匹配版与 112-width 参数匹配版）。
+- 本地结果 inventory/manifest 已生成：510 个实验、1708 行指标；**441 raw-verified、69 incomplete、0 completed-no-result**。已纳入统一 runner 之外的 deploy、Seq-MNIST、warm-start 与 PPO 结果；PPO 现在显式记录每个 seed 的最后20个评估点均值。自动分组得到 306 个可汇报指标组、0 个同配置 seed 冲突；另检测到 1 个实验命名碰撞（`mlp_mnist_relu` 同名但分别为 64-width 未匹配版与 112-width 参数匹配版）。
 - ✅ **SSH 取证已完成（Claude，2026-07-26）**：
   - CNN CIFAR-10 2-arg seed 42 已从集群拉回，`test_accuracy=0.7969`（**79.69%**，非之前反推的 79.68%），日志确认，现为 **raw-verified**。五个 seed 齐全，mean=78.57%（popSD 0.74 / sampleSD 0.82）。
   - 4 个旧 job 终态：547111 FFN deploy **TIMEOUT**（未完成，innernet 仅 4 seed、distilled 空）；547112 CNN deploy COMPLETED；547208 Seq-MNIST 诊断 COMPLETED；547209 bark COMPLETED。队列现已空。
@@ -58,22 +58,22 @@
 
 - **U20 param sharing bug**：之前 Transformer/ResNet/WRN 的 InnerNet 每层各一个没共享。已修复，重跑。修复后结果和之前差不多（d=64: 112.66→112.83），说明影响不大，但 sharing 是论文基本设计。CNN/MLP/AE/VGG/LSTM/PPO 不受影响。
 
-## 集群状态（2026-09-08）
+## 集群状态（2026-09-25）
 
-U35 hidden-dim 消融中 h=8/16 已完成并拉回，h=64 仍在运行；此前 causal、CNN seed补齐、原论文对照图和计算成本profile均已完成。
+当前 `squeue -u yizhouc3` 为空；U35 hidden-dim 消融四档结果均已完成并拉回。
 
-### U35 InnerNet hidden-dim 消融：⏳ 2/3 新配置完成
+### U35 InnerNet hidden-dim 消融：✅ 完成
 
 - **验证 job 682890**：✅ COMPLETED（1m42s，CPU partition）；h=8/16/64 均通过模型构建与一次 forward/backward，参数量分别为 1,186,569 / 1,186,601 / 1,186,793。
 - 新配置：`config/experiments/transformer_wikitext_2arg_innerh{8,16,64}.yaml`；均严格复用 canonical WikiText-2 d=128、10 epochs、5 seeds（42–46）协议，只改变共享 InnerNet 的 `inner_hidden`。
 - h=32 直接复用现有 canonical 5-seed 结果 **95.26±1.00 PPL**，不重复训练。
 - **h=8 job 682891**：✅ COMPLETED（10h54m），**96.17±0.95 PPL**；相对 h=32 差 +0.91 PPL，paired-t p=0.107、Wilcoxon p=0.125。
 - **h=16 job 682892**：✅ COMPLETED（15h39m），**95.76±0.64 PPL**；相对 h=32 差 +0.50 PPL，paired-t p=0.482、Wilcoxon p=0.8125。
-- **h=64 job 682895**：⏳ RUNNING；截至 2026-09-08 19:19 PDT，seeds 42–43 已完成，seed44 到 epoch7/10。h=64 在同一 RTX 2080 Ti 上约 64 分钟/epoch，按剩余23 epochs估计约在 **2026-09-09 20:00 PDT** 前后完成。完成 Bark job **682896** 仍正确依赖该 job。
-- h=8/16 的原始 `lm_results.p`、config 和日志已拉回对应本地 exp 目录；汇总见 `results/audit/inner_hidden_ablation_partial.json`。当前 `LMRunner` 不保存该实验族的模型 checkpoint，因此远端也没有 checkpoint 文件可拉回。
+- **h=64 job 682895**：✅ COMPLETED（53h02m），**95.09±1.15 PPL**；相对 h=32 改善 0.17 PPL，paired-t p=0.708、Wilcoxon p=0.625。完成 Bark job **682896** 已触发。
+- 四档原始 `lm_results.p`、config 和日志均已拉回对应本地 exp 目录；完整汇总见 `results/audit/inner_hidden_ablation.json`。当前 `LMRunner` 不保存该实验族的模型 checkpoint，因此远端没有 checkpoint 文件可拉回。
 - 首次 h=64 job **682893** 在启动 32 秒后取消：旧验证模式把 h=64 config hash 留在 `exp/_validate_tmp`，训练 dedup 因而误认临时目录为可续跑实验。该 62KB 临时目录已可恢复地归档到 `/user_data/yizhouc3/xor_u35_validation_artifacts/validate_tmp_682890_h64_collision`，没有结果纳入分析；清理后重提为 682895。
 - dedup 污染已在提交 **a44195f** 修复：验证目录改用系统临时目录，不再位于 `exp/`。修复验证 job **682897** ✅ COMPLETED（11秒，CPU partition），日志确认使用 `/tmp/xor_validate_*` 且 validation PASS。
-- 当前部分结论：h=16 保留了大部分 h=32 性能，h=8 均值进一步下降；两者与 h=32 的差异在 n=5 下均未显著，但不能据此声称统计等价。h=64 完成前不作完整容量曲线结论。hidden 缩小也不等于解决未融合小 MLP 的 kernel 开销。
+- 完整结论：h=8/16/32/64 的均值为 **96.17/95.76/95.26/95.09 PPL**，Friedman p=0.392。性能在 h=16 后进入平台，h=64 没有可测得的收益，却比 h=8 慢4.86×。n=5 足以作为“宽度收益很快饱和”的辅助消融，不足以证明严格统计等价；按预设 ±1 PPL margin 的 TOST，h=16 vs h=32 仍未通过（p=0.237）。
 
 ### P1 causal matrix v2：✅ 40/40 条件完成
 
@@ -192,7 +192,7 @@ Bark：原完成通知 **664237** 与补跑通知 **677677** 均已触发。当�
 |---|------|------|------|
 | **P1** | **表面定量提炼** | ✅ 40/40 条件完成 | Bilinear host下joint/frozen × random/multiply共20/20条件全部判为multiply（mult R²=0.9976–0.9993）；SwiGLU host下4 init ×5 seeds共20/20全部判为SwiGLU（R²=0.9853–0.9912）。最终算子由host/optimization basin决定，不存在network-independent SwiGLU attractor。 |
 | **P2** | **Seq-MNIST 功能与稳定性边界** | ✅ 约束实验完成 | 去掉 `W_c` 后 8/9 实际训练成功，98.44±0.22%，1 NaN（另 1 infra OOM），参数从37K降至21K。inner2 gate R² 0.447±0.263，与旧设计约0.43±0.31相同：功能结果增强，机制仍不可辨识。 |
-| **P3** | **结果审计与统计严谨性** | ✅ 工具链与新结果索引完成 | canonical manifest现含507 experiments、1678 metric rows、438 raw-verified、69 incomplete、300 reportable groups、0 seed冲突；共有29项预注册核心比较，RESULTS_CN/EN 的70个已注册 headline cells 与manifest **70/70一致**。 |
+| **P3** | **结果审计与统计严谨性** | ✅ 工具链与新结果索引完成 | canonical manifest现含510 experiments、1708 metric rows、441 raw-verified、69 incomplete、306 reportable groups、0 seed冲突；共有32项预注册核心比较，RESULTS_CN/EN 的76个已注册 headline cells 与manifest **76/76一致**。 |
 
 ### 🔴 Critical
 
@@ -242,7 +242,7 @@ Bark：原完成通知 **664237** 与补跑通知 **677677** 均已触发。当�
 | U32 | 参数量和推理速度 | ✅ | `deploy_analysis.json`：CNN InnerNet只比SwiGLU多129参数但慢6.59×；distilled快2.68×但仍比SwiGLU慢2.46×。FFN InnerNet约比SwiGLU慢6.03×（4 seeds；distilled未跑到） |
 | U33 | 提炼 InnerNet 为简单公式 | ✅ | d=128 poly3 R²=0.997；SwiGLU family R²=0.942。CNN poly3 R²=0.974、SwiGLU family R²=0.908。causal结果说明具体算子依赖host/basin，不能称普适SwiGLU吸引子 |
 | U34 | Qwen2.5-0.5B finetune | ✅ **负面结果** | 3 seeds: InnerNet ~80% vs SwiGLU ~89%。替换瞬间崩到 52-66%，恢复不回来。大模型直接替换不可行 |
-| U35 | InnerNet hidden dim 消融 | ⏳ h8/h16完成，h64 job 682895 RUNNING | h8 96.17±0.95，h16 95.76±0.64，h32 95.26±1.00；h64截至seed44 ep7/10，预计2026-09-09约20:00 PDT完成。 |
+| U35 | InnerNet hidden dim 消融 | ✅ 完成 | h8/h16/h32/h64为96.17/95.76/95.26/95.09 PPL；Friedman p=0.392。h64无可测收益但耗时为h8的4.86×；不作严格等价 claim。 |
 | U36 | Non-shared warm-start | ⏳ PTB ✅ MLM ✅ | PTB 5/5 赢, CNN +3.12%, **MLM non-shared 15.63 vs SwiGLU 18.91 (-3.28)**。Wiki d=128 不在当前队列，本地无最终原始结果，不再标记为运行中。 |
 | U37 | Free-init (不同初始化) | ✅ Wiki 3/3, MLM 2/3 | Wiki: 4 种初始化全收敛到 ~71.7-72.6 vs SwiGLU ~77.3。MLM: random/multiply/swiglu_fitted/identity 都 ~15.7-16.1。**初始化不影响终点** |
 | U38 | Multiply-init 多任务 | ✅ 5/5 seeds | d=64 持平, d=128 -0.24, PTB -1.08, **MLM MultInit 15.93±0.21 vs SwiGLU 19.09±0.27 (-16.6%)** |
@@ -270,7 +270,7 @@ Bark：原完成通知 **664237** 与补跑通知 **677677** 均已触发。当�
 | m2 | 论文原始数字复现对比表 | ✅ 完成 | Figure 4d仅有曲线，已按约0.5pp精度图读并与canonical 5-seed结果对照：MLP-MNIST、MLP-CIFAR、CNN-MNIST基本复现；CNN-CIFAR仅方向复现、绝对值低3.5–7.4pp。详见`docs/paper_results.md`。 |
 | m3 | 更多 LM dataset | ✅ PTB 已完成 |
 | m4 | 计算开销分析（FLOPs + wall-clock） | ✅ RTX 2080 Ti统一profile完成 | 相对SwiGLU，InnerNet主要算子FLOPs仅1.17×，但CNN/FFN推理慢17.33×/12.02×、训练慢7.63×/6.27×、峰值显存7.90×/6.43×。瓶颈是未融合逐元素小MLP而非参数量/FLOPs。 |
-| m5 | 显著性检验 p-value | ✅ 29项预注册比较，paired/Welch t、Wilcoxon/Mann–Whitney、bootstrap CI 与效应量均自动生成 |
+| m5 | 显著性检验 p-value | ✅ 32项预注册比较，paired/Welch t、Wilcoxon/Mann–Whitney、bootstrap CI 与效应量均自动生成 |
 | 24 | 参数效率出图 | ✅ `fig_parameter_efficiency.{png,pdf}`；模型实测参数量 + canonical 5-seed CIFAR-10准确率，InnerNet w128 415,051参数与ReLU w256 920,842参数表现相当，少54.9% |
 
 ---

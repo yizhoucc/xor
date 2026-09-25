@@ -58,6 +58,24 @@ checks:
       1: {exp_name: transformer_wikitext_baseline_large, metric: best_val_ppl, format: mean_pm_pop, decimals: 2}
       2: {exp_name: transformer_wikitext_swiglu_large, metric: best_val_ppl, format: mean_pm_pop, decimals: 2}
       3: {exp_name: transformer_wikitext_2arg_large, metric: best_val_ppl, format: mean_pm_pop, decimals: 2}
+  - id: en_tf_innerh8
+    file: RESULTS_EN.md
+    section: "### InnerNet hidden-width ablation"
+    line_contains: "| 8 |"
+    cells:
+      1: {exp_name: transformer_wikitext_2arg_innerh8, metric: best_val_ppl, format: mean_pm_pop, decimals: 2}
+  - id: en_tf_innerh16
+    file: RESULTS_EN.md
+    section: "### InnerNet hidden-width ablation"
+    line_contains: "| 16 |"
+    cells:
+      1: {exp_name: transformer_wikitext_2arg_innerh16, metric: best_val_ppl, format: mean_pm_pop, decimals: 2}
+  - id: en_tf_innerh64
+    file: RESULTS_EN.md
+    section: "### InnerNet hidden-width ablation"
+    line_contains: "| 64 |"
+    cells:
+      1: {exp_name: transformer_wikitext_2arg_innerh64, metric: best_val_ppl, format: mean_pm_pop, decimals: 2}
   - id: en_big_mlp_innernet
     file: RESULTS_EN.md
     line_contains: "| InnerNet | **98.39"
@@ -125,6 +143,24 @@ checks:
       1: {exp_name: transformer_wikitext_baseline_large, metric: best_val_ppl, format: mean, decimals: 2}
       2: {exp_name: transformer_wikitext_swiglu_large, metric: best_val_ppl, format: mean, decimals: 2}
       3: {exp_name: transformer_wikitext_2arg_large, metric: best_val_ppl, format: mean, decimals: 2}
+  - id: cn_tf_innerh8
+    file: RESULTS_CN.md
+    section: "### InnerNet hidden-dim 消融（U35，完成）"
+    line_contains: "| 8 |"
+    cells:
+      1: {exp_name: transformer_wikitext_2arg_innerh8, metric: best_val_ppl, format: mean_pm_pop, decimals: 2}
+  - id: cn_tf_innerh16
+    file: RESULTS_CN.md
+    section: "### InnerNet hidden-dim 消融（U35，完成）"
+    line_contains: "| 16 |"
+    cells:
+      1: {exp_name: transformer_wikitext_2arg_innerh16, metric: best_val_ppl, format: mean_pm_pop, decimals: 2}
+  - id: cn_tf_innerh64
+    file: RESULTS_CN.md
+    section: "### InnerNet hidden-dim 消融（U35，完成）"
+    line_contains: "| 64 |"
+    cells:
+      1: {exp_name: transformer_wikitext_2arg_innerh64, metric: best_val_ppl, format: mean_pm_pop, decimals: 2}
   - id: cn_ae_mnist_innernet
     file: RESULTS_CN.md
     line_contains: "| MNIST | **0.0039** | 0.0068"

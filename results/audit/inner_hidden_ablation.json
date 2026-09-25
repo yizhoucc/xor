@@ -1,6 +1,6 @@
 {
-  "status": "partial_h64_running",
-  "updated_at": "2026-09-08T19:19:13-07:00",
+  "status": "complete",
+  "updated_at": "2026-09-25",
   "protocol": {
     "task": "WikiText-2 causal language modeling",
     "model": "InnerNetTransformer",
@@ -17,8 +17,8 @@
       "config": "config/experiments/transformer_wikitext_2arg_innerh8.yaml",
       "exp_dir": "exp/transformer_wikitext_2arg_innerh8_20260907_173223_e01b40da",
       "slurm_job": 682891,
-      "state": "COMPLETED",
       "elapsed": "10:54:33",
+      "parameters": 1186569,
       "per_seed_ppl": [96.24714782733959, 95.5080676493998, 94.767182333125, 97.36407949445835, 96.97034330340189],
       "mean_ppl": 96.17136412154494,
       "population_sd": 0.9464005038860803
@@ -27,8 +27,8 @@
       "config": "config/experiments/transformer_wikitext_2arg_innerh16.yaml",
       "exp_dir": "exp/transformer_wikitext_2arg_innerh16_20260907_173223_afe14b42",
       "slurm_job": 682892,
-      "state": "COMPLETED",
       "elapsed": "15:39:37",
+      "parameters": 1186601,
       "per_seed_ppl": [96.3850520019093, 94.5893664513871, 95.85290649725792, 96.2850254090762, 95.66808543941295],
       "mean_ppl": 95.75608715980869,
       "population_sd": 0.6408943660999579
@@ -36,7 +36,7 @@
     "h32": {
       "config": "config/experiments/transformer_wikitext_2arg.yaml",
       "exp_dir": "exp/transformer_wikitext_2arg_20260303_095126_29974a57",
-      "state": "COMPLETED_CANONICAL",
+      "parameters": 1186665,
       "per_seed_ppl": [93.83312088043746, 95.55994716251138, 94.52406520528002, 96.71528298944473, 95.67169562989294],
       "mean_ppl": 95.2608223735133,
       "population_sd": 0.9954788630373705
@@ -45,21 +45,46 @@
       "config": "config/experiments/transformer_wikitext_2arg_innerh64.yaml",
       "exp_dir": "exp/transformer_wikitext_2arg_innerh64_20260907_173302_96d52d5d",
       "slurm_job": 682895,
-      "state": "RUNNING",
-      "progress_at_update": "seed 44 epoch 7/10; seeds 42-43 complete"
+      "elapsed": "2-05:02:05",
+      "parameters": 1186793,
+      "per_seed_ppl": [93.59761732814508, 94.12195484890526, 95.65079281571091, 96.85286892588331, 95.24617305646238],
+      "mean_ppl": 95.0938813950214,
+      "population_sd": 1.1498545632589436
     }
+  },
+  "omnibus": {
+    "test": "Friedman",
+    "statistic": 3.0,
+    "p_value": 0.3916251762710884
   },
   "paired_comparisons_to_h32": {
     "h8": {
       "mean_delta_ppl": 0.910541748031622,
+      "difference_95ci": [-0.3078265902527362, 2.1289100863159804],
       "paired_t_p": 0.10662913541821105,
-      "wilcoxon_p": 0.125
+      "wilcoxon_p": 0.125,
+      "tost_equivalence_p_margin_1ppl": 0.42420744225931006
     },
     "h16": {
       "mean_delta_ppl": 0.4952647862953853,
+      "difference_95ci": [-1.2802384410778642, 2.2707680136686346],
       "paired_t_p": 0.48188395617518365,
-      "wilcoxon_p": 0.8125
+      "wilcoxon_p": 0.8125,
+      "tost_equivalence_p_margin_1ppl": 0.23705015775074373
+    },
+    "h64": {
+      "mean_delta_ppl": -0.16694097849191677,
+      "difference_95ci": [-1.3206619694990547, 0.9867800125152212],
+      "paired_t_p": 0.7084107596910446,
+      "wilcoxon_p": 0.625,
+      "tost_equivalence_p_margin_1ppl": 0.057743141122180375
     }
   },
+  "runtime_ratios": {
+    "h16_over_h8": 1.434,
+    "h64_over_h8": 4.859,
+    "h64_over_h16": 3.389
+  },
+  "interpretation": "The ablation supports a performance plateau from h=16 to h=64 and shows no measurable gain from h=64 over h=32. With five paired seeds, it does not establish strict equivalence within a pre-specified 1-PPL margin.",
   "checkpoint_note": "LMRunner saves lm_results.p and logs but does not save model checkpoints for this experiment family."
 }

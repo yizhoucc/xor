@@ -24,6 +24,21 @@ comparisons:
     reference: {exp_name: transformer_wikitext_swiglu, metric: best_val_ppl}
     paired: true
     lower_better: true
+  - name: transformer_innerh8_vs_h32
+    condition: {exp_name: transformer_wikitext_2arg_innerh8, metric: best_val_ppl}
+    reference: {exp_name: transformer_wikitext_2arg, metric: best_val_ppl}
+    paired: true
+    lower_better: true
+  - name: transformer_innerh16_vs_h32
+    condition: {exp_name: transformer_wikitext_2arg_innerh16, metric: best_val_ppl}
+    reference: {exp_name: transformer_wikitext_2arg, metric: best_val_ppl}
+    paired: true
+    lower_better: true
+  - name: transformer_innerh64_vs_h32
+    condition: {exp_name: transformer_wikitext_2arg_innerh64, metric: best_val_ppl}
+    reference: {exp_name: transformer_wikitext_2arg, metric: best_val_ppl}
+    paired: true
+    lower_better: true
   - name: cnn_cifar10_2arg_vs_relu
     condition: {exp_name: cnn_cifar_2arg, metric: test_accuracy}
     reference: {exp_name: cnn_cifar_relu, metric: test_accuracy}
