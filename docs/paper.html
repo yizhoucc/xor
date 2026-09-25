@@ -21,7 +21,7 @@
     }
 
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: auto; }
     body {
       margin: 0;
       color: var(--ink);
@@ -34,6 +34,14 @@
       color: var(--accent);
       text-decoration-thickness: 1px;
       text-underline-offset: 3px;
+    }
+    .cite {
+      margin-left: 0.12rem;
+      font-family: var(--sans);
+      font-size: 0.82em;
+      font-weight: 600;
+      text-decoration: none;
+      white-space: nowrap;
     }
     code {
       padding: 0.1rem 0.28rem;
@@ -194,6 +202,20 @@
       line-height: 1.55;
     }
     .references li { margin-bottom: 0.65rem; }
+    .references li {
+      scroll-margin-top: 4.5rem;
+      padding: 0.45rem 0.55rem;
+      border-radius: 0.22rem;
+    }
+    .references li:target {
+      background: var(--note);
+      outline: 1px solid #ead17a;
+    }
+    .ref-note {
+      display: block;
+      margin-top: 0.2rem;
+      color: var(--muted);
+    }
     .foot {
       margin-top: 3.5rem;
       padding-top: 1rem;
@@ -241,7 +263,7 @@
       <p>
         人工神经网络通常先对输入求加权和，再施加预先指定的一元激活函数。这种设计高效且稳定，却把神经元内部的特征交互规则固定在架构设计阶段。受皮层神经元树突区室对多路输入进行非线性整合的现象启发，本文研究共享的两输入小网络 InnerNet，使局部算子
         <span class="math">f<sub>θ</sub>(a,b)</span>
-        能随任务共同学习。跨图像分类、自编码、语言建模、循环记忆和强化学习的实验表明，InnerNet 在小型和中型模型中能够改善性能或收敛，但它的主要价值并非直接替代现有激活函数。更关键的结果是，经过训练的二维函数可以被可视化、拟合和干预，从而用于辨识外围网络所偏好的局部计算结构。一组跨宿主算子、初始化和训练方式的因果实验进一步显示：当外围网络由双线性算子训练得到时，InnerNet 稳定恢复乘法结构；当外围网络由 SwiGLU 训练得到时，InnerNet 稳定恢复 SwiGLU 类结构。最终形态由外围网络所在的优化区域决定，而非由 InnerNet 的初始函数决定。与此同时，从头训练的高容量 InnerNet 往往难以达到手工算子的性能；先获得有效的外围网络，再进行局部结构搜索，可显著缓解这一问题。我们据此提出一种工作流：用可学习二元单元探索局部计算规则，再将稳定结构提炼为简单算子。该方法为神经科学启发的结构假设、可解释的架构搜索和高效模型设计提供了同一个实验接口。
+        能随任务共同学习。跨图像分类、自编码、语言建模、循环记忆和强化学习的实验表明，InnerNet 在小型和中型模型中能够改善性能或收敛。本文进一步研究它作为结构探针的用途：训练后的二维函数可以被可视化、拟合和干预，从而用于辨识外围网络所偏好的局部计算结构。一组跨宿主算子、初始化和训练方式的因果实验显示：当外围网络由双线性算子训练得到时，InnerNet 稳定恢复乘法结构；当外围网络由 SwiGLU 训练得到时，InnerNet 稳定恢复 SwiGLU 类结构。外围网络所在的优化区域主导最终形态，InnerNet 的初始函数影响较小。与此同时，从头训练的高容量 InnerNet 往往难以达到手工算子的性能；先获得有效的外围网络，再进行局部结构搜索，可显著缓解这一问题。我们据此提出一种工作流：用可学习二元单元探索局部计算规则，再将稳定结构提炼为简单算子。该框架把神经科学启发的结构假设、可解释的架构搜索和高效算子设计放进同一套实验流程。
       </p>
     </section>
 
@@ -249,11 +271,11 @@
       <h2>1　引言</h2>
 
       <p>
-        现代神经网络中的神经元通常被简化为线性变换与标量非线性的组合。ReLU、GELU 和 SiLU 等函数只接收一个聚合后的标量，因此不同输入通路之间如何相互促进、抑制或门控，主要由网络的宏观连线事先决定。真实神经元则具有更丰富的局部结构。基底树突、顶端树突及其分支可以接收来源不同的输入，并在细胞体放电之前完成非线性整合。人类皮层神经元中的树突事件甚至表现出 XOR 类计算特征 [1,2]。这些观察提示，神经元内部的多输入非线性本身可以构成一种有意义的计算基元。
+        现代神经网络中的神经元通常被简化为线性变换与标量非线性的组合。ReLU、GELU 和 SiLU 等函数只接收一个聚合后的标量，因此不同输入通路之间如何相互促进、抑制或门控，主要由网络的宏观连线事先决定。真实神经元则具有更丰富的局部结构。基底树突、顶端树突及其分支可以接收来源不同的输入，并在细胞体放电之前完成非线性整合。人类皮层神经元中的树突事件甚至表现出 XOR 类计算特征 <a class="cite" href="#ref-1">[1]</a><a class="cite" href="#ref-2">[2]</a>。这些观察提示，神经元内部的多输入非线性本身可以构成一种有意义的计算基元。
       </p>
 
       <p>
-        Yoon 等人据此提出两参数激活函数 [1]。他们用一个共享的小型多层感知机替代固定激活函数，使每个神经元对两路线性投影进行联合变换。该模型在 MNIST 和 CIFAR-10 的 MLP 与 CNN 上学到软 XOR 或门控形态，并在若干设置中获得更快的学习和更好的鲁棒性。这个结果建立了生物学动机与机器学习算子之间的联系，但也留下了三个问题。第一，二元非线性离开简单前馈分类后是否仍然有用。第二，训练得到的函数究竟反映任务需要、初始化偏置，还是外围网络已经形成的表示。第三，高容量小网络带来的计算开销能否换成一个更简单的部署结构。
+        Yoon 等人据此提出两参数激活函数 <a class="cite" href="#ref-1">[1]</a>。他们用一个共享的小型多层感知机替代固定激活函数，使每个神经元对两路线性投影进行联合变换。该模型在 MNIST 和 CIFAR-10 的 MLP 与 CNN 上学到软 XOR 或门控形态，并在若干设置中获得更快的学习和更好的鲁棒性。这个结果建立了生物学动机与机器学习算子之间的联系，但也留下了三个问题。第一，二元非线性离开简单前馈分类后是否仍然有用。第二，训练得到的函数究竟反映任务需要、初始化偏置，还是外围网络已经形成的表示。第三，高容量小网络带来的计算开销能否换成一个更简单的部署结构。
       </p>
 
       <p>
@@ -264,8 +286,26 @@
         我们的实验得到三个主要结论。首先，二元单元的收益具有明显的架构和规模依赖性：它在多种小型和中型任务中有效，但从头训练的大模型常受优化困难和运行成本限制。其次，InnerNet 的容量足以表示强手工算子，真正的瓶颈是如何进入有效的优化区域。最后，学到的局部算子并不存在脱离外围网络的唯一最优形态；它会稳定恢复与当前表示和优化区域相容的交互规则。这使 InnerNet 更适合作为局部架构发现与假设检验工具，而非一个需要永久保留在部署模型中的通用激活函数。
       </p>
 
+      <h3>1.1　相关工作</h3>
+
+      <p>
+        可学习激活函数通常从低自由度参数化开始。PReLU 只学习负半轴斜率 <a class="cite" href="#ref-4">[4]</a>，Padé activation 和 spline activation 则允许一元函数随任务改变 <a class="cite" href="#ref-10">[10]</a><a class="cite" href="#ref-11">[11]</a>。ACON 与 Attention as Activation 进一步让激活依赖输入状态或局部通道上下文 <a class="cite" href="#ref-8">[8]</a><a class="cite" href="#ref-9">[9]</a>。KAN 把可学习的一元 spline 放在网络边上，并在训练后进行剪枝和符号化 <a class="cite" href="#ref-12">[12]</a>。Network In Network 较早使用局部小型 MLP 增强卷积计算 <a class="cite" href="#ref-3">[3]</a>。InnerNet 研究的是更受限的共享二元函数，因此可以直接表示和分析乘法、门控与 XOR 类交互。
+      </p>
+
+      <p>
+        自动激活与算子搜索已经产生了多个强先例。Ramachandran 等人从预先规定的 primitive 组合中发现 Swish <a class="cite" href="#ref-5">[5]</a>；PANGAEA 用进化搜索和梯度优化寻找架构特异的参数化激活 <a class="cite" href="#ref-6">[6]</a>；EvoNorm 从基础操作中搜索归一化与激活的联合结构 <a class="cite" href="#ref-7">[7]</a>。DARTS 和 AutoML-Zero 把类似思想扩展到网络操作和学习算法 <a class="cite" href="#ref-13">[13]</a><a class="cite" href="#ref-14">[14]</a>。这些方法通常在离散公式或候选图上搜索。InnerNet 先优化连续二维函数，再读取训练保留的结构，搜索范围较窄，但无需预先列出所有候选公式。
+      </p>
+
+      <p>
+        乘法门控本身已有成熟基础。LSTM、GRU、GLU 和 SwiGLU 都通过两路信号的乘法交互控制信息流 <a class="cite" href="#ref-16">[16]</a><a class="cite" href="#ref-17">[17]</a><a class="cite" href="#ref-18">[18]</a><a class="cite" href="#ref-19">[19]</a>，相关分析也把 attention、hypernetwork 和动态卷积放在统一的乘法交互框架中 <a class="cite" href="#ref-20">[20]</a>。因此，恢复 SwiGLU 类表面主要用于验证 InnerNet 能够辨识已知强结构。本文关注的问题是：当任务、网络和优化状态改变时，局部算子是否会稳定地偏离这些已知形式。
+      </p>
+
+      <p>
+        已有研究也从神经模块中提取简单公式。Equation Learner 直接在数学 primitive 上学习稀疏方程 <a class="cite" href="#ref-25">[25]</a>；Cranmer 等人先训练带物理归纳偏置的图网络，再对内部模块做 symbolic regression <a class="cite" href="#ref-24">[24]</a>；KAN 也把训练后的 spline 转成已知函数 <a class="cite" href="#ref-12">[12]</a>。本文将这一思路用于网络内部重复调用的共享二元算子，并通过宿主干预判断提取出的公式来自参数化偏置，还是来自外围网络已经形成的计算状态。
+      </p>
+
       <div class="figure">
-        <img src="paper_assets/fig4_innernet_architecture.png" alt="固定标量激活与共享二元 InnerNet 架构对比">
+        <img loading="eager" src="paper_assets/fig4_innernet_architecture.png" width="3552" height="1151" alt="固定标量激活与共享二元 InnerNet 架构对比">
         <p class="caption">
           <strong>图 1｜共享二元 InnerNet。</strong>
           标准单元对单个加权和施加固定非线性。InnerNet 接收两路线性投影，并用共享的小型网络计算
@@ -329,17 +369,17 @@
 
       <div class="figure dual">
         <div>
-          <img src="paper_assets/fig_original_reproduction_comparison.png" alt="本项目结果与原论文图读结果的比较">
+          <img loading="eager" src="paper_assets/fig_original_reproduction_comparison.png" width="2109" height="949" alt="本项目结果与原论文图读结果的比较">
           <p class="caption">
             <strong>图 2a｜原论文结果复核。</strong>
             三项任务在绝对水平和相对方向上基本复现；CNN CIFAR-10 保留了相对优势，但绝对精度低于原论文曲线的图读值。
           </p>
         </div>
         <div>
-          <img src="paper_assets/fig_training_curves.png" alt="MLP 和 CNN 多随机种子训练曲线">
+          <img loading="eager" src="paper_assets/fig_training_curves.png" width="2049" height="1656" alt="MLP 和 CNN 多随机种子训练曲线">
           <p class="caption">
             <strong>图 2b｜多随机种子训练曲线。</strong>
-            为公平比较收敛速度，所有模型统一显示前 200 个 epoch；阴影表示跨种子离散程度。二参数模型的主要优势通常在优化早期形成。
+            为公平比较收敛速度，所有模型统一显示前 200 个 epoch；同一设置的均值曲线按最短 seed 截断，不对提前结束的记录补平。阴影表示跨种子离散程度。二参数模型的主要优势通常在优化早期形成。
           </p>
         </div>
       </div>
@@ -404,7 +444,7 @@
       </p>
 
       <div class="figure">
-        <img src="paper_assets/fig_scaling_law.png" alt="不同 Transformer 规模上 GELU、SwiGLU 和 InnerNet 的比较">
+        <img loading="eager" src="paper_assets/fig_scaling_law.png" width="2969" height="1166" alt="不同 Transformer 规模上 GELU、SwiGLU 和 InnerNet 的比较">
         <p class="caption">
           <strong>图 3｜Transformer 规模与测试困惑度。</strong>
           InnerNet 在四个 WikiText-2 宽度上优于 GELU，但始终落后于 SwiGLU。更大的 GPT 设置出现反转，表明高容量局部算子的主要限制来自优化和训练成本。
@@ -424,7 +464,7 @@
       </p>
 
       <div class="figure">
-        <img src="paper_assets/fig_warmstart_curves.png" alt="SwiGLU 分叉训练与冻结外围网络容量验证">
+        <img loading="eager" src="paper_assets/fig_warmstart_curves.png" width="2970" height="1239" alt="SwiGLU 分叉训练与冻结外围网络容量验证">
         <p class="caption">
           <strong>图 4｜优化路径与容量分离。</strong>
           左图在共同的 SwiGLU 预训练后分叉，分别继续训练 SwiGLU 或改用可训练 InnerNet。右图冻结外围网络，只优化 InnerNet。InnerNet 可以保持或略微改善已有解，说明从头训练的差距主要是优化问题。
@@ -473,7 +513,7 @@
       </div>
 
       <div class="figure">
-        <img src="paper_assets/fig_causal_matrix.png" alt="双线性与 SwiGLU 宿主中的逐条件算子恢复矩阵">
+        <img loading="eager" src="paper_assets/fig_causal_matrix.png" width="2877" height="1255" alt="双线性与 SwiGLU 宿主中的逐条件算子恢复矩阵">
         <p class="caption">
           <strong>图 5｜宿主条件化的算子恢复。</strong>
           每个单元格对应一个随机种子和一个探针设置。双线性宿主中的 20 个条件全部恢复乘法，SwiGLU 宿主中的 20 个条件全部恢复 SwiGLU 类结构。M 和 S 分别表示 Multiply 与 SwiGLU。
@@ -489,7 +529,7 @@
       </p>
 
       <div class="figure">
-        <img src="paper_assets/fig_d64_swiglu_surface.png" alt="训练后的 InnerNet 表面、缩放 SwiGLU 拟合及残差">
+        <img loading="eager" src="paper_assets/fig_d64_swiglu_surface.png" width="3270" height="1040" alt="训练后的 InnerNet 表面、缩放 SwiGLU 拟合及残差">
         <p class="caption">
           <strong>图 6｜二维函数的结构读取。</strong>
           一个 Transformer 检查点中的 InnerNet 可由缩放 SwiGLU 项解释 97.7% 的方差。单个表面只提供实例证据；跨宿主、跨初始化和跨种子的因果矩阵给出了更强的结构结论。
@@ -507,7 +547,7 @@
       </p>
 
       <div class="figure">
-        <img src="paper_assets/fig_inner_hidden_tradeoff.png" alt="InnerNet 隐藏宽度、困惑度和运行时间的关系">
+        <img loading="eager" src="paper_assets/fig_inner_hidden_tradeoff.png" width="2407" height="1063" alt="InnerNet 隐藏宽度、困惑度和运行时间的关系">
         <p class="caption">
           <strong>图 7｜探针容量与计算成本。</strong>
           左图给出五个随机种子的均值与标准差，右图给出有完整 wall-clock 记录的设置。h=32 复用了较早的 canonical 结果，没有可比的总运行时间，因此不在右图补造该点。
@@ -535,7 +575,7 @@
       </p>
 
       <div class="figure">
-        <img src="paper_assets/fig_compute_cost_breakdown.png" alt="CNN 和 Transformer 中不同局部算子的相对计算成本">
+        <img loading="eager" src="paper_assets/fig_compute_cost_breakdown.png" width="2326" height="1187" alt="CNN 和 Transformer 中不同局部算子的相对计算成本">
         <p class="caption">
           <strong>图 8｜当前实现的计算成本。</strong>
           CNN 以 ReLU、Transformer FFN 以 GELU 为 1 倍基线。Poly3 表示当前未融合的三阶多项式实现。该测量说明 InnerNet 的主要障碍来自执行与中间张量开销，也说明现有 Poly3 结果不能代表未来融合算子的速度上限。
@@ -569,20 +609,34 @@
     <section id="discussion">
       <h2>3　讨论</h2>
 
-      <h3>3.1　从激活函数比较转向局部结构发现</h3>
+      <h3>3.1　搜索 SwiGLU 之后的局部算子</h3>
 
       <p>
-        固定激活函数的目标是提供一个便宜、稳定、可复用的非线性。InnerNet 承担的是不同角色。它在训练期间打开一个连续的二维函数空间，使模型能够探索局部乘法、门控、软 XOR 及其变体。由于最终函数可以单独取出和拟合，这个过程产生的不只是一个性能数字，还产生一个关于网络局部计算方式的可检验假设。
+        SwiGLU 是当前 Transformer 前馈层中的强算子 <a class="cite" href="#ref-19">[19]</a>，但现有研究没有给出一个对所有任务和架构都最优的激活函数。PANGAEA 在不同架构上找到不同的参数化激活 <a class="cite" href="#ref-6">[6]</a>，Padé 和 spline activation 的收益也随任务与训练设置变化 <a class="cite" href="#ref-10">[10]</a><a class="cite" href="#ref-11">[11]</a>。我们的实验得到同样的结论，而且把这种依赖推进到了受控干预层面：同一个 InnerNet 进入双线性宿主时恢复乘法，进入 SwiGLU 宿主时恢复 SwiGLU 类结构。局部算子的合适形态取决于它面对的表示、尺度和梯度。
       </p>
 
       <p>
-        因果矩阵表明，这种发现是宿主条件化的。双线性宿主和 SwiGLU 宿主分别稳定保留不同结构，说明不存在一个对所有网络都相同的“最佳激活”。这并不削弱方法的价值。局部结构本来就应当依赖上游表示、下游目标和训练状态。InnerNet 提供的是在给定网络解附近进行连续结构搜索的能力，类似于对已经形成的计算系统做可微的局部探测。
+        InnerNet 因而提供了一种寻找下一类候选算子的办法。它不要求研究者先猜出函数名称，也不把搜索限制在一个预先列出的公式库中。训练期间，二维小网络在连续函数空间内移动；训练结束后，我们再用表面、拟合和干预筛选稳定结构。与 DARTS、Swish 搜索和 EvoNorm 相比 <a class="cite" href="#ref-5">[5]</a><a class="cite" href="#ref-7">[7]</a><a class="cite" href="#ref-13">[13]</a>，这里不搜索全局拓扑，也不枚举离散算子图。搜索只发生在网络内部反复调用的局部计算规则上。
       </p>
 
-      <h3>3.2　神经科学启发提供了可解释的结构先验</h3>
+      <p>
+        这种局部性限制了结论范围，也让问题变得可处理。现有证据不能证明 InnerNet 会从随机网络中找到全局最优算子。它证明的是，在一个已经形成有效表示的宿主网络附近，InnerNet 能够恢复并调整与该优化区域相容的高性能结构。未来的数据、架构或训练目标如果偏好 SwiGLU 之外的交互，InnerNet 可以让候选结构从任务本身产生，再通过独立训练、消融和提炼检验其价值。这里的优势是发现程序，而不是预先保证某个公式获胜。
+      </p>
+
+      <h3>3.2　先发现，再提炼和优化</h3>
 
       <p>
-        本方法的生物学意义不只来自“使用了更复杂的神经元”。更具体的联系在于，多路输入在单个计算单元内部发生非线性交互。皮层神经元的树突区室能够对不同来源的突触输入进行局部整合，人类皮层树突中也观察到与 XOR 相容的响应 [2]。二元 InnerNet 把这一事实抽象为一个最小可训练对象：两路投影进入同一个共享函数，函数可以表达协同、抑制、门控和上下文调制。
+        搜索阶段与部署阶段可以使用不同的表示。InnerNet 适合探索，因为它能表达宽广的二维函数族；部署模型需要便宜、稳定、容易融合的固定算子。Cranmer 等人的内部模块符号回归和 KAN 的 symbolification 已经证明，先训练灵活函数、再恢复简单表达式是一条可行路线 <a class="cite" href="#ref-12">[12]</a><a class="cite" href="#ref-24">[24]</a>。EvoNorm 则说明自动搜索得到的局部公式可以成为实际网络组件 <a class="cite" href="#ref-7">[7]</a>。本文把这条路线用于共享二元局部算子，并进一步测量替换后的任务性能和运行成本。
+      </p>
+
+      <p>
+        当前三阶多项式把 CNN 推理吞吐提高了 2.68 倍，并保留了相对 ReLU 和 SwiGLU 的部分准确率优势。它仍损失 3.63 个准确率点，而且这个 Poly3 是普通框架算子组成的未融合实现，比 SwiGLU 慢 2.46 倍。我们尚未测试 fused kernel，因此现有速度不能代表闭式算子的实现上限。更完整的流程应从多个种子中寻找稳定项，再约束公式复杂度，生成可融合实现，并用该算子重新训练网络。InnerNet 的训练成本可以只在发现阶段支付一次。
+      </p>
+
+      <h3>3.3　神经科学启发提供了可解释的结构先验</h3>
+
+      <p>
+        本方法的生物学联系在于，多路输入在单个计算单元内部发生非线性交互。来自不同皮层层次的输入可以通过树突事件耦合 <a class="cite" href="#ref-23">[23]</a>，具有多个非线性树突子单元的锥体神经元可以近似为两层网络 <a class="cite" href="#ref-21">[21]</a>，人类皮层树突中也观察到能够区分线性不可分输入的事件 <a class="cite" href="#ref-2">[2]</a>。更详细的模拟表明，复现主动树突神经元的输入输出映射需要较深的时序网络 <a class="cite" href="#ref-22">[22]</a>。二元 InnerNet 从这些现象中抽取了一个最小计算原则：两路投影进入同一个局部函数，函数可以表达协同、抑制、门控和上下文调制。
       </p>
 
       <p>
@@ -593,20 +647,14 @@
         InnerNet 仍然是计算模型，而非真实树突的完整复刻。它没有描述形态、电导、时序动力学或细胞类型差异。当前结果支持的是一个更窄也更有用的观点：来自真实神经元的多输入非线性为人工网络提供了可操作的结构先验，而可学习二维函数可以用来检验这种先验在不同任务中会形成什么计算。
       </p>
 
-      <h3>3.3　有效起点是高容量结构搜索的必要条件</h3>
+      <h3>3.4　有效起点是高容量结构搜索的必要条件</h3>
 
       <p>
-        从头训练时，InnerNet 与外围网络同时改变，局部函数、特征尺度和表示基底互相牵制。固定算子则把这一部分搜索空间压缩为一个已知归纳偏置，因此更容易优化。warm-start、冻结容量实验和 causal matrix 给出了相互一致的解释：一旦外围网络进入有效区域，InnerNet 能够恢复已有算子，并沿局部梯度继续调整；如果整个系统从随机状态开始，高自由度反而会阻碍训练。
+        从头训练时，InnerNet 与外围网络同时改变，局部函数、特征尺度和表示基底互相牵制。固定算子把这一部分搜索空间压缩为一个已知归纳偏置，因此更容易优化。Network Morphism 等保函数结构变换也利用成熟网络作为新结构的起点 <a class="cite" href="#ref-15">[15]</a>。我们的 warm-start、冻结容量实验和 causal matrix 给出一致的解释：一旦外围网络进入有效区域，InnerNet 能够恢复已有算子，并沿局部梯度继续调整；如果整个系统从随机状态开始，高自由度会阻碍训练。
       </p>
 
       <p>
         这一发现指向一种更合适的训练程序。先用稳定的固定算子、低容量 InnerNet 或教师网络建立可用表示，再释放局部函数进行结构搜索。搜索完成后，可以对多随机种子中稳定出现的低阶项进行拟合、消融和再训练。这样的流程把手工结构的优化优势与可学习结构的表达能力结合起来。
-      </p>
-
-      <h3>3.4　从发现到部署</h3>
-
-      <p>
-        可学习探针不需要成为最终算子。一个实用闭环包含四步：用稳定结构训练宿主网络；用 InnerNet 替换局部算子并继续优化；从多个随机种子中提取稳定的函数成分；将这些成分写成简单、可融合的算子并重新训练。CNN 多项式实验已经完成前三步并部分完成第四步。它证明性能增益可以保留一部分，但也表明仅做数值拟合还不够。最终算子还需要考虑硬件融合、梯度稳定性和重训练后的任务性能。
       </p>
 
       <h3>3.5　局限</h3>
@@ -729,7 +777,7 @@
 
       <h4>A.3　跨任务函数表面</h4>
       <div class="figure">
-        <img src="paper_assets/fig10_innernet_all_tasks.png" alt="不同任务训练后的 InnerNet 二维函数表面">
+        <img loading="eager" src="paper_assets/fig10_innernet_all_tasks.png" width="3266" height="585" alt="不同任务训练后的 InnerNet 二维函数表面">
         <p class="caption">
           <strong>图 A1｜不同任务的训练后二维表面。</strong>
           Transformer、CNN 和 masked language modeling 产生不同的局部函数。表面差异说明算子形态受任务和外围表示共同约束。
@@ -738,7 +786,7 @@
 
       <h4>A.4　参数效率</h4>
       <div class="figure">
-        <img src="paper_assets/fig_parameter_efficiency.png" alt="InnerNet 与 ReLU MLP 的参数效率比较">
+        <img loading="eager" src="paper_assets/fig_parameter_efficiency.png" width="1885" height="1242" alt="InnerNet 与 ReLU MLP 的参数效率比较">
         <p class="caption">
           <strong>图 A2｜参数效率。</strong>
           在容量受限的 MLP 中，共享局部函数可以用较少的外围宽度获得较好的性能。随着基础网络变宽，这一优势减弱。
@@ -822,21 +870,155 @@
     <section id="references">
       <h2>参考文献</h2>
       <ol class="references">
-        <li>
-          Yoon, K., Orhan, E., Kim, J., and Pitkow, X. Two-argument activation functions learn soft XOR operations like cortical neurons. 2021.
-          <a href="2110.06871v2.pdf">本地论文 PDF</a>。
+        <li id="ref-1">
+          Yoon, K., Orhan, E., Kim, J., and Pitkow, X.
+          <a href="https://doi.org/10.1109/ACCESS.2022.3178951">Two-Argument Activation Functions Learn Soft XOR Operations Like Cortical Neurons</a>.
+          IEEE Access, 2022。<a href="2110.06871v2.pdf">本地论文 PDF</a>。
+          <span class="ref-note">本文工作的直接起点：提出共享二输入 InnerNet，并在 MLP 与 CNN 中观察到软 XOR 类表面、性能与鲁棒性收益。</span>
         </li>
-        <li>
-          Gidon, A. 等。人类第二至第三层皮层神经元中的树突动作电位与计算。Science，2020。
+        <li id="ref-2">
+          Gidon, A. 等。
+          <a href="https://doi.org/10.1126/science.aax6239">Dendritic Action Potentials and Computation in Human Layer 2/3 Cortical Neurons</a>.
+          Science, 2020。
+          <span class="ref-note">在人类皮层树突中观察到可区分线性不可分输入的事件，为 XOR-like 树突计算提供实验依据。</span>
         </li>
-        <li>
-          Poirazi, P. 与 Mel, B. W. 树突子结构对单个神经元计算能力的贡献。Neuron，2001。
+        <li id="ref-3">
+          Lin, M., Chen, Q., and Yan, S.
+          <a href="https://arxiv.org/abs/1312.4400">Network In Network</a>.
+          ICLR, 2014。
+          <span class="ref-note">用局部小型 MLP 替代线性滤波，是 micro-network 架构的早期代表，但不分析共享二元标量函数。</span>
         </li>
-        <li>
-          Larkum, M. E. 等。皮层神经元中不同树突输入通路的交互。Nature，1999。
+        <li id="ref-4">
+          He, K., Zhang, X., Ren, S., and Sun, J.
+          <a href="https://doi.org/10.1109/ICCV.2015.123">Delving Deep into Rectifiers: Surpassing Human-Level Performance on ImageNet Classification</a>.
+          ICCV, 2015。
+          <span class="ref-note">提出 PReLU，只学习负半轴斜率，代表低自由度可学习激活函数。</span>
         </li>
-        <li>
-          Vaswani, A. 等。基于注意力的序列建模架构。2017。
+        <li id="ref-5">
+          Ramachandran, P., Zoph, B., and Le, Q. V.
+          <a href="https://arxiv.org/abs/1710.05941">Searching for Activation Functions</a>.
+          arXiv:1710.05941, 2017。
+          <span class="ref-note">从预定义一元和二元 primitive 的组合中搜索激活公式，并发现 Swish。</span>
+        </li>
+        <li id="ref-6">
+          Bingham, G. and Miikkulainen, R.
+          <a href="https://doi.org/10.1016/j.neunet.2022.01.001">Discovering Parametric Activation Functions</a>.
+          Neural Networks, 2022。
+          <span class="ref-note">PANGAEA 结合进化搜索与梯度优化，并报告不同架构偏好不同的参数化激活函数。</span>
+        </li>
+        <li id="ref-7">
+          Liu, H., Brock, A., Simonyan, K., and Le, Q. V.
+          <a href="https://proceedings.neurips.cc/paper/2020/hash/9d4c03631b8b0c85ae08bf05eda37d0f-Abstract.html">Evolving Normalization-Activation Layers</a>.
+          NeurIPS, 2020。
+          <span class="ref-note">从基础操作中搜索归一化与激活的联合结构，最终得到可直接执行的 EvoNorm 公式。</span>
+        </li>
+        <li id="ref-8">
+          Ma, N., Zhang, X., Liu, M., and Sun, J.
+          <a href="https://doi.org/10.1109/CVPR46437.2021.00794">Activate or Not: Learning Customized Activation</a>.
+          CVPR, 2021。
+          <span class="ref-note">ACON 学习非线性状态与近线性状态之间的切换，meta-ACON 进一步让参数依赖输入上下文。</span>
+        </li>
+        <li id="ref-9">
+          Dai, Y. 等。
+          <a href="https://arxiv.org/abs/2007.07729">Attention as Activation</a>.
+          arXiv:2007.07729, 2020。
+          <span class="ref-note">把局部跨通道信息放进激活计算，是 context-aware activation 的相邻方法。</span>
+        </li>
+        <li id="ref-10">
+          Molina, A., Schramowski, P., and Kersting, K.
+          <a href="https://openreview.net/forum?id=BJlBSkHtDS">Padé Activation Units: End-to-end Learning of Flexible Activation Functions in Deep Networks</a>.
+          ICLR, 2020。
+          <span class="ref-note">用低阶有理函数学习紧凑的一元激活，兼顾函数自由度和闭式表达。</span>
+        </li>
+        <li id="ref-11">
+          Bohra, P. 等。
+          <a href="https://doi.org/10.1109/OJSP.2020.3039379">Learning Activation Functions in Deep (Spline) Neural Networks</a>.
+          IEEE Open Journal of Signal Processing, 2020。
+          <span class="ref-note">用 B-spline 学习自由形态的一元激活，并通过正则化控制复杂度。</span>
+        </li>
+        <li id="ref-12">
+          Liu, Z. 等。
+          <a href="https://openreview.net/forum?id=Ozo7qJ5vZi">KAN: Kolmogorov-Arnold Networks</a>.
+          ICLR, 2025。
+          <span class="ref-note">在网络边上学习一元 spline，再通过剪枝与 symbolification 得到简单表达式，是“先发现后提炼”的强先例。</span>
+        </li>
+        <li id="ref-13">
+          Liu, H., Simonyan, K., and Yang, Y.
+          <a href="https://openreview.net/forum?id=S1eYHoC5FX">DARTS: Differentiable Architecture Search</a>.
+          ICLR, 2019。
+          <span class="ref-note">把候选操作的离散选择连续松弛，再用梯度优化结构参数。</span>
+        </li>
+        <li id="ref-14">
+          Real, E., Liang, C., So, D. R., and Le, Q. V.
+          <a href="https://proceedings.mlr.press/v119/real20a.html">AutoML-Zero: Evolving Machine Learning Algorithms From Scratch</a>.
+          ICML, 2020。
+          <span class="ref-note">从基本数学 primitive 搜索完整学习算法，展示了大范围自动计算结构发现。</span>
+        </li>
+        <li id="ref-15">
+          Wei, T., Wang, C., Rui, Y., and Chen, C. W.
+          <a href="https://arxiv.org/abs/1603.01670">Network Morphism</a>.
+          arXiv:1603.01670, 2016。
+          <span class="ref-note">通过保函数变换把成熟网络迁移到更大结构，为本文的 warm-start 设计提供方法背景。</span>
+        </li>
+        <li id="ref-16">
+          Hochreiter, S. and Schmidhuber, J.
+          <a href="https://doi.org/10.1162/neco.1997.9.8.1735">Long Short-Term Memory</a>.
+          Neural Computation, 1997。
+          <span class="ref-note">用乘法门控制记忆写入、保留和读取，建立了多输入门控的经典范式。</span>
+        </li>
+        <li id="ref-17">
+          Cho, K. 等。
+          <a href="https://aclanthology.org/D14-1179/">Learning Phrase Representations using RNN Encoder-Decoder for Statistical Machine Translation</a>.
+          EMNLP, 2014。
+          <span class="ref-note">提出 GRU，用更紧凑的门控结构稳定循环状态更新。</span>
+        </li>
+        <li id="ref-18">
+          Dauphin, Y. N., Fan, A., Auli, M., and Grangier, D.
+          <a href="https://proceedings.mlr.press/v70/dauphin17a.html">Language Modeling with Gated Convolutional Networks</a>.
+          ICML, 2017。
+          <span class="ref-note">GLU 用两路线性投影和逐元素乘法构成门控，是 InnerNet 二输入形式的直接工程参照。</span>
+        </li>
+        <li id="ref-19">
+          Shazeer, N.
+          <a href="https://arxiv.org/abs/2002.05202">GLU Variants Improve Transformer</a>.
+          arXiv:2002.05202, 2020。
+          <span class="ref-note">系统比较 GLU 变体并提出 SwiGLU，是本文 Transformer 实验中的核心强基线。</span>
+        </li>
+        <li id="ref-20">
+          Jayakumar, S. 等。
+          <a href="https://openreview.net/forum?id=rylnK6VtDH">Multiplicative Interactions and Where to Find Them</a>.
+          ICLR, 2020。
+          <span class="ref-note">把 gating、attention、hypernetwork 和动态卷积统一解释为乘法交互。</span>
+        </li>
+        <li id="ref-21">
+          Poirazi, P., Brannon, T., and Mel, B. W.
+          <a href="https://doi.org/10.1016/S0896-6273(03)00149-1">Pyramidal Neuron as Two-Layer Neural Network</a>.
+          Neuron, 2003。
+          <span class="ref-note">详细区室模型显示，非线性树突子单元可形成类似两层网络的单神经元计算。</span>
+        </li>
+        <li id="ref-22">
+          Beniaguev, D., Segev, I., and London, M.
+          <a href="https://doi.org/10.1016/j.neuron.2021.07.002">Single Cortical Neurons as Deep Artificial Neural Networks</a>.
+          Neuron, 2021。
+          <span class="ref-note">复现主动树突神经元的输入输出映射需要较深时序网络，说明单神经元具有较高计算复杂度。</span>
+        </li>
+        <li id="ref-23">
+          Larkum, M. E., Zhu, J. J., and Sakmann, B.
+          <a href="https://doi.org/10.1038/18686">A New Cellular Mechanism for Coupling Inputs Arriving at Different Cortical Layers</a>.
+          Nature, 1999。
+          <span class="ref-note">给出不同皮层层次输入通过树突事件发生非线性耦合的实验依据。</span>
+        </li>
+        <li id="ref-24">
+          Cranmer, M. 等。
+          <a href="https://proceedings.neurips.cc/paper/2020/hash/c9f2f917078bd2db12f23c3b413d9cba-Abstract.html">Discovering Symbolic Models from Deep Learning with Inductive Biases</a>.
+          NeurIPS, 2020。
+          <span class="ref-note">先训练神经模型，再对内部模块做 symbolic regression，并用闭式方程替换原模块。</span>
+        </li>
+        <li id="ref-25">
+          Sahoo, S., Lampert, C., and Martius, G.
+          <a href="https://proceedings.mlr.press/v80/sahoo18a.html">Learning Equations for Extrapolation and Control</a>.
+          ICML, 2018。
+          <span class="ref-note">从预定义数学 primitive 中学习稀疏方程，目标是恢复具有外推能力的解析关系。</span>
         </li>
       </ol>
     </section>
@@ -845,5 +1027,38 @@
       本页是中文论文草稿。正文数据来自项目的 canonical 实验记录与原始结果审计，内部任务状态不属于论文正文。
     </p>
   </main>
+  <script>
+    (() => {
+      const imagesReady = Promise.all(
+        Array.from(document.images).map((img) => {
+          if (img.complete) return Promise.resolve();
+          return new Promise((resolve) => {
+            img.addEventListener("load", resolve, { once: true });
+            img.addEventListener("error", resolve, { once: true });
+          });
+        })
+      );
+
+      const jumpToReference = (id) => {
+        const target = document.getElementById(id);
+        if (target) target.scrollIntoView({ block: "start" });
+      };
+
+      document.addEventListener("click", (event) => {
+        const link = event.target.closest("a.cite");
+        if (!link) return;
+        event.preventDefault();
+        const id = link.getAttribute("href").slice(1);
+        history.pushState(null, "", `#${id}`);
+        jumpToReference(id);
+        imagesReady.then(() => jumpToReference(id));
+      });
+
+      if (location.hash.startsWith("#ref-")) {
+        const id = location.hash.slice(1);
+        imagesReady.then(() => jumpToReference(id));
+      }
+    })();
+  </script>
 </body>
 </html>

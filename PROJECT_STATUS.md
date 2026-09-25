@@ -85,6 +85,14 @@
 - 图 2b 的曲线长度已统一：原始 phase-1 协议中 2-arg/1-arg 为 200 epochs，ReLU 为 400 epochs；该图用于比较收敛速度，因此绘图脚本默认只显示共同的前 200 epochs，最终性能继续由表格报告。
 - 原附录占位图已补成正式图：`fig_causal_matrix`、`fig_inner_hidden_tradeoff`、`fig_compute_cost_breakdown` 均由审计 JSON 直接生成，并已嵌入论文。h=32 缺少可比 wall-clock 的事实在图中明确标注；Poly3 统一标为当前未融合实现，不外推融合后的速度。
 
+### Related work 与 Discussion：✅ 系统综述已完成
+
+- 新增 `docs/literature_review.md`，核对 25 篇相关论文，覆盖可学习激活、自动算子搜索、可微架构搜索、门控与乘法、树突计算、symbolic regression 和发现后提炼。
+- 必须正面承认的强先例包括 PANGAEA、EvoNorm、KAN 和 Cranmer et al.。因此不使用“首次做 activation discovery”或“首次先发现再提炼”的表述。
+- 当前可守住的新意是：共享二元局部算子、40 条件宿主干预、capacity 与 optimization 分离，以及对提炼后精度和吞吐的实际测量。
+- Discussion 已补入文献并强化主张：SwiGLU 是当前强基线，但任务与架构仍可能偏好其他局部交互；InnerNet 用于生成候选结构，部署阶段再进行公式约束、重训练和 fused implementation。
+- HTML 正文中的 citation 编号现可点击跳到对应参考文献；25 条文献均附有稳定来源链接和一句与本文关系的说明。目标条目会高亮，页面也会在图片加载完成后校正跳转位置。
+
 ### P1 causal matrix v2：✅ 40/40 条件完成
 
 旧矩阵因单个 job 重复训练 host、串行执行多个 init，出现 24h timeout；另有 8 个 job 落到 PyTorch 不支持的 RTX Pro 6000 节点。现已改成**共享 host checkpoint + probe 拆分 + 可续跑 + 结构化 `results.json`**，并用独立 worktree `/home/yizhouc3/xor-codex-audit` 保护 cluster 上有未提交改动的 `~/xor`。

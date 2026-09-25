@@ -6,6 +6,10 @@ Current manuscript draft: `docs/paper.html` (Chinese-only paper draft; the forme
 
 Paper figures generated directly from audited JSON now include `results/figures/fig_causal_matrix`, `fig_inner_hidden_tradeoff`, and `fig_compute_cost_breakdown`. The compute plot reports the current unfused Poly3 implementation; it does not estimate fused-kernel performance.
 
+The verified related-work map is in `docs/literature_review.md`. The manuscript now distinguishes our contribution from PANGAEA, EvoNorm, KAN, DARTS, and symbolic model extraction: the new evidence concerns host-conditioned discovery of a shared bivariate local operator, controlled basin interventions, capacity-versus-optimization separation, and measured post-distillation accuracy and runtime.
+
+All in-text citation numbers in `docs/paper.html` now link to annotated reference entries with stable publication URLs and one-sentence relevance notes.
+
 ## Paper Story — Learnable Activations as Differentiable Architecture Search
 
 InnerNet replaces scalar activations (ReLU) with a small learned MLP taking two inputs: `f(a, b) → output`, so each neuron computes a nonlinear interaction between two learned linear projections (analogous to the soft-XOR interactions of cortical neurons).
