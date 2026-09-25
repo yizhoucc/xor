@@ -472,6 +472,14 @@
         </table>
       </div>
 
+      <div class="figure">
+        <img src="paper_assets/fig_causal_matrix.png" alt="双线性与 SwiGLU 宿主中的逐条件算子恢复矩阵">
+        <p class="caption">
+          <strong>图 5｜宿主条件化的算子恢复。</strong>
+          每个单元格对应一个随机种子和一个探针设置。双线性宿主中的 20 个条件全部恢复乘法，SwiGLU 宿主中的 20 个条件全部恢复 SwiGLU 类结构。M 和 S 分别表示 Multiply 与 SwiGLU。
+        </p>
+      </div>
+
       <p>
         四十个条件形成了清晰的分离。相同的 InnerNet 初始化进入不同宿主后会得到不同的函数，而同一宿主中的不同初始化会收敛到同一类函数。因此，最终算子并不是 InnerNet 参数化本身产生的固定吸引子。外围网络已经形成的表示、尺度和梯度场共同限定了可行的局部计算。InnerNet 在这个条件空间内完成连续搜索，并恢复与当前网络解相容的高性能结构。
       </p>
@@ -483,7 +491,7 @@
       <div class="figure">
         <img src="paper_assets/fig_d64_swiglu_surface.png" alt="训练后的 InnerNet 表面、缩放 SwiGLU 拟合及残差">
         <p class="caption">
-          <strong>图 5｜二维函数的结构读取。</strong>
+          <strong>图 6｜二维函数的结构读取。</strong>
           一个 Transformer 检查点中的 InnerNet 可由缩放 SwiGLU 项解释 97.7% 的方差。单个表面只提供实例证据；跨宿主、跨初始化和跨种子的因果矩阵给出了更强的结构结论。
         </p>
       </div>
@@ -498,23 +506,12 @@
         没有检测到总体宽度效应。与此同时，宽度 64 的训练时间为宽度 8 的 4.86 倍。
       </p>
 
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>InnerNet 隐藏宽度</th>
-              <th class="num">测试 PPL</th>
-              <th class="num">相对 h=32</th>
-              <th class="num">运行时间</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>8</td><td class="num">96.17±0.95</td><td class="num">+0.91</td><td class="num">10.9 小时</td></tr>
-            <tr><td>16</td><td class="num">95.76±0.64</td><td class="num">+0.50</td><td class="num">15.7 小时</td></tr>
-            <tr><td>32</td><td class="num">95.26±1.00</td><td class="num">0</td><td class="num">标准设置</td></tr>
-            <tr><td>64</td><td class="num">95.09±1.15</td><td class="num">−0.17</td><td class="num">53.0 小时</td></tr>
-          </tbody>
-        </table>
+      <div class="figure">
+        <img src="paper_assets/fig_inner_hidden_tradeoff.png" alt="InnerNet 隐藏宽度、困惑度和运行时间的关系">
+        <p class="caption">
+          <strong>图 7｜探针容量与计算成本。</strong>
+          左图给出五个随机种子的均值与标准差，右图给出有完整 wall-clock 记录的设置。h=32 复用了较早的 canonical 结果，没有可比的总运行时间，因此不在右图补造该点。
+        </p>
       </div>
 
       <p>
@@ -536,6 +533,14 @@
       <p>
         InnerNet 的主要代价来自执行方式。它只增加少量共享参数，理论算子 FLOPs 也只比 SwiGLU 高约 17%，但逐元素小 MLP 会产生大量未融合 kernel 和中间张量。在统一硬件测量中，InnerNet 的 CNN 与 Transformer 推理分别比 SwiGLU 慢 17.33 倍和 12.02 倍。由此，直接把 InnerNet 长期保留在部署模型中并不理想。
       </p>
+
+      <div class="figure">
+        <img src="paper_assets/fig_compute_cost_breakdown.png" alt="CNN 和 Transformer 中不同局部算子的相对计算成本">
+        <p class="caption">
+          <strong>图 8｜当前实现的计算成本。</strong>
+          CNN 以 ReLU、Transformer FFN 以 GELU 为 1 倍基线。Poly3 表示当前未融合的三阶多项式实现。该测量说明 InnerNet 的主要障碍来自执行与中间张量开销，也说明现有 Poly3 结果不能代表未来融合算子的速度上限。
+        </p>
+      </div>
 
       <p>
         我们在 CIFAR-10 CNN 上把训练后的二维表面拟合为固定三阶多项式。固定算子把吞吐从每秒 1,622 张提高到 4,345 张，并保留了相对 ReLU 和 SwiGLU 的准确率优势。代价是准确率从 84.95±0.57% 降至 81.32±0.32%，且当前未融合多项式仍慢于 SwiGLU。这个实验验证了“探索后提炼”的可行性，但尚未实现无损和硬件友好的最终算子。
@@ -807,16 +812,6 @@
       </p>
 
       <h3>附录 D　成稿前编辑备注</h3>
-
-      <div class="note">
-        <strong>图表待补 1：</strong>
-        将表 3 的 40 个条件绘成一个紧凑矩阵。横轴为 InnerNet 初始化，纵轴为宿主与训练方式；颜色表示乘法或 SwiGLU 拟合 R²。该图应成为主文的核心机制图。
-      </div>
-
-      <div class="note">
-        <strong>图表待补 2：</strong>
-        把 hidden-width 的 PPL 与运行时间画在同一张双面板图中，直接展示容量平台和成本增长。当前表格已经包含全部数据。
-      </div>
 
       <div class="note">
         <strong>实验待补：</strong>

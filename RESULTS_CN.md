@@ -35,7 +35,7 @@
 
 **部署结果**：CNN 上 InnerNet 为 **84.95±0.57%**，提炼后的固定 poly3 为 **81.32±0.32%**，ReLU/SwiGLU 约为79.9%（5 seeds，sample SD）。固定算子比 InnerNet 快 **2.68×**，但仍比 SwiGLU 慢2.46×，并损失3.63个准确率点；它仍显著优于 ReLU/SwiGLU约1.4点。说明“发现→提炼”能回收部分效率和收益，但现有手写多项式没有完成无损部署。FFN deploy 超时，只有 InnerNet 4 seeds且 distilled 0 seeds；已完成分支显示 InnerNet训练吞吐约比SwiGLU慢6.03×，不据此声称FFN部署成功。详见 `results/audit/deploy_analysis.json`。
 
-**统一计算成本profile（RTX 2080 Ti，FP32，同进程synthetic batch）**：相对SwiGLU，InnerNet的主要算子FLOPs只有 **1.17×**，但CNN/Transformer推理分别慢 **17.33×/12.02×**，训练步慢 **7.63×/6.27×**，峰值训练显存为 **7.90×/6.43×**。因此主要瓶颈不是参数量或理论FLOPs，而是逐元素小MLP造成的大量未融合kernel与中间张量。poly3提炼后相对InnerNet推理快4.84×/4.37×，但未融合实现仍比SwiGLU慢3.58×/2.75×。详见 `results/audit/compute_cost_profile.json`。
+**统一计算成本profile（RTX 2080 Ti，FP32，同进程synthetic batch）**：相对SwiGLU，InnerNet的主要算子FLOPs只有 **1.17×**，但CNN/Transformer推理分别慢 **17.33×/12.02×**，训练步慢 **7.63×/6.27×**，峰值训练显存为 **7.90×/6.43×**。因此主要瓶颈不是参数量或理论FLOPs，而是逐元素小MLP造成的大量未融合kernel与中间张量。poly3提炼后相对InnerNet推理快4.84×/4.37×，但未融合实现仍比SwiGLU慢3.58×/2.75×。详见 `results/audit/compute_cost_profile.json`；图：`results/figures/fig_compute_cost_breakdown.{png,pdf}`。
 
 ---
 
@@ -113,7 +113,7 @@ d=64 到 d=256 InnerNet 一直赢 GELU（-3.3% → -1.7%）。但 GPT d=256（�
 | 32 | **95.26±1.00** | — | — | ✅ canonical |
 | 64 | **95.09±1.15** | -0.17 | 0.708 | ✅ 5/5 |
 
-完整四档的 Friedman 检验 p=0.392，没有检测到总体宽度效应。h=16 后性能均值进入平台，h=64 相对 h=32 只改善0.17 PPL，95%差值区间为[-1.32, 0.99]。这足以作为“继续增大探针没有可测收益”的辅助消融。它不能证明严格等价：若预先把等价边界设为±1 PPL，h=16 vs h=32 的 TOST p=0.237，仍未通过。运行成本则很明确：h=8/h=16/h=64 分别耗时10.9/15.7/53.0小时，h=64是h=8的4.86×，而总参数只增加224个。Configs：`config/experiments/transformer_wikitext_2arg_innerh{8,16,64}.yaml`；exp：`exp/transformer_wikitext_2arg_innerh{8,16,64}_*`；完整汇总：`results/audit/inner_hidden_ablation.json`。该 LM runner 只保存 `lm_results.p` 和日志，不保存模型 checkpoint。
+完整四档的 Friedman 检验 p=0.392，没有检测到总体宽度效应。h=16 后性能均值进入平台，h=64 相对 h=32 只改善0.17 PPL，95%差值区间为[-1.32, 0.99]。这足以作为“继续增大探针没有可测收益”的辅助消融。它不能证明严格等价：若预先把等价边界设为±1 PPL，h=16 vs h=32 的 TOST p=0.237，仍未通过。运行成本则很明确：h=8/h=16/h=64 分别耗时10.9/15.7/53.0小时，h=64是h=8的4.86×，而总参数只增加224个。Configs：`config/experiments/transformer_wikitext_2arg_innerh{8,16,64}.yaml`；exp：`exp/transformer_wikitext_2arg_innerh{8,16,64}_*`；完整汇总：`results/audit/inner_hidden_ablation.json`；论文图：`results/figures/fig_inner_hidden_tradeoff.{png,pdf}`。该 LM runner 只保存 `lm_results.p` 和日志，不保存模型 checkpoint。
 
 修复 parameter-sharing 后的 scaling 图由 canonical audit 数据直接生成：`results/figures/fig_scaling_law.pdf`。旧硬编码 pre-fix 图已被替换；当前趋势是正向但**非单调**，不能再写成“规模越大优势单调缩小”。
 
@@ -247,7 +247,7 @@ d=64 的 post-sharing checkpoint 也明确是 SwiGLU-like：单项拟合解释 9
 
 **跨 seed 一致性（warm-start retention）**：5 个 seeds 的后续任务优化彼此独立，但它们共享同一份显式拟合到 SwiGLU 的 InnerNet 初值。逐个提炼得到 SwiGLU 拟合 **R²=0.947±0.010**（范围 0.931–0.956），系数 **0.238±0.005**，纯乘法约 0.66。这个结果排除了单个 seed 的偶然漂移，但不能升级成“独立再发现”；要支持后者，必须分析从 Gaussian/random 等非 SwiGLU 初值训练并保存的多 seed checkpoint。
 
-**完整 causal matrix（5 seeds，40/40条件）**：Bilinear-host下，joint random/multiply分别达到PPL **73.70±0.59 / 73.79±0.45**，表面仍为纯乘法（mult R² **0.9976 / 0.9989**）；frozen random/multiply为PPL **79.57±0.73 / 79.56±0.72**，mult R² **0.9993 / 0.9990**。20/20条件均投票为multiply。SwiGLU-host下，random/identity/multiply/swiglu四种初值达到PPL **71.98–72.21**、SwiGLU R² **0.9853–0.9912**，20/20条件均投票为SwiGLU。最终算子完全由host/optimization basin区分，而非InnerNet初值；这排除了network-independent SwiGLU attractor。PPL改善不能全归因于activation，因为没有对应host继续训练10ep的对照。
+**完整 causal matrix（5 seeds，40/40条件）**：Bilinear-host下，joint random/multiply分别达到PPL **73.70±0.59 / 73.79±0.45**，表面仍为纯乘法（mult R² **0.9976 / 0.9989**）；frozen random/multiply为PPL **79.57±0.73 / 79.56±0.72**，mult R² **0.9993 / 0.9990**。20/20条件均投票为multiply。SwiGLU-host下，random/identity/multiply/swiglu四种初值达到PPL **71.98–72.21**、SwiGLU R² **0.9853–0.9912**，20/20条件均投票为SwiGLU。最终算子完全由host/optimization basin区分，而非InnerNet初值；这排除了network-independent SwiGLU attractor。PPL改善不能全归因于activation，因为没有对应host继续训练10ep的对照。逐条件图：`results/figures/fig_causal_matrix.{png,pdf}`。
 
 | | swiglu R² | silu(a)·b 系数 | mult R² |
 |--|:---:|:---:|:---:|

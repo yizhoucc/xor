@@ -4,6 +4,8 @@
 
 Current manuscript draft: `docs/paper.html` (Chinese-only paper draft; the former bilingual report layout has been removed).
 
+Paper figures generated directly from audited JSON now include `results/figures/fig_causal_matrix`, `fig_inner_hidden_tradeoff`, and `fig_compute_cost_breakdown`. The compute plot reports the current unfused Poly3 implementation; it does not estimate fused-kernel performance.
+
 ## Paper Story — Learnable Activations as Differentiable Architecture Search
 
 InnerNet replaces scalar activations (ReLU) with a small learned MLP taking two inputs: `f(a, b) → output`, so each neuron computes a nonlinear interaction between two learned linear projections (analogous to the soft-XOR interactions of cortical neurons).

@@ -83,6 +83,7 @@
 - 40 条件因果矩阵在结果中明确拆成：双线性宿主的 5 seeds × 2 初始化 × 2 训练方式，以及 SwiGLU 宿主的 5 seeds × 4 初始化，不再把“40 个条件”作为未解释的摘要术语。
 - 页面保留 8 张核心图和必要表格，编辑提示仅放附录。已使用 humanizer 与 writing-style 规则清理汇报腔和模板化表述，并在 Safari 检查标题、摘要、结果表格、首图及 8/8 图片加载。
 - 图 2b 的曲线长度已统一：原始 phase-1 协议中 2-arg/1-arg 为 200 epochs，ReLU 为 400 epochs；该图用于比较收敛速度，因此绘图脚本默认只显示共同的前 200 epochs，最终性能继续由表格报告。
+- 原附录占位图已补成正式图：`fig_causal_matrix`、`fig_inner_hidden_tradeoff`、`fig_compute_cost_breakdown` 均由审计 JSON 直接生成，并已嵌入论文。h=32 缺少可比 wall-clock 的事实在图中明确标注；Poly3 统一标为当前未融合实现，不外推融合后的速度。
 
 ### P1 causal matrix v2：✅ 40/40 条件完成
 
