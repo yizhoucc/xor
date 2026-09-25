@@ -29,6 +29,8 @@ def main():
     parser.add_argument('--exp-dir', default='exp')
     parser.add_argument('--output', default='results/figures/fig_training_curves')
     parser.add_argument('--phase', default='phase1', choices=['phase1', 'phase2'])
+    parser.add_argument('--max-epoch', type=int, default=200,
+                        help='Maximum epoch shown on the x-axis (default: 200)')
     parser.add_argument('--show-ln', action='store_true', help='Include ReLU+LN')
     parser.add_argument('--show', action='store_true', help='Open an interactive plot window')
     args = parser.parse_args()
@@ -73,6 +75,7 @@ def main():
                              key='val_acc',
                              ylabel='Val. Accuracy',
                              alpha_fill=0.15)
+        ax.set_xlim(1, args.max_epoch)
         ax.set_title(title)
         ax.grid(True, alpha=0.3, linewidth=0.5)
 
