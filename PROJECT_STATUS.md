@@ -4,7 +4,7 @@
 
 - **本项目本地不运行测试或实验。** 本地仅用于代码/文档编辑、静态查看和结果整理；所有测试、验证与训练必须通过 Mind Cluster 的 Slurm 调度执行，严禁在 cluster 登录节点直接运行。
 
-## 当前任务：中文论文双版本修订（2026-10-20，已完成）
+## 当前任务：中文论文双版本修订与独立复核（2026-10-20，已完成）
 
 - ✅ **版本 A，保留现有结构，已完成**：输出为 `docs/paper_corrected.html`，共同基线 `docs/paper.html` 未修改。该版本保留原有章节顺序、研究 framing、神经科学篇幅、11 张图、25 条可点击参考文献和引用跳转脚本，全文按 writing-style 与 humanizer 规则重写。
 - 版本 A 已修正以下技术表述：函数标签只比较 multiplication 与 scaled SwiGLU 的 R²，Poly2/Poly3 仅作描述拟合；0.9976-0.9993 与 0.9853-0.9912 明确为分组平均 R² 范围，逐条件范围分别为 0.9949-0.9996 与 0.9830-0.9938；Friedman p=0.392 只写为未检测到总体差异；scratch 证据不进入摘要确定结论；SwiGLU 恢复、Poly3 替换和神经科学动机均按证据范围降级。
@@ -12,7 +12,8 @@
 - ✅ **版本 B，贡献优先重构，已完成**：输出为 `docs/paper_reframed.html`。正文按宿主算子恢复、表示与优化分离、固定 Poly3 替换、原论文复现与跨架构边界的顺序重排，最强的 40 条件宿主干预位于第一项结果。版本 B 将软 XOR、门控与神经科学类比明确归于 Yoon 等原工作，同时在引言和 Discussion 保留树突多输入计算的结构动机及其解释边界。
 - 版本 B 的核心数字已与审计文件逐项核对：Bilinear 20/20 恢复 multiplication，SwiGLU 20/20 恢复 SwiGLU 类函数；frozen InnerNet 与 SwiGLU 容量基线报告到两位小数均为 77.38 PPL；未融合 Poly3 相对 InnerNet 提速 2.68 倍、准确率下降 3.63 个百分点、仍比 SwiGLU 慢 2.46 倍；WikiText-2 d=128 的 InnerNet、GELU 与 SwiGLU 分别为 95.26±1.00、96.82±1.19 与 92.98±1.14 PPL。
 - 版本 B 静态验证通过：标准 HTML parser 可读取，11/11 图片存在，25/25 reference id 完整，25 篇文献均有正文 citation 且无缺失 target，正文图号与 caption 一致，全文无 em dash 或 en dash，也没有使用“自动发现 SwiGLU”“全局最优”“下一代算子”等越界表述。未运行本地实验。
-- **双版本任务完成**：版本 A 便于在原结构上继续编辑，版本 B 用于比较贡献优先的论文组织。共同基线 `docs/paper.html` 未修改，`RESULTS_CN.md` 与 `RESULTS_EN.md` 未修改，因为本轮没有新实验结果。
+- **独立复核修复完成**：continued SwiGLU 为 77.38±0.54，joint InnerNet 为 76.84±0.40；自编码器 MNIST、FashionMNIST、CIFAR-10 的 MSE 降幅分别为 42.8%、11.1%、25.4%，CIFAR-10 ReLU baseline 为 0.01086；WikiText-2 LSTM 改用 canonical audit 主口径，InnerNet 为 103.28±0.62，standard 为 104.34±0.60。语言模型口径统一为每个 seed 先取记录期最低验证 PPL，再计算跨 seed 均值和 population SD。
+- **文档同步说明**：共同基线 `docs/paper.html` 未修改。`RESULTS_CN.md` 与 `RESULTS_EN.md` 中存在同一组 AE 与 ivs_d128 旧数字，因此按项目文档规则同步修正，并补充 frozen-host 结果不是统计等价性检验的边界。
 - **Cluster 核对**：本轮通过 SSH 查询 `squeue -u yizhouc3`，队列为空。当前没有 PENDING 或 RUNNING 作业，本轮不启动新实验。
 
 ## Codex 发表前审计（2026-07-26）
@@ -34,8 +35,8 @@
 ## 核心结论
 
 - InnerNet 在没 skip 保护的位置有效（CNN, AE, TF FFN, ResNet internal）
-- Warm-start 后 InnerNet 在 **10/11** 任务上赢或持平 SwiGLU，从头训打不过是优化问题
-- **容量上限 ≥ SwiGLU**（ivs_d128 最终结果：SwiGLU 77.38±0.54 vs Frozen InnerNet **77.38±0.51**，完全持平）
+- Warm-start 后 InnerNet 在 **10/11** 任务上赢或持平 SwiGLU；从头训练的差距至少部分来自联合优化
+- **冻结宿主中能逼近 SwiGLU 解**（ivs_d128 最终结果：SwiGLU 77.38±0.54 vs Frozen InnerNet **77.38±0.51**；均值报告到两位小数相同，未做统计等价性检验）
 - 模型越大 InnerNet 优势越小：d=64 赢 3.3%, d=128 赢 1.6%, d=256 从头训反转为输（GPT d=256: ~76.2 vs GELU ~72.6）
 - **从头训一致输 SwiGLU**：scratch_init 2 seeds 确认 SwiGLU > Gaussian > Random > Multiply
 - **大模型 finetune 替换不可行**：Qwen 2.5-0.5B 替换后 acc 从 89% 掉到 80%
@@ -53,7 +54,7 @@
 
 **我们超出的部分**：
 - **架构广度**（原论文完全没碰）：Transformer FFN、LSTM、RNN(Seq-MNIST)、AE、ResNet/VGG/WRN、ViT、MLP-Mixer、PPO、Masked LM、GPT —— 10+ 架构。
-- **新增结论**：① 显式 SwiGLU warm-start 在任务优化后保持为缩放 SwiGLU；② 加法记忆 + 二元交互在 Seq-MNIST 成功 runs 上达到约 98%，但标准 gate 表面不可辨识；③ 位置决定效果；④ 优化壁垒 ≠ 容量上限；⑤ scaling 反转；⑥ learned-surface distillation。当前证据不支持“从无信息初始化独立再发现 SwiGLU/gate”。
+- **新增结论**：① 显式 SwiGLU warm-start 在任务优化后保持为缩放 SwiGLU；② 加法记忆 + 二元交互在 Seq-MNIST 成功 runs 上达到约 98%，但标准 gate 表面不可辨识；③ 位置决定效果；④ 冻结宿主与联合训练可区分表示能力和优化路径；⑤ scaling 反转；⑥ learned-surface distillation。当前证据不支持“从无信息初始化独立再发现 SwiGLU/gate”。
 
 ### 当前证据支持的 Story：**可微的架构探针**（NOT "a better activation function"）
 
@@ -205,7 +206,7 @@ Bark：原完成通知 **664237** 与补跑通知 **677677** 均已触发。当�
 |------|------|
 | **RNN PTB 2-arg** ✅ | Test PPL≈169，输 tanh baseline (PPL≈140) |
 | **RNN PTB 1-arg** ✅ | Test PPL≈179，输 tanh baseline |
-| **ivs_d128** ✅ | SwiGLU 77.38±0.54 vs Frozen InnerNet **77.38±0.51** — 完全持平，容量验证 |
+| **ivs_d128** ✅ | SwiGLU 77.38±0.54 vs Frozen InnerNet **77.38±0.51**；均值报告到两位小数相同，未做统计等价性检验 |
 | **mult_init** ✅ | d=64 持平, d=128 -0.24, PTB -1.08, **MLM -3.16**（5 seeds） |
 | **GPT v4** ⚠️ 未补齐，当前未运行 | 3/5 seeds 完成（77.20, 75.69, 75.83 → 均值 ~76.2），时间到 |
 | **free_init_v2** ⚠️ 未补齐，当前未运行 | Wiki 3/3 seeds ✅（4 种初始化收敛到 ~71.7-72.6 vs SwiGLU ~77.3），MLM 2/3 seeds |
@@ -241,7 +242,7 @@ Bark：原完成通知 **664237** 与补跑通知 **677677** 均已触发。当�
 | U1 | CNN 60% params representation 分析 | 搁置 |
 | U2 | 主流 CNN (aug fix 后重跑) | ✅ ResNet 73.51%, VGG 68.69%, WRN 74.80% — 合理 baseline。ResNet InnerNet 71.72% (n=4, 1 outlier) |
 | U3 | SwiGLU CNN 图像 | ✅ CIFAR-10: SwiGLU 79.79% > InnerNet 78.57%. CIFAR-100: InnerNet 53.74% > SwiGLU 46.48% |
-| U4 | LSTM 消融 (2×2) | ✅ 全部完成: Classic unbnd **99.33** > Classic bnd 101.76 > Semantic unbnd 103.41 > Standard 104.38 > Semantic bnd 105.59 |
+| U4 | LSTM 消融 (2×2) | ✅ 全部完成。canonical audit 主比较为 Semantic unbnd **103.28±0.62** vs Standard **104.34±0.60**，按每 seed 最低验证 PPL 汇总。Classic unbnd 99.33、Classic bnd 101.76、Semantic bnd 105.59 来自旧消融汇总，未混入论文主比较，后续如需引用应先按相同口径重审 |
 | U5 | SiLU-InnerNet Transformer | ✅ PTB 208.43, WikiText-2 94.90。SiLU 和 ReLU InnerNet 差不多 |
 | U6 | InnerGate（备选，如 SiLU 不行）| TODO | `b × sigmoid(InnerNet(a,b))`：b 保留直达通路 + gate 双向感知。上限最高但有点"作弊"（结构太接近 SwiGLU） |
 | U7 | 训练阶段消融 | ✅ 4/4 完成 | AE/ResNet/MLP: e2e ≈ 3-phase。CNN e2e 77.35% vs 3-phase 78.57% 稍差 -1.2%。pretrain 不是必须的 |
@@ -328,14 +329,14 @@ Bark：原完成通知 **664237** 与补跑通知 **677677** 均已触发。当�
 ### LSTM 消融 (WikiText-2) ✅
 | 变体 | Best PPL | Last PPL |
 |------|---------|----------|
-| Classic（相邻配对） | **99.33** | 101.72±0.99 |
-| Semantic（x vs h） | 103.41 | 105.30±0.31 |
-| Standard (baseline) | 104.38 | 108.39±0.75 |
+| Classic（相邻配对） | 99.33（旧汇总，未纳入当前 canonical audit） | 101.72±0.99 |
+| Semantic（x vs h） | 103.28±0.62 | 105.30±0.31 |
+| Standard (baseline) | 104.34±0.60 | 108.39±0.75 |
 
-*Bounded (tanh) 变体已测试并归档——加 tanh 约束一致更差。*
+*Semantic 与 Standard 的 Best PPL 先取每个 seed 在记录期内的最低验证困惑度，再报告跨 seed 均值和 population SD。Classic 的 99.33 沿用旧汇总，不能与前两项作同口径统计比较。Bounded (tanh) 变体已测试并归档，加 tanh 约束一致更差。*
 
 ### 其他已确认结果
-- AE: MNIST -39%, FashionMNIST -12%, CIFAR-10 -26%
+- AE: MNIST -42.8%, FashionMNIST -11.1%, CIFAR-10 -25.4%
 - Housing 回归: -5% MSE
 - Big MLP MNIST: +0.46%
 - PPO Acrobot: 最后20个评估点均值 -90.1 vs ReLU -111.8（+21.7 return points，paired-t p=0.0036）

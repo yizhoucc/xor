@@ -20,14 +20,14 @@ HTML 正文中的引用编号可直接跳到对应参考文献；每条参考文
 
 ### 相对原论文（Yoon et al., IEEE Access 2022）的新意
 
-原论文只测 MLP+CNN、只在 MNIST/CIFAR 上、结论温和（简单任务略有提升 + 鲁棒 + 生物动机）。我们超出的：**架构广度**（Transformer/LSTM/RNN/AE/ResNet/ViT/Mixer/PPO/MLM/GPT 10+ 个）+ **系统性边界**（位置效应、优化壁垒≠容量上限、scaling 反转、可解释表面提炼，以及加法记忆 + 二元交互的功能性结果）。
+原论文只测 MLP+CNN、只在 MNIST/CIFAR 上、结论温和（简单任务略有提升 + 鲁棒 + 生物动机）。我们超出的：**架构广度**（Transformer/LSTM/RNN/AE/ResNet/ViT/Mixer/PPO/MLM/GPT 10+ 个）+ **系统性边界**（位置效应、表示能力与优化路径的区分、scaling 反转、可解释表面提炼，以及加法记忆 + 二元交互的功能性结果）。
 
 ### 实验事实速查
 
 确认有效的：CNN、AE、Transformer FFN（d=64~256 全赢 GELU）、LSTM WikiText-2、PPO Acrobot、ResNet internal-only、Seq-MNIST 加法记忆 + InnerNet（成功 runs ~98%）。
 不好用的：ResNet 全换（skip connection 冗余）、LSTM PTB、大模型从头训（GPT d=256 反转）、大模型直接替换（Qwen -9%）。
 
-**关键发现**：InnerNet 容量上限 ≥ SwiGLU（warm-start 10/11 赢或持平，ivs_d128 追平），从头训大模型输是优化问题。模型越大差距越大（d=64 赢 3.3%, d=256 输 5.2%）。适合"发现 + warm-start finetune"，不适合大模型从头训或直接部署替换。
+**关键发现**：warm-start 后 InnerNet 在 10/11 个任务上赢或持平；在 ivs_d128 的冻结宿主实验中，它能逼近已有 SwiGLU 解。这个结果说明从头训练的差距不能只归因于表示能力，但没有做统计等价性检验。适合"发现 + warm-start finetune"，不适合大模型从头训或直接部署替换。
 
 ### 投稿前剩余工作
 
@@ -71,13 +71,13 @@ Configs: `config/experiments/cnn_cifar_2arg.yaml` 等，exp: `exp/cnn_cifar_2arg
 
 | 数据集 | InnerNet | ReLU | ReLU 参数匹配 | 改进 |
 |--------|----------|------|-------------|------|
-| MNIST | **0.0039** | 0.0068 | 0.0059 | **-43%** |
-| FashionMNIST | **0.0076** | 0.0086 | — | -12% |
-| CIFAR-10 | **0.0081** | 0.0105 | — | -23% |
+| MNIST | **0.00391** | 0.00684 | 0.00587 | **-42.8% vs ReLU，-33.4% vs 参数匹配** |
+| FashionMNIST | **0.00764** | 0.00860 | — | -11.1% |
+| CIFAR-10 | **0.00809** | 0.01086 | — | -25.4% |
 
 效果最好的。容量缩放 latent=32 改进最大 (-42%)。
 
-Configs: `config/experiments/ae_mnist_2arg.yaml`，exp: `exp/ae_mnist_2arg_*`
+这些数值是五个 seed 的均值，来自 `results/audit/grouped_metric_summary.csv`。Configs：`config/experiments/ae_{mnist,fmnist,cifar}_{2arg,relu}.yaml`、`config/experiments/ae_mnist_relu_matched.yaml`；exp：`exp/ae_{mnist,fmnist,cifar}_{2arg,relu}_*`、`exp/ae_mnist_relu_matched_*`。
 
 ### Housing 回归的宽度边界（MSE↓，3 seeds）
 
@@ -131,18 +131,18 @@ SwiGLU 是 InnerNet 的子集。从头训 InnerNet 打不过 SwiGLU，做了两�
 
 | | SwiGLU 20ep | InnerNet 20ep |
 |--|-------------|---------------|
-| 均值 | 77.04±0.79 | **76.85±0.63** |
-| 赢的 seeds | 1/5 | **4/5** |
+| 均值 | 77.38±0.54 | **76.84±0.40** |
+| 赢的 seeds | 0/5 | **5/5** |
 
-InnerNet 从 SwiGLU 初始化后继续训，4/5 seeds 赢了，均值好 0.19 PPL。
+InnerNet 从 SwiGLU 初始化后继续训，5/5 seeds 的验证困惑度都更低，均值相差 0.54 PPL。
 
 **Frozen（只动 InnerNet，5 seeds）**：SwiGLU 20ep 收敛 → freeze network → non-shared InnerNet 训到收敛
 
 | | SwiGLU | Frozen InnerNet |
 |--|--------|-----------------|
-| 均值 | 77.04 | 77.11 |
+| 均值 | 77.38±0.54 | 77.38±0.51 |
 
-持平。只动 InnerNet 参数超不过 SwiGLU。改进主要来自 InnerNet 和 network 一起调整。
+两组均值报告到两位小数相同，但这不是统计等价性检验。冻结结果说明 InnerNet 在当前宿主和训练预算下能逼近已有 SwiGLU 解；联合训练结果还包含外围网络共同调整的影响。
 
 **Warm-start 全配置对比（SwiGLU 训到 make sense → InnerNet 替换 → 各自继续训）**：
 
@@ -151,7 +151,7 @@ InnerNet 从 SwiGLU 初始化后继续训，4/5 seeds 赢了，均值好 0.19 PP
 | **CNN CIFAR-10** | 83.33% | **85.79%** | **+2.46%** | — | — |
 | **MLM** | 54.92 | **38.74** | **-16.18** | ⏳ | — |
 | PTB d=128 | 162.22 | **161.18** | -1.04 | **162.49** | **-2.11**† |
-| TF d=128 | 77.04 | **76.85** | -0.19 | ⏳ | — |
+| TF d=128 | 77.38 | **76.84** | -0.54 | ⏳ | — |
 | MLM (non-shared) | 18.91 | 38.74 (shared) | -16.18 | **15.63** | **-3.28** |
 | TF d=64 | 92.08 | **91.93** | -0.15 | — | — |
 | TF d=192 | ⏳ | ⏳ 3/3 赢 | — | — | — |
@@ -169,7 +169,7 @@ Non-shared PTB 赢的幅度约是 shared 的 2 倍（-2.11 vs -1.04）。每层�
 
 Non-shared 更符合生物学（不同区域的神经元激活特性不同）。参数差 291 个，可以忽略。
 
-**ivs_d128 容量验证** ✅：最终结果（5 seeds）：SwiGLU **77.38±0.54** vs Frozen InnerNet **77.38±0.51**。**完全持平**，证明 InnerNet 容量 ≥ SwiGLU。
+**ivs_d128 冻结宿主验证** ✅：最终结果（5 seeds）：SwiGLU **77.38±0.54** vs Frozen InnerNet **77.38±0.51**。均值报告到两位小数相同，但没有做统计等价性检验；该结果只支持 InnerNet 在这个宿主中能够逼近已有 SwiGLU 解。
 
 对应的逐 epoch 训练曲线已生成：`results/figures/fig_warmstart_curves.{png,pdf}`。左图显示共同 SwiGLU 预训练后分叉为继续 SwiGLU 与可训练 InnerNet，右图显示冻结外部网络、只训练 InnerNet 的容量验证；两图均汇总 5 seeds 的 mean±sample-SD。原始数据：`exp/ivs_d128_v2/results.p`。
 
@@ -461,14 +461,14 @@ GPT v4 (3/5 seeds)、free_init_v2 (Wiki 3/3, MLM 2/3)、scratch_init (2.5/5) 时
 
 ## 总结
 
-有效的：**CNN (+0.4~4.6%)，AE (-43%)，TF FFN (-0.8~3.3% d=64~256)，LSTM WikiText-2 (-6.2%)，ResNet internal-only (+1.5%)，参数省 55%，PPO Acrobot (+21.7 return points)，Warm-start 10/11 赢或持平，Multiply-init MLM -16.6%**。
+有效的：**CNN (+0.4~4.6%)，AE (-11.1%~-42.8%)，TF FFN (-0.8~3.3% d=64~256)，LSTM WikiText-2 (-6.2%)，ResNet internal-only (+1.5%)，参数省 55%，PPO Acrobot (+21.7 return points)，Warm-start 10/11 赢或持平，Multiply-init MLM -16.6%**。
 
 没用的：ResNet 全换（持平），MLM 从头训（差），LSTM/RNN PTB（差），GPT d=256 从头训（输 5%），Qwen 0.5B 直接替换（-9%），从头训一致输 SwiGLU。
 
 关键发现：
 - InnerNet 放在没 skip 保护的位置有效果
-- **容量上限 ≥ SwiGLU**（warm-start 10/11 赢或持平，ivs_d128: 77.38=77.38 完全持平）
-- 从头训打不过是**优化问题**，不是容量问题（scratch_init 证实）
+- **冻结宿主中能逼近 SwiGLU 解**（warm-start 10/11 赢或持平；ivs_d128 两组均值报告到两位小数均为 77.38，未做统计等价性检验）
+- 冻结宿主结果说明从头训练的差距至少部分来自**联合优化**，但不能据此推出一般的容量等价
 - **初始化不影响终点**：4 种初始化都收敛到同一水平（free_init 证实）
 - Scaling: d=64 赢 3.3% → d=256 赢 1.7% → GPT d=256 输 5%。模型越大优化负担越重
 - 大模型直接替换不可行（Qwen -9%），但 warm-start + 继续训可以（ivs_d128 追平）

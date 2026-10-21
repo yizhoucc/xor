@@ -19,12 +19,12 @@ We position InnerNet not as a drop-in *better activation function*, but as a **d
 - **Learned operators are basin-dependent** — in the complete 40-condition causal matrix, all 20 SwiGLU-host conditions converge to a scaled-SwiGLU surface (SwiGLU R²=0.985–0.991), whereas all 20 Bilinear-host conditions remain pure multiplication (mult R²=0.998–0.999). InnerNet can recover and refine a useful bivariate operator, but the operator is not a network-independent SwiGLU attractor.
 - **Functional recurrent gating** — a recurrent network with an additive memory channel and two InnerNets solves Sequential MNIST (~98% vs 11% for a plain RNN); we report this as a functional result, since the individual InnerNet surfaces are not identifiable as canonical LSTM/GRU gates.
 
-This makes the large-scale behavior a boundary, not a contradiction: from-scratch InnerNet underperforms hand-designed SwiGLU because optimization and the surrounding network determine which functional basin is reached, not because InnerNet lacks the required capacity (frozen-InnerNet capacity matches SwiGLU).
+This makes the large-scale behavior a boundary, not a contradiction. The frozen-host result shows that InnerNet can approximate an existing SwiGLU solution in one controlled host, while the scratch and warm-start results show that optimization and the surrounding network affect which functional basin is reached.
 
 **Supporting findings:**
 
-1. **Capacity ceiling ≥ SwiGLU** — warm-start across 11 tasks: InnerNet wins or ties 10/11. Verified by ivs_d128 (5 seeds): frozen InnerNet 77.38±0.51 = SwiGLU 77.38±0.54. The from-scratch gap is an optimization barrier, not a capacity limit.
-2. **Position determines effect** — InnerNet helps at positions without skip-connection bypass (CNN +0.4–4.6%, AE −43% MSE, Transformer FFN −0.8–3.3% PPL across 4 scales, ResNet internal-only +1.5%), and is redundant where a skip connection already provides a bypass.
+1. **Frozen-host recovery of a SwiGLU solution** — warm-start across 11 tasks: InnerNet wins or ties 10/11. In ivs_d128 (5 seeds), frozen InnerNet reaches 77.38±0.51 PPL and the SwiGLU capacity baseline reaches 77.38±0.54. The means round to the same value, but this is not an equivalence test. The result shows that the from-scratch gap cannot be attributed only to representation capacity in this host.
+2. **Position determines effect** — InnerNet helps at positions without skip-connection bypass (CNN +0.4–4.6%, AE up to 42.8% lower MSE, Transformer FFN 0.8–3.3% lower PPL across 4 scales, ResNet internal-only +1.5%), and is redundant where a skip connection already provides a bypass.
 3. **Scale boundary** — InnerNet remains below same-width GELU across the controlled d=64–256 sweep, but the gains are not monotonic (3.3%, 1.6%, 0.8%, 1.7%) and reverse in the larger GPT-style experiment. We therefore report scale as an empirical boundary, not as a fitted scaling law.
 4. **Simplicity wins** — simple adjacent pairing > deliberate semantic pairing; no pretraining needed (end-to-end ≈ 3-phase).
 
@@ -62,9 +62,9 @@ Multi-seed training curves are provided in `results/figures/fig_training_curves.
 
 | Dataset | InnerNet | ReLU | ReLU matched | Improvement |
 |---------|----------|------|-------------|-------------|
-| MNIST | **0.0039** | 0.0068 | 0.0059 | **-43% vs ReLU, -34% vs matched** |
-| FashionMNIST | **0.0076** | 0.0086 | — | **-12%** |
-| CIFAR-10 | **0.0081** | 0.0105 | — | **-23%** |
+| MNIST | **0.00391** | 0.00684 | 0.00587 | **-42.8% vs ReLU, -33.4% vs matched** |
+| FashionMNIST | **0.00764** | 0.00860 | — | **-11.1%** |
+| CIFAR-10 | **0.00809** | 0.01086 | — | **-25.4%** |
 
 ### AE Capacity Scaling (latent dimension)
 
@@ -75,7 +75,7 @@ Multi-seed training curves are provided in `results/figures/fig_training_curves.
 | 32 | 0.0039 | 0.0067 | -42% |
 | 64 | 0.0026 | 0.0042 | -39% |
 
-Configs: `config/experiments/ae_mnist_2arg.yaml`, exp: `exp/ae_mnist_2arg_*`
+Values are five-seed means from `results/audit/grouped_metric_summary.csv`. Configs: `config/experiments/ae_{mnist,fmnist,cifar}_{2arg,relu}.yaml`, `config/experiments/ae_mnist_relu_matched.yaml`; experiment folders: `exp/ae_{mnist,fmnist,cifar}_{2arg,relu}_*`, `exp/ae_mnist_relu_matched_*`.
 
 ### Housing Regression Width Boundary (MSE↓, 3 seeds)
 
@@ -126,17 +126,17 @@ When InnerNet is initialized from a trained SwiGLU model (10 epochs) and both co
 
 | Model | Best PPL (20ep total) |
 |-------|----------------------|
-| InnerNet (from SwiGLU init) | **76.85 ± 0.63** |
-| SwiGLU (continued) | 77.04 ± 0.79 |
+| InnerNet (from SwiGLU init) | **76.84 ± 0.40** |
+| SwiGLU (continued) | 77.38 ± 0.54 |
 
-InnerNet wins in 4/5 seeds (-0.19 PPL). This pattern holds across multiple configurations:
+InnerNet has lower validation PPL in 5/5 seeds (-0.54 PPL in the mean). This pattern holds across multiple configurations:
 
 | Config | SwiGLU | Shared (97p) | Δ | Non-shared (388p) | Δ |
 |--------|--------|-------------|-----|------------------|-----|
 | **CNN CIFAR-10** | 83.33% | **85.79%** | **+2.46%** | — | — |
 | **MLM WikiText-2** | 54.92 | **38.74** | **-16.18** | ⏳ | — |
 | PTB d=128 | 162.22 | **161.18** | -1.04 | **162.49** | **-2.11**† |
-| TF d=128 | 77.04 | **76.85** | -0.19 | ⏳ | — |
+| TF d=128 | 77.38 | **76.84** | -0.54 | ⏳ | — |
 | TF d=64 | 92.08 | **91.93** | -0.15 | — | — |
 | MLP-Mixer | 81.13% | **81.25%** | +0.12% | — | — |
 | ViT | 77.54% | 77.59% | Tied | — | — |
@@ -159,7 +159,7 @@ Each layer learns a distinct activation function when non-shared (fig11). Parame
 
 ### Capacity Verification (ivs_d128, 5 seeds)
 
-Direct proof that InnerNet capacity ≥ SwiGLU: SwiGLU trained to convergence → replace activations with InnerNet → continue training. Final result: SwiGLU **77.38 ± 0.54** vs Frozen InnerNet **77.38 ± 0.51**. Exact match across 5 seeds. The from-scratch gap is purely optimization, not expressiveness.
+Starting from a trained SwiGLU model, we replace its local operator with InnerNet and freeze the outer network. Frozen InnerNet reaches **77.38 ± 0.51** PPL, while the SwiGLU capacity baseline reaches **77.38 ± 0.54** over five seeds. The means round to the same value, but no equivalence test was performed. This result shows that InnerNet can approximate the existing SwiGLU solution in this host; it does not establish equal capacity in general.
 
 The corresponding epoch-wise trajectories are available in `results/figures/fig_warmstart_curves.{png,pdf}`. The left panel shows the five-seed fork from a shared SwiGLU pretraining trajectory into continued SwiGLU and trainable-InnerNet branches; the right panel shows the frozen-outer-network capacity test. Curves report mean ± sample SD from `exp/ivs_d128_v2/results.p`.
 
@@ -318,16 +318,16 @@ An additional same-process FP32 profile on one RTX 2080 Ti separates arithmetic 
 
 InnerNet provides consistent benefits in **feedforward networks without built-in feature interaction mechanisms**:
 
-- **Autoencoders**: -23% to -43% MSE
+- **Autoencoders**: 11.1% to 42.8% lower MSE
 - **CNNs**: +0.4–4.6% accuracy with 40% fewer parameters, consistent across 5 datasets
-- **Transformer FFN**: -0.8–3.3% PPL across 4 model sizes; slightly exceeds SwiGLU with warm-start (76.85 vs 77.04)
+- **Transformer FFN**: 0.8–3.3% lower PPL across 4 model sizes; slightly exceeds SwiGLU with warm-start (76.84 vs 77.38)
 - **LSTM**: -6.2% PPL (WikiText-2, classic pairing)
 - **ResNet internal-only**: +1.5% on CIFAR-100 — position matters
 - **Parameter efficiency**: 55% parameter savings (InnerNet w=128 ≈ ReLU w=256)
 - **Multiply-init MLM**: -16.6% PPL vs SwiGLU (5 seeds)
 - **Functional recurrent interaction**: the 21K constrained model reaches 98.44±0.22% on 8/9 trained Sequential MNIST runs; individual gate surfaces remain non-identifiable
 
-**Capacity and optimization**: InnerNet wins or ties SwiGLU in **10/11** warm-start tasks. The ivs_d128 experiment directly verifies capacity ≥ SwiGLU (Frozen InnerNet 77.38±0.51 = SwiGLU 77.38±0.54, 5 seeds). Within a SwiGLU host, four different InnerNet initializations reach the same performance basin; the Bilinear-host control shows that the learned operator family remains host-dependent. The from-scratch gap is an optimization issue: InnerNet's per-epoch compute is higher, and the advantage decreases with model size.
+**Capacity and optimization**: InnerNet wins or ties SwiGLU in **10/11** warm-start tasks. In ivs_d128, Frozen InnerNet reaches 77.38±0.51 PPL and the SwiGLU capacity baseline reaches 77.38±0.54 over five seeds. Their means round to the same value, without an equivalence test. Within a SwiGLU host, four different InnerNet initializations reach the same performance basin; the Bilinear-host control shows that the learned operator family remains host-dependent. These results identify optimization as one contributor to the from-scratch gap, not as its only possible cause.
 
 **Boundaries**: InnerNet is redundant at positions protected by skip connections, but effective at unprotected internal positions even in residual networks.
 
