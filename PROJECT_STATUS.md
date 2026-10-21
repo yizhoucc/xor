@@ -4,12 +4,15 @@
 
 - **本项目本地不运行测试或实验。** 本地仅用于代码/文档编辑、静态查看和结果整理；所有测试、验证与训练必须通过 Mind Cluster 的 Slurm 调度执行，严禁在 cluster 登录节点直接运行。
 
-## 当前任务：中文论文双版本修订（2026-10-20，进行中）
+## 当前任务：中文论文双版本修订（2026-10-20，已完成）
 
 - ✅ **版本 A，保留现有结构，已完成**：输出为 `docs/paper_corrected.html`，共同基线 `docs/paper.html` 未修改。该版本保留原有章节顺序、研究 framing、神经科学篇幅、11 张图、25 条可点击参考文献和引用跳转脚本，全文按 writing-style 与 humanizer 规则重写。
 - 版本 A 已修正以下技术表述：函数标签只比较 multiplication 与 scaled SwiGLU 的 R²，Poly2/Poly3 仅作描述拟合；0.9976-0.9993 与 0.9853-0.9912 明确为分组平均 R² 范围，逐条件范围分别为 0.9949-0.9996 与 0.9830-0.9938；Friedman p=0.392 只写为未检测到总体差异；scratch 证据不进入摘要确定结论；SwiGLU 恢复、Poly3 替换和神经科学动机均按证据范围降级。
 - 版本 A 静态验证通过：HTML 可解析，11/11 图片存在，25/25 reference id 存在，38 个正文 citation 均能解析到 25 个 reference target，样式和 citation JS 与基线一致，全文无 em dash 或 en dash。未运行本地实验。
-- ⏳ **版本 B，贡献优先重构，进行中**：计划把宿主条件化算子恢复、优化路径分离和固定算子提炼放在前面，清楚说明相对原 XOR 论文新增了什么；保留 XOR 和神经科学动机，但不把原论文已有的软 XOR、生物类比或门控现象写成本工作的新增贡献。
+- ✅ **版本 B，贡献优先重构，已完成**：输出为 `docs/paper_reframed.html`。正文按宿主算子恢复、表示与优化分离、固定 Poly3 替换、原论文复现与跨架构边界的顺序重排，最强的 40 条件宿主干预位于第一项结果。版本 B 将软 XOR、门控与神经科学类比明确归于 Yoon 等原工作，同时在引言和 Discussion 保留树突多输入计算的结构动机及其解释边界。
+- 版本 B 的核心数字已与审计文件逐项核对：Bilinear 20/20 恢复 multiplication，SwiGLU 20/20 恢复 SwiGLU 类函数；frozen InnerNet 与 SwiGLU 容量基线报告到两位小数均为 77.38 PPL；未融合 Poly3 相对 InnerNet 提速 2.68 倍、准确率下降 3.63 个百分点、仍比 SwiGLU 慢 2.46 倍；WikiText-2 d=128 的 InnerNet、GELU 与 SwiGLU 分别为 95.26±1.00、96.82±1.19 与 92.98±1.14 PPL。
+- 版本 B 静态验证通过：标准 HTML parser 可读取，11/11 图片存在，25/25 reference id 完整，25 篇文献均有正文 citation 且无缺失 target，正文图号与 caption 一致，全文无 em dash 或 en dash，也没有使用“自动发现 SwiGLU”“全局最优”“下一代算子”等越界表述。未运行本地实验。
+- **双版本任务完成**：版本 A 便于在原结构上继续编辑，版本 B 用于比较贡献优先的论文组织。共同基线 `docs/paper.html` 未修改，`RESULTS_CN.md` 与 `RESULTS_EN.md` 未修改，因为本轮没有新实验结果。
 - **Cluster 核对**：本轮通过 SSH 查询 `squeue -u yizhouc3`，队列为空。当前没有 PENDING 或 RUNNING 作业，本轮不启动新实验。
 
 ## Codex 发表前审计（2026-07-26）
