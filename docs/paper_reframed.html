@@ -457,14 +457,14 @@
         <div>
           <img loading="eager" src="paper_assets/fig_original_reproduction_comparison.png" width="2109" height="949" alt="本项目结果与原论文图读结果的比较">
           <p class="caption">
-            <strong>图 6a｜原论文结果复核。</strong>
+            <strong>图 6｜原论文结果复核。</strong>
             三项任务的相对方向与原论文一致。CNN CIFAR-10 保留相对优势，但绝对精度低于从原论文曲线读取的数值。
           </p>
         </div>
         <div>
           <img loading="eager" src="paper_assets/fig_training_curves.png" width="2049" height="1656" alt="MLP 和 CNN 多随机种子训练曲线">
           <p class="caption">
-            <strong>图 6b｜共同 200 epoch 窗口内的训练曲线。</strong>
+            <strong>图 7｜共同 200 epoch 窗口内的训练曲线。</strong>
             同一设置的均值曲线按最短 seed 截断，没有补平提前结束的记录。阴影表示跨种子的离散程度。
           </p>
         </div>
@@ -479,7 +479,7 @@
       <div class="figure">
         <img loading="eager" src="paper_assets/fig_scaling_law.png" width="2969" height="1166" alt="不同 Transformer 规模上 GELU、SwiGLU 和 InnerNet 的比较">
         <p class="caption">
-          <strong>图 7｜Transformer 宽度与测试困惑度。</strong>
+          <strong>图 8｜Transformer 宽度与测试困惑度。</strong>
           WikiText-2 四个宽度均显示 InnerNet 位于 GELU 与 SwiGLU 之间。GPT 设置只完成 3/5 个计划种子，因此图中数值不用于确定规模趋势。
         </p>
       </div>
@@ -497,7 +497,7 @@
       <div class="figure">
         <img loading="eager" src="paper_assets/fig_inner_hidden_tradeoff.png" width="2407" height="1063" alt="InnerNet 隐藏宽度、困惑度和运行时间的关系">
         <p class="caption">
-          <strong>图 8｜InnerNet 隐藏宽度与运行成本。</strong>
+          <strong>图 9｜InnerNet 隐藏宽度与运行成本。</strong>
           左图给出五个随机种子的均值与标准差。右图只显示有完整 wall-clock 记录的设置；h=32 复用较早结果，没有可比的总运行时间。
         </p>
       </div>
@@ -680,7 +680,7 @@
       <div class="figure">
         <img loading="eager" src="paper_assets/fig10_innernet_all_tasks.png" width="3266" height="585" alt="不同任务训练后的 InnerNet 二维函数表面">
         <p class="caption">
-          <strong>图 A1｜不同任务的训练后二维表面。</strong>
+          <strong>图 10｜不同任务的训练后二维表面。</strong>
           Transformer、CNN 与 masked language modeling 检查点中的函数形态不同。未经宿主干预，这些差异不能直接归因于任务。
         </p>
       </div>
@@ -689,7 +689,7 @@
       <div class="figure">
         <img loading="eager" src="paper_assets/fig_parameter_efficiency.png" width="1885" height="1242" alt="InnerNet 与 ReLU MLP 的参数效率比较">
         <p class="caption">
-          <strong>图 A2｜容量受限 MLP 中的参数效率。</strong>
+          <strong>图 11｜容量受限 MLP 中的参数效率。</strong>
           共享二元函数在较小外围宽度下取得较高准确率。随着基础网络变宽，差值缩小。
         </p>
       </div>
@@ -1092,14 +1092,14 @@
           <div>
             <img loading="eager" src="paper_assets/fig_original_reproduction_comparison.png" width="2109" height="949" alt="Comparison between project results and values read from the original paper">
             <p class="caption">
-              <strong>Figure 6a | Check of the original paper's results.</strong>
+              <strong>Figure 6 | Check of the original paper's results.</strong>
               Three tasks show the same relative direction as the original paper. CNN CIFAR-10 retains a relative advantage, but its absolute accuracy is lower than the value read from the original paper's curve.
             </p>
           </div>
           <div>
             <img loading="eager" src="paper_assets/fig_training_curves.png" width="2049" height="1656" alt="Multi-seed training curves for MLPs and CNNs">
             <p class="caption">
-              <strong>Figure 6b | Training curves within a shared 200-epoch window.</strong>
+              <strong>Figure 7 | Training curves within a shared 200-epoch window.</strong>
               The mean curve for each setting is truncated to its shortest seed, without padding records that end early. Shading shows dispersion across seeds.
             </p>
           </div>
@@ -1114,7 +1114,7 @@
         <div class="figure">
           <img loading="eager" src="paper_assets/fig_scaling_law.png" width="2969" height="1166" alt="Comparison of GELU, SwiGLU, and InnerNet at several Transformer sizes">
           <p class="caption">
-            <strong>Figure 7 | Transformer width and test perplexity.</strong>
+            <strong>Figure 8 | Transformer width and test perplexity.</strong>
             At all four WikiText-2 widths, InnerNet lies between GELU and SwiGLU. The GPT setting completed only 3/5 planned seeds, so those values do not establish a scaling trend.
           </p>
         </div>
@@ -1132,7 +1132,7 @@
         <div class="figure">
           <img loading="eager" src="paper_assets/fig_inner_hidden_tradeoff.png" width="2407" height="1063" alt="Relationship among InnerNet hidden width, perplexity, and runtime">
           <p class="caption">
-            <strong>Figure 8 | InnerNet hidden width and runtime cost.</strong>
+            <strong>Figure 9 | InnerNet hidden width and runtime cost.</strong>
             The left panel shows means and standard deviations over five random seeds. The right panel includes only settings with complete wall-clock records. The h=32 condition reuses an earlier result and has no comparable total runtime.
           </p>
         </div>
@@ -1315,7 +1315,7 @@
         <div class="figure">
           <img loading="eager" src="paper_assets/fig10_innernet_all_tasks.png" width="3266" height="585" alt="Two-dimensional InnerNet surfaces trained on different tasks">
           <p class="caption">
-            <strong>Figure A1 | Trained two-dimensional surfaces across tasks.</strong>
+            <strong>Figure 10 | Trained two-dimensional surfaces across tasks.</strong>
             Function shapes differ among Transformer, CNN, and masked language modeling checkpoints. Without a host intervention, these differences cannot be attributed directly to the task.
           </p>
         </div>
@@ -1324,7 +1324,7 @@
         <div class="figure">
           <img loading="eager" src="paper_assets/fig_parameter_efficiency.png" width="1885" height="1242" alt="Parameter efficiency comparison between InnerNet and ReLU MLPs">
           <p class="caption">
-            <strong>Figure A2 | Parameter efficiency in capacity-limited MLPs.</strong>
+            <strong>Figure 11 | Parameter efficiency in capacity-limited MLPs.</strong>
             The shared bivariate function obtains higher accuracy with a narrower host network. The difference shrinks as the base network becomes wider.
           </p>
         </div>
