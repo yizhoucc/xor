@@ -71,6 +71,7 @@
     }
     .nav a { color: #3e484f; text-decoration: none; }
     .nav a:hover { color: var(--accent); }
+    .nav-separator { color: var(--line); }
     .paper {
       width: min(1040px, calc(100% - 2rem));
       margin: 1.2rem auto 3rem;
@@ -231,6 +232,11 @@
       font-family: var(--sans);
       font-size: 0.78rem;
     }
+    .language-version + .language-version {
+      margin-top: 4rem;
+      padding-top: 3rem;
+      border-top: 1px solid var(--line);
+    }
     @media (max-width: 720px) {
       body { font-size: 16px; }
       .paper { width: 100%; margin: 0; padding: 1.4rem; border: 0; }
@@ -247,8 +253,12 @@
   </style>
 </head>
 <body>
-  <nav class="nav" aria-label="论文目录">
+  <nav class="nav" aria-label="论文导航">
     <div class="nav-inner">
+      <a href="#chinese-version">中文</a>
+      <span class="nav-separator" aria-hidden="true">|</span>
+      <a href="#english-version" lang="en">English</a>
+      <span class="nav-separator" aria-hidden="true">·</span>
       <a href="#abstract">摘要</a>
       <a href="#introduction">1 引言</a>
       <a href="#results">2 结果</a>
@@ -260,8 +270,9 @@
   </nav>
 
   <main class="paper">
+    <section class="language-version" id="chinese-version" lang="zh-CN" tabindex="-1">
     <header>
-      <p class="version">贡献优先重构版</p>
+      <p class="version">中英双语，贡献优先重构版</p>
       <h1>已训练神经网络中的共享二元局部算子辨识</h1>
       <p class="authors">匿名投稿稿件 · 中文草稿</p>
     </header>
@@ -892,6 +903,643 @@
     <p class="foot">
       本页是中文论文草稿的贡献优先重构版。正文数据来自项目的 canonical 实验记录与结果审计。
     </p>
+    </section>
+
+    <section class="language-version" id="english-version" lang="en" tabindex="-1">
+      <header>
+        <p class="version">Bilingual, contribution-first reframed version</p>
+        <h1>Recovering shared bivariate local operators in trained neural networks</h1>
+        <p class="authors">Anonymous submission · English draft</p>
+      </header>
+
+      <section class="abstract" id="en-abstract">
+        <h2>Abstract</h2>
+        <p>
+          Learnable bivariate activation functions form visualizable two-dimensional surfaces, but direct interventions have not established whether the trained shape comes from function initialization, task data, or representations already present in the host network. We replace multiplication and SwiGLU with an InnerNet in two trained Transformer hosts, then vary the probe's initial function and training protocol. All 20 conditions in the bilinear host recover multiplication, and all 20 conditions in the SwiGLU host recover a SwiGLU-like function. This result is limited to these two hosts and the current protocol. With the host network frozen, the WikiText-2 perplexities of InnerNet and the original SwiGLU solution both round to 77.38; this shows that InnerNet can approximate the existing local operator in this host, but it is not a statistical equivalence test. We also replace a trained CNN surface with a fixed third-order polynomial. The unfused Poly3 implementation is 2.68 times faster than InnerNet, while losing 3.63 accuracy points and remaining 2.46 times slower than SwiGLU. Reproduction of the original paper and experiments across architectures further show that the effect of a bivariate local function depends on the network and training path. Within the two hosts studied here, we therefore use a shared bivariate InnerNet as a probe for local operator recovery. Multi-input dendritic computation motivates this model form, but this study adds no biological data.
+        </p>
+      </section>
+
+      <section id="en-introduction">
+        <h2>1 Introduction</h2>
+
+        <p>
+          Artificial neurons usually aggregate their inputs before applying a univariate nonlinearity. Biological neurons integrate inputs in a more compartmentalized way. Basal and apical dendrites receive signals from different sources, and local dendritic events can couple inputs from different cortical levels <a class="cite" href="#en-ref-23">[23]</a>. Detailed models of pyramidal neurons also show that multiple nonlinear dendritic subunits can form a computational structure resembling a two-layer network <a class="cite" href="#en-ref-21">[21]</a>. Gidon et al. observed events in human cortical dendrites that distinguish linearly inseparable inputs and described them as XOR-like computations <a class="cite" href="#en-ref-2">[2]</a>. These studies pose a concrete modeling question: if a single computational unit receives two projections, what local function will it form after task training?
+        </p>
+
+        <p>
+          Yoon et al. addressed this question with a shared two-input InnerNet <a class="cite" href="#en-ref-1">[1]</a>. The same small multilayer perceptron is reused throughout a host network, with its inputs interpreted as analogues of basal and apical dendritic pathways. That work connected trained surfaces, soft XOR, and observations from cortical dendrites. In MLPs and CNNs trained on MNIST and CIFAR-10, the learned functions often took quadratic, gated, or soft-XOR forms. In some settings, the models learned faster and were more robust to natural and adversarial perturbations. The original paper also compared random initial functions, analyzed curvature and frequency content, and fitted quadratic polynomials. Bivariate activations, soft XOR, and the neuroscience analogy are therefore not contributions of the present study.
+        </p>
+
+        <p>
+          The original study leaves an experimentally separable question. A trained two-dimensional surface may reflect its InnerNet initialization, or it may be a local computation that is easy to preserve near the host's existing representation. A surface obtained from a single end-to-end training run cannot distinguish these explanations. Polynomial fitting likewise shows only that a neural module can be approximated by a simple formula. The formula must be placed back into the network to measure how approximation error affects task performance and runtime.
+        </p>
+
+        <p>
+          We intervene on local operators in trained networks. We first train hosts with either fixed multiplication or fixed SwiGLU, then replace the operator with InnerNets initialized in several ways. This design shows what the same probe recovers in different hosts. Frozen-host, joint-training, and scratch controls separate function representation from joint optimization. We then place the fitted formula back into the model and measure accuracy and throughput. Cross-task experiments follow these controlled results and define the architectures in which the method is effective. The number of tasks is not itself a main contribution.
+        </p>
+
+        <div class="figure">
+          <img loading="eager" src="paper_assets/fig4_innernet_architecture.png" width="3552" height="1151" alt="Comparison of a fixed scalar activation and a shared bivariate InnerNet">
+          <p class="caption">
+            <strong>Figure 1 | A shared bivariate local function.</strong>
+            A standard unit applies a fixed nonlinearity to one weighted sum. InnerNet receives two linear projections and computes the shared function
+            <span class="math">f<sub>θ</sub>(a,b)</span>.
+            The same function is reused across neurons and layers, so the trained two-dimensional surface can be analyzed independently of any single location.
+          </p>
+        </div>
+
+        <h3>1.1 Related work</h3>
+
+        <p>
+          Learnable activation functions make different tradeoffs between flexibility and readability. PReLU learns only the slope on the negative half-axis <a class="cite" href="#en-ref-4">[4]</a>, while Padé activation units and spline activations allow a univariate curve to change during training <a class="cite" href="#en-ref-10">[10]</a><a class="cite" href="#en-ref-11">[11]</a>. ACON and Attention as Activation further condition a local nonlinearity on the input or channel context <a class="cite" href="#en-ref-8">[8]</a><a class="cite" href="#en-ref-9">[9]</a>. Network In Network replaces simple linear filters in convolutional layers with local MLPs <a class="cite" href="#en-ref-3">[3]</a>. The InnerNet used here comes directly from the two-input design of Yoon et al. Our experiments measure how its trained function changes with host state; the ability to learn soft XOR follows from the original work.
+        </p>
+
+        <p>
+          Searches for activation functions and local operators usually specify a formula graph or a set of operations in advance. Swish emerged from a search over combinations of unary and binary primitives <a class="cite" href="#en-ref-5">[5]</a>. PANGAEA combines evolutionary search with continuous parameter optimization and finds architecture-dependent activation functions <a class="cite" href="#en-ref-6">[6]</a>. EvoNorm searches joint expressions for normalization and activation <a class="cite" href="#en-ref-7">[7]</a>. DARTS and AutoML-Zero extend search to network operations and learning algorithms, respectively <a class="cite" href="#en-ref-13">[13]</a><a class="cite" href="#en-ref-14">[14]</a>. InnerNet does not search a whole-network topology. It replaces a repeatedly used local operator with a continuous bivariate function. The present study tests only whether it can recover the corresponding known operator from bilinear and SwiGLU hosts.
+        </p>
+
+        <p>
+          Multiplication and gating already have established designs. LSTM and GRU use gates to control recurrent state <a class="cite" href="#en-ref-16">[16]</a><a class="cite" href="#en-ref-17">[17]</a>, while GLU and SwiGLU construct elementwise gates from two linear projections <a class="cite" href="#en-ref-18">[18]</a><a class="cite" href="#en-ref-19">[19]</a>. Multiplicative interactions also provide a common description of attention, hypernetworks, and dynamic convolution <a class="cite" href="#en-ref-20">[20]</a>. Recovery in a SwiGLU host tests only whether the probe can read out an existing operator.
+        </p>
+
+        <p>
+          There are also direct precedents for extracting formulas after training. Equation Learner fits sparse equations over predefined mathematical primitives <a class="cite" href="#en-ref-25">[25]</a>. Cranmer et al. apply symbolic regression to modules inside neural networks and replace those modules with closed-form expressions <a class="cite" href="#en-ref-24">[24]</a>. KAN learns splines on network edges and obtains simple formulas through pruning and symbolification <a class="cite" href="#en-ref-12">[12]</a>. Our study concerns a shared bivariate local function and measures host replacement, task performance after formula replacement, and runtime. Network Morphism transfers a trained network to a new structure through function-preserving transformations, which provides related background for training from a mature host <a class="cite" href="#en-ref-15">[15]</a>.
+        </p>
+      </section>
+
+      <section id="en-results">
+        <h2>2 Results</h2>
+
+        <h3>2.1 The recovered function family changes with the host operator</h3>
+
+        <p>
+          We first train two types of Transformer host. The first uses the fixed bilinear operator
+          <span class="math">a·b</span>,
+          and the second uses fixed SwiGLU. After training each host, we replace the fixed operator with a shared InnerNet. In the bilinear host, we test random and multiplication initialization with either frozen-host or joint training. In the SwiGLU host, we test random, identity, multiplication, and SwiGLU initialization with joint training. Each setting has five random seeds, giving 40 conditions in total.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Host</th>
+                <th>Probe variation</th>
+                <th class="num">Conditions</th>
+                <th>Recovery result</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Bilinear</td>
+                <td>Random or multiplication initialization; frozen-host or joint training</td>
+                <td class="num">20</td>
+                <td>20/20 classified as multiplication; per-condition multiplication R²=0.9949-0.9996</td>
+              </tr>
+              <tr>
+                <td>SwiGLU</td>
+                <td>Random, identity, multiplication, or SwiGLU initialization; joint training</td>
+                <td class="num">20</td>
+                <td>20/20 classified as SwiGLU; per-condition scaled SwiGLU R²=0.9830-0.9938</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="figure">
+          <img loading="eager" src="paper_assets/fig_causal_matrix.png" width="2877" height="1255" alt="Per-condition operator recovery matrix in bilinear and SwiGLU hosts">
+          <p class="caption">
+            <strong>Figure 2 | Operator recovery in two host types.</strong>
+            Each cell corresponds to one random seed and probe setting. Function labels compare only the R² values of multiplication and scaled SwiGLU. M and S denote these two labels. Poly2 and Poly3 describe additional fits but do not enter the label decision.
+          </p>
+        </div>
+
+        <p>
+          The two hosts separate completely across the 40 conditions in the current experiment. The same initial function receives different labels in different hosts, while the tested initializations within a host receive the same label. Initialization alone cannot explain these surfaces. The conclusion is limited to the bilinear and SwiGLU hosts and the current replacement protocol: the recovered function family changes with the host operator. The experiment does not separate the effects of representation scale, feature basis, and gradient field. It also does not show that the recovered function is the unique solution near the host.
+        </p>
+
+        <div class="figure">
+          <img loading="eager" src="paper_assets/fig_d64_swiglu_surface.png" width="3270" height="1040" alt="Trained InnerNet surface, scaled SwiGLU fit, and residual">
+          <p class="caption">
+            <strong>Figure 3 | Closed-form fit to a trained surface.</strong>
+            A scaled SwiGLU term explains 97.7% of the variance in an InnerNet from one Transformer checkpoint. A fit to one surface cannot determine how the function arose. Figure 2 uses two host types and multiple initializations for a controlled comparison.
+          </p>
+        </div>
+
+        <h3>2.2 A frozen host separates representation capacity from joint optimization</h3>
+
+        <p>
+          Host replacement also tests whether InnerNet can preserve an already trained local operator. We first train a SwiGLU Transformer with
+          <span class="math">d=128</span>
+          on WikiText-2, then replace its local operator with InnerNet. When only InnerNet is trained and all other parameters are frozen, the mean perplexities of frozen InnerNet and the SwiGLU capacity baseline across five seeds are 77.377 and 77.385, respectively. Both round to 77.38. The two groups have different dispersion, and we do not perform an equivalence test here. This result shows only that InnerNet can approximate the existing SwiGLU solution in this host and under this training budget.
+        </p>
+
+        <p>
+          When the host network and InnerNet can both update, the model can move away from the original SwiGLU solution. Warm-start trajectories are more stable than scratch trajectories, but this difference is also affected by the representation at initialization, feature scale, and optimization budget. The current scratch controls do not contain all planned seeds, so we do not infer a general rule about initialization from these runs. The controlled result supports a narrower conclusion: end-to-end performance differences cannot be attributed entirely to InnerNet's inability to represent SwiGLU, and joint optimization accounts for at least part of the difficulty in the tested setting.
+        </p>
+
+        <div class="figure">
+          <img loading="eager" src="paper_assets/fig_warmstart_curves.png" width="2970" height="1239" alt="Branched training from a SwiGLU host and capacity evaluation with a frozen host network">
+          <p class="caption">
+            <strong>Figure 4 | Training trajectories branched from the same SwiGLU host.</strong>
+            The left panel compares continued SwiGLU training with joint training after replacement by a trainable InnerNet. The right panel freezes the host network and updates only InnerNet. Curves summarize five random seeds. In the frozen experiment, replacement preserves the original solution when reported to two decimal places.
+          </p>
+        </div>
+
+        <h3>2.3 Replacement with fixed Poly3 exposes accuracy and speed costs</h3>
+
+        <p>
+          A shared InnerNet has few parameters, but its computation graph contains repeated elementwise transformations, intermediate tensors, and unfused kernels. On the same RTX 2080 Ti, forward passes through the current InnerNet implementation are 17.33 times slower than SwiGLU in the CNN and 12.02 times slower in the Transformer. Profiled FLOPs do not explain the full gap because scheduling small kernels and accessing memory consume substantial runtime.
+        </p>
+
+        <div class="figure">
+          <img loading="eager" src="paper_assets/fig_compute_cost_breakdown.png" width="2326" height="1187" alt="Relative computational cost of local operators in a CNN and Transformer">
+          <p class="caption">
+            <strong>Figure 5 | Computational cost of the current implementation.</strong>
+            ReLU in the CNN and GELU in the Transformer FFN set the 1× baselines. Poly3 is an unfused implementation composed of standard framework operations. The latency and memory measurements cannot be extrapolated to the speed of a fused kernel.
+          </p>
+        </div>
+
+        <p>
+          In a CIFAR-10 CNN, we fit a fixed third-order polynomial to the trained two-dimensional surface and replace InnerNet with that formula. Throughput rises from 1,622 to 4,345 images per second, a 2.68-fold increase over InnerNet. Accuracy falls from 84.95±0.57% to 81.32±0.32%, a loss of 3.63 percentage points. Poly3 reaches only 40.7% of SwiGLU throughput and remains 2.46 times slower. The current implementation is unfused. This experiment shows that closed-form replacement is executable, while also measuring the remaining approximation error and system overhead.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>CIFAR-10 CNN operator</th>
+                <th class="num">Accuracy</th>
+                <th class="num">Throughput</th>
+                <th>Relative result</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>InnerNet</td><td class="num">84.95±0.57%</td><td class="num">1,622 images/s</td><td>Trained two-dimensional function</td></tr>
+              <tr><td>Fixed Poly3</td><td class="num">81.32±0.32%</td><td class="num">4,345 images/s</td><td>2.68 times faster, 3.63 percentage points lower</td></tr>
+              <tr><td>SwiGLU</td><td class="num">79.97±0.37%</td><td class="num">10,680 images/s</td><td>Poly3 is 2.46 times slower</td></tr>
+              <tr><td>ReLU</td><td class="num">79.93±0.17%</td><td class="num">15,059 images/s</td><td>Scalar baseline</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>2.4 Reproduction of the original paper and boundaries across architectures</h3>
+
+        <p>
+          The controlled host experiments ask what determines function shape. The classification reproduction tests whether our implementation preserves the basic observations of the original work. Across the four main MLP and CNN tasks, the mean accuracy of the two-argument model exceeds that of the corresponding ReLU baseline. On CNN CIFAR-10, the two-argument model reaches 78.57±0.74%, compared with 73.99±0.49% for ReLU and 75.14±0.34% for ReLU with LayerNorm at the same location. Most of the difference appears early in training. On FashionMNIST and SVHN, the one-argument version is slightly better than the two-argument version, so the bivariate form has no uniform advantage.
+        </p>
+
+        <div class="figure dual">
+          <div>
+            <img loading="eager" src="paper_assets/fig_original_reproduction_comparison.png" width="2109" height="949" alt="Comparison between project results and values read from the original paper">
+            <p class="caption">
+              <strong>Figure 6a | Check of the original paper's results.</strong>
+              Three tasks show the same relative direction as the original paper. CNN CIFAR-10 retains a relative advantage, but its absolute accuracy is lower than the value read from the original paper's curve.
+            </p>
+          </div>
+          <div>
+            <img loading="eager" src="paper_assets/fig_training_curves.png" width="2049" height="1656" alt="Multi-seed training curves for MLPs and CNNs">
+            <p class="caption">
+              <strong>Figure 6b | Training curves within a shared 200-epoch window.</strong>
+              The mean curve for each setting is truncated to its shortest seed, without padding records that end early. Shading shows dispersion across seeds.
+            </p>
+          </div>
+        </div>
+
+        <p>
+          In the WikiText-2 Transformer with
+          <span class="math">d=128</span>,
+          InnerNet obtains a perplexity of 95.26±1.00, below GELU at 96.82±1.19 and above SwiGLU at 92.98±1.14. This setting shows a boundary of the method: a continuous bivariate function can outperform a common univariate activation, yet scratch training does not reach the established gated operator. The mean results at all four widths have the same ordering. Paired differences between InnerNet and GELU do not reach significance at d=192 or d=256. The larger GPT scratch runs also lack some planned seeds.
+        </p>
+
+        <div class="figure">
+          <img loading="eager" src="paper_assets/fig_scaling_law.png" width="2969" height="1166" alt="Comparison of GELU, SwiGLU, and InnerNet at several Transformer sizes">
+          <p class="caption">
+            <strong>Figure 7 | Transformer width and test perplexity.</strong>
+            At all four WikiText-2 widths, InnerNet lies between GELU and SwiGLU. The GPT setting completed only 3/5 planned seeds, so those values do not establish a scaling trend.
+          </p>
+        </div>
+
+        <p>
+          Other architectures give mixed positive and negative results. Mean autoencoder reconstruction error falls by 42.8%, 11.1%, and 25.4% on MNIST, FashionMNIST, and CIFAR-10, respectively. The WikiText-2 LSTM difference is small: InnerNet reaches 103.28±0.62 PPL, compared with 104.34±0.60 for the standard model. For this comparison, we take the lowest validation perplexity recorded for each seed, then compute the mean and population SD across five seeds. The paired return difference on PPO Acrobot is 21.7, with p=0.0036 in a paired t test; LunarLander shows no detected difference. A compact recurrent unit reaches 98.44±0.22% across eight completed Sequential MNIST runs, but its trained surface cannot be fitted reliably by a standard sigmoid gate. These experiments broaden the empirical range and show that task performance cannot be explained by a single visualized surface.
+        </p>
+
+        <p>
+          The InnerNet capacity ablation likewise shows no monotonic gain. In the fixed WikiText-2
+          <span class="math">d=128</span>
+          setting, hidden widths 8, 16, 32, and 64 yield mean PPL values of 96.17, 95.76, 95.26, and 95.09. A Friedman test gives p=0.392 and detects no overall difference. TOST with a prespecified ±1 PPL margin also fails to establish strict equivalence. The h=64 run takes 4.86 times as long as h=8.
+        </p>
+
+        <div class="figure">
+          <img loading="eager" src="paper_assets/fig_inner_hidden_tradeoff.png" width="2407" height="1063" alt="Relationship among InnerNet hidden width, perplexity, and runtime">
+          <p class="caption">
+            <strong>Figure 8 | InnerNet hidden width and runtime cost.</strong>
+            The left panel shows means and standard deviations over five random seeds. The right panel includes only settings with complete wall-clock records. The h=32 condition reuses an earlier result and has no comparable total runtime.
+          </p>
+        </div>
+      </section>
+
+      <section id="en-discussion">
+        <h2>3 Discussion</h2>
+
+        <h3>3.1 What host dependence allows us to infer</h3>
+
+        <p>
+          The 40 replacement conditions show that trained surfaces cannot be interpreted apart from their host networks. In the two hosts studied, InnerNet recovers the original host function family, and the labels are stable across the tested initializations. This intervention provides more evidence than observing a single SwiGLU-like or XOR-like surface. Under the current protocol, a shared bivariate function can act as a recovery probe for these two hosts. After a known local operator is released, closed-form fitting and comparisons across conditions can test whether the corresponding structure remains.
+        </p>
+
+        <p>
+          We use identification here in an operational sense. Classical system identification requires identifiability conditions, assumptions about input excitation, and an error model. We do not establish those conditions. Bilinear and SwiGLU are also only two known hosts. The 20/20 and 20/20 separation does not show that host networks generally determine local operators, nor does the experiment compare all feasible functions near a host. The current result shows only that this probe distinguishes the two trained hosts.
+        </p>
+
+        <h3>3.2 Relation to activation search and operator discovery</h3>
+
+        <p>
+          PANGAEA, the Swish search, and EvoNorm directly search executable formulas or operation graphs <a class="cite" href="#en-ref-5">[5]</a><a class="cite" href="#en-ref-6">[6]</a><a class="cite" href="#en-ref-7">[7]</a>. InnerNet has a narrower search object. It leaves the network topology unchanged and releases only a repeatedly used bivariate local function. A continuous function representation imposes fewer symbolic constraints before training, but the resulting surface may be difficult to execute efficiently. Multiplication and SwiGLU were specified by the hosts in our experiments. The current results therefore recover known operators and do not produce a new formula validated by independent retraining.
+        </p>
+
+        <p>
+          Poly3 replacement shows that a neural probe and a deployment operator can use different representations, but the current path has a substantial loss. A 2.68-fold speedup comes with a 3.63-point accuracy drop, and unfused Poly3 remains slower than SwiGLU. Cranmer et al. and KAN have already shown that neural modules can be converted into symbolic expressions <a class="cite" href="#en-ref-12">[12]</a><a class="cite" href="#en-ref-24">[24]</a>. The additional measurement here is task performance and runtime after actual replacement of a shared bivariate operator. The current numbers establish executability, not efficient deployment.
+        </p>
+
+        <h3>3.3 Neuroscience motivation and its limits</h3>
+
+        <p>
+          InnerNet retains one structural feature of dendritic computation: different input pathways undergo nonlinear integration inside a single computational unit. Coupling between inputs from different cortical layers in Larkum et al., dendritic subunit models in Poirazi et al., and XOR-like dendritic events in Gidon et al. motivate this two-input local function <a class="cite" href="#en-ref-23">[23]</a><a class="cite" href="#en-ref-21">[21]</a><a class="cite" href="#en-ref-2">[2]</a>. Beniaguev et al. found that approximating the input-output mapping of an active dendritic neuron requires a relatively deep temporal network, which also shows that single-neuron computation is far more complex than a static two-dimensional surface <a class="cite" href="#en-ref-22">[22]</a>.
+        </p>
+
+        <p>
+          This abstraction permits controlled experiments. The two projections, shared rule, and two-dimensional surface can all be manipulated. If the input pathways have defined information sources, one could test whether a local interaction depends on the division of labor between pathways. The current results do not support that interpretation. The model has no dendritic morphology, conductances, spike timing, or cell types, and it is not fitted to neural recordings. A surface that resembles soft XOR or a gate does not show that an artificial network uses the same mechanism as cortical dendrites. This study adds no biological data, and neuroscience is not a new contribution relative to Yoon et al.
+        </p>
+
+        <h3>3.4 Limitations</h3>
+
+        <p>
+          The host intervention covers only multiplication and SwiGLU, and the SwiGLU host is tested only with joint training. The main Transformer comparison keeps model width fixed rather than matching total parameter count exactly. Some large-model scratch experiments lack two planned seeds, so they cannot establish a scaling trend. The frozen-host result of 77.38 versus 77.38 is equality only after rounding and does not establish statistical equivalence. The Sequential MNIST result also does not map to a stable standard gating formula.
+        </p>
+
+        <p>
+          The deployment experiment uses unfused Poly3 and loses 3.63 accuracy points in one CNN setting. The current measurements cannot determine whether a sparser formula, training a fixed operator from scratch, or a specialized fused kernel would improve this tradeoff. These limits define the scope of the conclusions. Under the current protocol, a shared bivariate InnerNet can recover known local operators in two trained hosts and quantify the cost of one formula replacement. It is not yet a general method for operator discovery or deployment.
+        </p>
+      </section>
+
+      <section id="en-methods">
+        <h2>4 Methods</h2>
+
+        <h3>4.1 Shared bivariate InnerNet</h3>
+
+        <p>
+          For input
+          <span class="math">x</span>
+          to a layer of the host network, we compute two linear projections,
+          <span class="math">a=W<sub>1</sub>x</span>
+          and
+          <span class="math">b=W<sub>2</sub>x</span>,
+          and use a shared function to produce the output:
+        </p>
+
+        <div class="equation">
+          y = f<sub>θ</sub>(a,b)
+        </div>
+
+        <p>
+          The standard InnerNet is an MLP with two inputs, one output, and two ReLU hidden layers. Hidden width is 64 in the original classification setting and 32 in the main Transformer setting. Parameters
+          <span class="math">θ</span>
+          are shared across multiple uses in the same network. The classification models apply LayerNorm before InnerNet and dropout after it.
+        </p>
+
+        <h3>4.2 Host replacement and function labels</h3>
+
+        <p>
+          The bilinear and SwiGLU Transformer hosts each use five random seeds. In the bilinear host, InnerNet is initialized either randomly or as multiplication and optimized with joint training or a frozen host network, for
+          <span class="math">5×2×2=20</span>
+          conditions. In the SwiGLU host, InnerNet is initialized randomly, as identity, as multiplication, or as SwiGLU and jointly trained with the host network, for
+          <span class="math">5×4=20</span>
+          conditions.
+        </p>
+
+        <p>
+          We sample each trained function on a fixed two-dimensional grid. The analysis fits multiplication, scaled SwiGLU, symmetric SwiGLU, Poly2, and Poly3, then records R² and RMSE. The discrete labels in Figure 2 compare only the R² values of multiplication and scaled SwiGLU. Poly2 and Poly3 do not enter the vote. Group mean multiplication R² ranges from 0.9976-0.9993, while the per-condition range is 0.9949-0.9996. The corresponding ranges for scaled SwiGLU are 0.9853-0.9912 and 0.9830-0.9938.
+        </p>
+
+        <h3>4.3 Frozen-host, warm-start, and scratch protocols</h3>
+
+        <p>
+          The frozen-host experiment starts from five trained SwiGLU Transformers. After replacing the local operator, we keep all host parameters frozen and update only InnerNet. The warm-start branch updates both the host network and InnerNet, while the control branch continues with SwiGLU. Scratch models train from independent initializations. Because the scratch runs do not contain all planned seeds, the main text uses them only to define the scope of the evidence and does not report complete scaling statistics.
+        </p>
+
+        <h3>4.4 Fixed-formula replacement and system measurement</h3>
+
+        <p>
+          For the CNN deployment experiment, we sample InnerNet outputs over the trained two-dimensional input region and fit a third-order polynomial by least squares. After fitting, Poly3 replaces the original InnerNet as a fixed module, and we measure task accuracy with the same five random seeds. Throughput is measured on the same RTX 2080 Ti. Poly3, InnerNet, SwiGLU, and ReLU all use the current PyTorch implementations. We do not implement a fused kernel for Poly3.
+        </p>
+
+        <h3>4.5 Tasks, statistics, and audit</h3>
+
+        <p>
+          Reproduction of the original paper covers MLPs and CNNs on MNIST and CIFAR-10. The extended experiments include autoencoders, language models on WikiText-2 and Penn Treebank, recurrent networks, and reinforcement learning. Comparisons with matching random seeds use paired t tests and also report Wilcoxon tests, Cohen's
+          <span class="math">d<sub>z</sub></span>,
+          and bootstrap confidence intervals. The main language-model summaries take the lowest validation perplexity recorded for each seed, then compute the cross-seed mean and population SD. The hidden-width ablation uses a Friedman test, and equivalence testing uses TOST with a prespecified ±1 PPL margin. The canonical manifest indexes 510 experiments and 1,708 rows of structured metrics, of which 441 experiments have been checked against result files.
+        </p>
+      </section>
+
+      <section id="en-appendix">
+        <h2>Appendix</h2>
+
+        <h3>Appendix A Supplementary results</h3>
+
+        <h4>A.1 Summary of the classification reproduction</h4>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Task</th>
+                <th class="num">Two-argument InnerNet</th>
+                <th class="num">ReLU</th>
+                <th class="num">Absolute difference</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>MLP, MNIST</td><td class="num">98.0%</td><td class="num">91.9%</td><td class="num">+6.1</td></tr>
+              <tr><td>MLP, CIFAR-10</td><td class="num">52.1%</td><td class="num">49.5%</td><td class="num">+2.6</td></tr>
+              <tr><td>CNN, MNIST</td><td class="num">99.41±0.04%</td><td class="num">99.02±0.03%</td><td class="num">+0.39</td></tr>
+              <tr><td>CNN, CIFAR-10</td><td class="num">78.57±0.74%</td><td class="num">73.99±0.49%</td><td class="num">+4.58</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>A.2 Additional CNN datasets</h4>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Dataset</th>
+                <th class="num">Two-argument InnerNet</th>
+                <th class="num">One-argument version</th>
+                <th class="num">ReLU</th>
+                <th class="num">SwiGLU</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>MNIST</td><td class="num">99.41±0.04%</td><td class="num">99.42±0.06%</td><td class="num">99.02±0.03%</td><td class="num">Not measured</td></tr>
+              <tr><td>CIFAR-10</td><td class="num">78.57±0.74%</td><td class="num">81.02±1.02%</td><td class="num">73.99±0.49%</td><td class="num">79.79±0.54%</td></tr>
+              <tr><td>FashionMNIST</td><td class="num">90.91±0.29%</td><td class="num">91.36±0.47%</td><td class="num">89.34±0.13%</td><td class="num">Not measured</td></tr>
+              <tr><td>SVHN</td><td class="num">94.78±0.61%</td><td class="num">95.16±0.23%</td><td class="num">92.55±0.19%</td><td class="num">Not measured</td></tr>
+              <tr><td>CIFAR-100, large CNN</td><td class="num">53.74±0.88%</td><td class="num">Not measured</td><td class="num">50.00±0.83%</td><td class="num">46.48±0.50%</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>A.3 Transformer scaling results</h4>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Setting</th>
+                <th class="num">GELU PPL</th>
+                <th class="num">SwiGLU PPL</th>
+                <th class="num">InnerNet PPL</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>WikiText-2, d=64</td><td class="num">116.63</td><td class="num">112.31</td><td class="num">112.83</td></tr>
+              <tr><td>WikiText-2, d=128</td><td class="num">96.82</td><td class="num">92.98</td><td class="num">95.26</td></tr>
+              <tr><td>WikiText-2, d=192</td><td class="num">89.11</td><td class="num">85.43</td><td class="num">88.42</td></tr>
+              <tr><td>WikiText-2, d=256</td><td class="num">86.05</td><td class="num">81.56</td><td class="num">84.62</td></tr>
+              <tr><td>Penn Treebank, d=128</td><td class="num">212.28</td><td class="num">205.82</td><td class="num">207.91</td></tr>
+              <tr><td>GPT setting, d=256</td><td class="num">about 72.6</td><td class="num">about 74.5</td><td class="num">about 76.2, 3/5 seeds</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>A.4 Function surfaces across tasks</h4>
+        <div class="figure">
+          <img loading="eager" src="paper_assets/fig10_innernet_all_tasks.png" width="3266" height="585" alt="Two-dimensional InnerNet surfaces trained on different tasks">
+          <p class="caption">
+            <strong>Figure A1 | Trained two-dimensional surfaces across tasks.</strong>
+            Function shapes differ among Transformer, CNN, and masked language modeling checkpoints. Without a host intervention, these differences cannot be attributed directly to the task.
+          </p>
+        </div>
+
+        <h4>A.5 Parameter efficiency</h4>
+        <div class="figure">
+          <img loading="eager" src="paper_assets/fig_parameter_efficiency.png" width="1885" height="1242" alt="Parameter efficiency comparison between InnerNet and ReLU MLPs">
+          <p class="caption">
+            <strong>Figure A2 | Parameter efficiency in capacity-limited MLPs.</strong>
+            The shared bivariate function obtains higher accuracy with a narrower host network. The difference shrinks as the base network becomes wider.
+          </p>
+        </div>
+
+        <h3>Appendix B Negative results and boundaries</h3>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Setting</th>
+                <th>Observation</th>
+                <th>Current scope of interpretation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>RNN, Penn Treebank</td><td>InnerNet PPL about 169-179, tanh about 140</td><td>The bivariate local unit does not replace stable recurrent dynamics</td></tr>
+              <tr><td>GPT scratch training</td><td>InnerNet trails GELU and SwiGLU, with only 3/5 seeds complete</td><td>Joint optimization is difficult under the current budget; the scaling result is unresolved</td></tr>
+              <tr><td>Direct replacement in Qwen2.5-0.5B</td><td>Accuracy falls from about 89% to 80%</td><td>A mature model cannot change its local operator without a transition</td></tr>
+              <tr><td>Replacement at all ResNet positions</td><td>Overall performance is unchanged</td><td>The benefit of a bivariate unit depends on insertion position and host pathways</td></tr>
+              <tr><td>Sequential MNIST gate fitting</td><td>R² for a standard sigmoid gate is unstable</td><td>The functional result does not identify a unique gating mechanism</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Appendix C Experiment provenance</h3>
+
+        <p>
+          Configuration files for reproducing the original paper are located at
+          <code>config/experiments/mlp_*.yaml</code>
+          and
+          <code>config/experiments/cnn_*.yaml</code>.
+          The main Transformer experiments are located at
+          <code>config/experiments/transformer_wikitext_*.yaml</code>,
+          and the hidden-width ablation is located at
+          <code>config/experiments/transformer_wikitext_2arg_innerh{8,16,64}.yaml</code>.
+          The host matrix summary is in
+          <code>results/audit/causal_matrix_summary.json</code>,
+          frozen-host data are in
+          <code>results/audit/grouped_metric_summary.csv</code>,
+          and the Poly3 replacement and system costs are in
+          <code>results/audit/deploy_analysis.json</code>
+          and
+          <code>results/audit/compute_cost_profile.json</code>,
+          respectively.
+        </p>
+
+        <h3>Appendix D Experimental note before submission</h3>
+
+        <div class="note">
+          <strong>Open experimental question:</strong>
+          The current Poly3 replacement loses 3.63 accuracy points and has no fused kernel. Further deployment evaluation should first fix a small set of fusible primitives, retrain each candidate formula independently, and then compare accuracy and throughput with the same hardware and batch settings.
+        </div>
+      </section>
+
+      <section id="en-references">
+        <h2>References</h2>
+        <ol class="references">
+          <li id="en-ref-1">
+            Yoon, K., Orhan, E., Kim, J., and Pitkow, X.
+            <a href="https://doi.org/10.1109/ACCESS.2022.3178951">Two-Argument Activation Functions Learn Soft XOR Operations Like Cortical Neurons</a>.
+            IEEE Access, 2022. <a href="2110.06871v2.pdf">Local paper PDF</a>.
+            <span class="ref-note">This paper is the direct starting point for our study: it introduces the shared two-input InnerNet and reports soft-XOR-like surfaces, performance gains, and robustness gains in MLPs and CNNs.</span>
+          </li>
+          <li id="en-ref-2">
+            Gidon, A. et al.
+            <a href="https://doi.org/10.1126/science.aax6239">Dendritic Action Potentials and Computation in Human Layer 2/3 Cortical Neurons</a>.
+            Science, 2020.
+            <span class="ref-note">The study observes events in human cortical dendrites that distinguish linearly inseparable inputs, providing experimental evidence for XOR-like dendritic computation.</span>
+          </li>
+          <li id="en-ref-3">
+            Lin, M., Chen, Q., and Yan, S.
+            <a href="https://arxiv.org/abs/1312.4400">Network In Network</a>.
+            ICLR, 2014.
+            <span class="ref-note">This early micro-network architecture replaces linear filters with small local MLPs, but it does not analyze a shared bivariate scalar function.</span>
+          </li>
+          <li id="en-ref-4">
+            He, K., Zhang, X., Ren, S., and Sun, J.
+            <a href="https://doi.org/10.1109/ICCV.2015.123">Delving Deep into Rectifiers: Surpassing Human-Level Performance on ImageNet Classification</a>.
+            ICCV, 2015.
+            <span class="ref-note">PReLU learns only the negative-side slope and is a low-dimensional learnable activation function.</span>
+          </li>
+          <li id="en-ref-5">
+            Ramachandran, P., Zoph, B., and Le, Q. V.
+            <a href="https://arxiv.org/abs/1710.05941">Searching for Activation Functions</a>.
+            arXiv:1710.05941, 2017.
+            <span class="ref-note">The method searches combinations of predefined unary and binary primitives and discovers Swish.</span>
+          </li>
+          <li id="en-ref-6">
+            Bingham, G. and Miikkulainen, R.
+            <a href="https://doi.org/10.1016/j.neunet.2022.01.001">Discovering Parametric Activation Functions</a>.
+            Neural Networks, 2022.
+            <span class="ref-note">PANGAEA combines evolutionary search with gradient optimization and reports that different architectures prefer different parameterized activation functions.</span>
+          </li>
+          <li id="en-ref-7">
+            Liu, H., Brock, A., Simonyan, K., and Le, Q. V.
+            <a href="https://proceedings.neurips.cc/paper/2020/hash/9d4c03631b8b0c85ae08bf05eda37d0f-Abstract.html">Evolving Normalization-Activation Layers</a>.
+            NeurIPS, 2020.
+            <span class="ref-note">The method searches joint normalization and activation structures from basic operations and produces directly executable EvoNorm formulas.</span>
+          </li>
+          <li id="en-ref-8">
+            Ma, N., Zhang, X., Liu, M., and Sun, J.
+            <a href="https://doi.org/10.1109/CVPR46437.2021.00794">Activate or Not: Learning Customized Activation</a>.
+            CVPR, 2021.
+            <span class="ref-note">ACON learns to switch between nonlinear and near-linear states, and meta-ACON further conditions its parameters on the input context.</span>
+          </li>
+          <li id="en-ref-9">
+            Dai, Y. et al.
+            <a href="https://arxiv.org/abs/2007.07729">Attention as Activation</a>.
+            arXiv:2007.07729, 2020.
+            <span class="ref-note">This related context-aware activation method incorporates local cross-channel information into the activation computation.</span>
+          </li>
+          <li id="en-ref-10">
+            Molina, A., Schramowski, P., and Kersting, K.
+            <a href="https://openreview.net/forum?id=BJlBSkHtDS">Padé Activation Units: End-to-end Learning of Flexible Activation Functions in Deep Networks</a>.
+            ICLR, 2020.
+            <span class="ref-note">Low-order rational functions provide compact learnable univariate activations that balance flexibility with a closed-form expression.</span>
+          </li>
+          <li id="en-ref-11">
+            Bohra, P. et al.
+            <a href="https://doi.org/10.1109/OJSP.2020.3039379">Learning Activation Functions in Deep (Spline) Neural Networks</a>.
+            IEEE Open Journal of Signal Processing, 2020.
+            <span class="ref-note">The method learns free-form univariate activations with B-splines and controls their complexity through regularization.</span>
+          </li>
+          <li id="en-ref-12">
+            Liu, Z. et al.
+            <a href="https://openreview.net/forum?id=Ozo7qJ5vZi">KAN: Kolmogorov-Arnold Networks</a>.
+            ICLR, 2025.
+            <span class="ref-note">KAN learns univariate splines on network edges and extracts simple expressions through pruning and symbolification.</span>
+          </li>
+          <li id="en-ref-13">
+            Liu, H., Simonyan, K., and Yang, Y.
+            <a href="https://openreview.net/forum?id=S1eYHoC5FX">DARTS: Differentiable Architecture Search</a>.
+            ICLR, 2019.
+            <span class="ref-note">DARTS continuously relaxes the discrete choice among candidate operations and optimizes structural parameters by gradient descent.</span>
+          </li>
+          <li id="en-ref-14">
+            Real, E., Liang, C., So, D. R., and Le, Q. V.
+            <a href="https://proceedings.mlr.press/v119/real20a.html">AutoML-Zero: Evolving Machine Learning Algorithms From Scratch</a>.
+            ICML, 2020.
+            <span class="ref-note">AutoML-Zero searches complete learning algorithms from basic mathematical primitives, including models, losses, and update rules.</span>
+          </li>
+          <li id="en-ref-15">
+            Wei, T., Wang, C., Rui, Y., and Chen, C. W.
+            <a href="https://arxiv.org/abs/1603.01670">Network Morphism</a>.
+            arXiv:1603.01670, 2016.
+            <span class="ref-note">Function-preserving transformations transfer a trained network into a larger structure and provide methodological context for our warm-start design.</span>
+          </li>
+          <li id="en-ref-16">
+            Hochreiter, S. and Schmidhuber, J.
+            <a href="https://doi.org/10.1162/neco.1997.9.8.1735">Long Short-Term Memory</a>.
+            Neural Computation, 1997.
+            <span class="ref-note">LSTM uses multiplicative gates to control the writing, retention, and reading of memory, a canonical multi-input gating design.</span>
+          </li>
+          <li id="en-ref-17">
+            Cho, K. et al.
+            <a href="https://aclanthology.org/D14-1179/">Learning Phrase Representations using RNN Encoder-Decoder for Statistical Machine Translation</a>.
+            EMNLP, 2014.
+            <span class="ref-note">The paper introduces GRU, which uses a more compact gating structure to stabilize recurrent state updates.</span>
+          </li>
+          <li id="en-ref-18">
+            Dauphin, Y. N., Fan, A., Auli, M., and Grangier, D.
+            <a href="https://proceedings.mlr.press/v70/dauphin17a.html">Language Modeling with Gated Convolutional Networks</a>.
+            ICML, 2017.
+            <span class="ref-note">GLU combines two linear projections through elementwise gating and is a direct engineering reference for the two-input InnerNet form.</span>
+          </li>
+          <li id="en-ref-19">
+            Shazeer, N.
+            <a href="https://arxiv.org/abs/2002.05202">GLU Variants Improve Transformer</a>.
+            arXiv:2002.05202, 2020.
+            <span class="ref-note">The study compares GLU variants and introduces SwiGLU, which is the main Transformer baseline in our experiments.</span>
+          </li>
+          <li id="en-ref-20">
+            Jayakumar, S. et al.
+            <a href="https://openreview.net/forum?id=rylnK6VtDH">Multiplicative Interactions and Where to Find Them</a>.
+            ICLR, 2020.
+            <span class="ref-note">The paper gives a common interpretation of gating, attention, hypernetworks, and dynamic convolution as multiplicative interactions.</span>
+          </li>
+          <li id="en-ref-21">
+            Poirazi, P., Brannon, T., and Mel, B. W.
+            <a href="https://doi.org/10.1016/S0896-6273(03)00149-1">Pyramidal Neuron as Two-Layer Neural Network</a>.
+            Neuron, 2003.
+            <span class="ref-note">Detailed compartmental models show that nonlinear dendritic subunits can give a single neuron a computation resembling a two-layer network.</span>
+          </li>
+          <li id="en-ref-22">
+            Beniaguev, D., Segev, I., and London, M.
+            <a href="https://doi.org/10.1016/j.neuron.2021.07.002">Single Cortical Neurons as Deep Artificial Neural Networks</a>.
+            Neuron, 2021.
+            <span class="ref-note">Approximating the input-output mapping of an active dendritic neuron requires a relatively deep temporal network, indicating substantial single-neuron computational complexity.</span>
+          </li>
+          <li id="en-ref-23">
+            Larkum, M. E., Zhu, J. J., and Sakmann, B.
+            <a href="https://doi.org/10.1038/18686">A New Cellular Mechanism for Coupling Inputs Arriving at Different Cortical Layers</a>.
+            Nature, 1999.
+            <span class="ref-note">The experiments show nonlinear coupling through dendritic events between inputs arriving from different cortical levels.</span>
+          </li>
+          <li id="en-ref-24">
+            Cranmer, M. et al.
+            <a href="https://proceedings.neurips.cc/paper/2020/hash/c9f2f917078bd2db12f23c3b413d9cba-Abstract.html">Discovering Symbolic Models from Deep Learning with Inductive Biases</a>.
+            NeurIPS, 2020.
+            <span class="ref-note">The method first trains a neural model, applies symbolic regression to its internal modules, and replaces those modules with closed-form equations.</span>
+          </li>
+          <li id="en-ref-25">
+            Sahoo, S., Lampert, C., and Martius, G.
+            <a href="https://proceedings.mlr.press/v80/sahoo18a.html">Learning Equations for Extrapolation and Control</a>.
+            ICML, 2018.
+            <span class="ref-note">The method learns sparse equations from predefined mathematical primitives to recover analytical relations that can extrapolate.</span>
+          </li>
+        </ol>
+      </section>
+
+      <p class="foot">
+        This page is the bilingual, contribution-first reframed paper draft. The main-text data come from the project's canonical experiment records and result audit.
+      </p>
+    </section>
   </main>
   <script>
     (() => {
@@ -920,7 +1568,7 @@
         imagesReady.then(() => jumpToReference(id));
       });
 
-      if (location.hash.startsWith("#ref-")) {
+      if (/^#(?:en-)?ref-\d+$/.test(location.hash)) {
         const id = location.hash.slice(1);
         imagesReady.then(() => jumpToReference(id));
       }
